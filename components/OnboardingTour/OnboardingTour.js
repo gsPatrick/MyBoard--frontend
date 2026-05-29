@@ -205,6 +205,8 @@ export default function OnboardingTour() {
   const [targetRect, setTargetRect] = useState(null);
   const [tooltipSize, setTooltipSize] = useState({ width: 360, height: 240 });
   const [interactiveDone, setInteractiveDone] = useState(false);
+  const [animDirection, setAnimDirection] = useState(1);
+  const [isFirstRender, setIsFirstRender] = useState(true);
   const themeAtStepRef = useRef(null);
   const cardRef = useRef(null);
 
@@ -242,7 +244,10 @@ export default function OnboardingTour() {
     });
 
     if (!step?.target) {
-      setTargetRect(null);
+      document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((el) => {
+        el.classList.remove(HIGHLIGHT_CLASS);
+      });
+      window.setTimeout(() => setTargetRect(null), 320);
       return;
     }
 
@@ -288,8 +293,7 @@ export default function OnboardingTour() {
     if (!active || loading || !step) return;
 
     applyPrepare(step.prepare);
-    setTargetRect(null);
-    const timer = window.setTimeout(measureTarget, 160);
+    const timer = window.setTimeout(measureTarget, 120);
 
     function handleResize() {
       measureTarget();
@@ -302,11 +306,14 @@ export default function OnboardingTour() {
       window.clearTimeout(timer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleResize, true);
-      document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((el) => {
-        el.classList.remove(HIGHLIGHT_CLASS);
-      });
     };
   }, [active, loading, step, stepIndex, applyPrepare, measureTarget]);
+
+  useEffect(() => {
+    if (!isFirstRender) return;
+    const timer = window.setTimeout(() => setIsFirstRender(false), 400);
+    return () => window.clearTimeout(timer);
+  }, [isFirstRender]);
 
   useEffect(() => {
     if (!active) {
@@ -354,7 +361,13 @@ export default function OnboardingTour() {
       complete();
       return;
     }
+    setAnimDirection(1);
     goNext();
+  }
+
+  function handleBack() {
+    setAnimDirection(-1);
+    goBack();
   }
 
   return createPortal(
@@ -362,7 +375,13 @@ export default function OnboardingTour() {
       className={`${styles.root} ${isInteractive ? styles.rootInteractive : ""}`}
       role="presentation"
     >
-      {!targetRect && <div className={styles.overlayFull} aria-hidden="true" />}
+      {!targetRect && step?.target == null && (
+        <div className={styles.overlayFull} aria-hidden="true" />
+      )}
+
+      {!targetRect && step?.target != null && (
+        <div className={`${styles.overlayFull} ${styles.overlayTransition}`} aria-hidden="true" />
+      )}
 
       {targetRect && (
         <div
@@ -381,7 +400,7 @@ export default function OnboardingTour() {
         ref={cardRef}
         className={`${styles.card} ${tooltipPos.placement === "center" ? styles.cardCenter : ""} ${
           isDocked ? styles.cardDocked : ""
-        }`}
+        } ${isFirstRender ? styles.cardEnter : ""}`}
         style={{ top: tooltipPos.top, left: tooltipPos.left }}
         role="dialog"
         aria-modal="true"
@@ -391,17 +410,22 @@ export default function OnboardingTour() {
           <span className={styles.progressFill} style={{ width: `${progress}%` }} />
         </div>
 
-        <p className={styles.stepLabel}>
-          Passo {stepIndex + 1} de {totalSteps}
-        </p>
-        <h2 id="onboarding-title" className={styles.title}>
-          {step.title}
-        </h2>
-        <p className={styles.body}>{step.body}</p>
+        <div
+          key={step.id}
+          className={animDirection >= 0 ? styles.stepContent : styles.stepContentBack}
+        >
+          <p className={styles.stepLabel}>
+            Passo {stepIndex + 1} de {totalSteps}
+          </p>
+          <h2 id="onboarding-title" className={styles.title}>
+            {step.title}
+          </h2>
+          <p className={styles.body}>{step.body}</p>
 
-        {waitingInteraction && (
-          <p className={styles.interactiveHint}>Clique no botão destacado para continuar</p>
-        )}
+          {waitingInteraction && (
+            <p className={styles.interactiveHint}>Clique no botão destacado para continuar</p>
+          )}
+        </div>
 
         <div className={styles.footer}>
           <button type="button" className={styles.skipBtn} onClick={skip}>
@@ -409,7 +433,7 @@ export default function OnboardingTour() {
           </button>
           <div className={styles.actions}>
             {!isFirst && (
-              <Button variant="ghost" onClick={goBack}>
+              <Button variant="ghost" onClick={handleBack}>
                 Voltar
               </Button>
             )}
