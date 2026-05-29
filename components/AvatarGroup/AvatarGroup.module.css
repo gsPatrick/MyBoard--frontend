@@ -1,0 +1,28 @@
+.group {
+  display: inline-flex;
+  align-items: center;
+}
+
+.item {
+  position: relative;
+  margin-left: -8px;
+}
+
+.item:first-child {
+  margin-left: 0;
+}
+
+.item span,
+.item img {
+  border: 2px solid var(--background-2);
+}
+
+.more {
+  margin-left: -8px;
+}
+
+.more span {
+  border: 2px solid var(--background-2);
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}

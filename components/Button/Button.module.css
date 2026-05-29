@@ -1,0 +1,133 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 400;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.sm {
+  min-height: 24px;
+  padding: var(--space-1) var(--space-3);
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.md {
+  min-height: 32px;
+  padding: var(--space-2) var(--space-4);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.lg {
+  min-height: 40px;
+  padding: var(--space-2) var(--space-5);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.iconOnly.sm {
+  min-width: 24px;
+  padding: var(--space-1);
+}
+
+.iconOnly.md {
+  min-width: 32px;
+  padding: var(--space-2);
+}
+
+.iconOnly.lg {
+  min-width: 40px;
+  padding: var(--space-2);
+}
+
+.secondary {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.secondary:not(:disabled):hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.primary {
+  background: var(--primary);
+  color: var(--background-1);
+}
+
+.primary:not(:disabled):hover {
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.05);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:not(:disabled):hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.outline {
+  background: transparent;
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 0.5px var(--border-default);
+}
+
+.outline:not(:disabled):hover {
+  background: var(--surface-muted);
+}
+
+.fullWidth {
+  width: 100%;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.md .icon svg,
+.lg .icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}

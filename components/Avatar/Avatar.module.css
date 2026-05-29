@@ -1,0 +1,51 @@
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.xs {
+  width: 20px;
+  height: 20px;
+  font-size: 8px;
+}
+
+.sm {
+  width: 24px;
+  height: 24px;
+  font-size: 10px;
+}
+
+.md {
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
+}
+
+.lg {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.xl {
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  line-height: 1;
+}

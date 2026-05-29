@@ -1,0 +1,185 @@
+.logoutOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 12, 0.72);
+  backdrop-filter: blur(12px);
+  animation: overlayIn 0.35s ease forwards;
+}
+
+.logoutGlow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(98, 95, 255, 0.45), transparent 70%);
+  animation: pulseGlow 1.4s ease-in-out infinite;
+}
+
+.logoutCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-9);
+  border-radius: var(--radius-xl);
+  background: var(--background-2);
+  border: 0.5px solid var(--border-default);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  animation: cardPop 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+}
+
+.logoutLogo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  background: var(--gradient-brand);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 700;
+  animation: logoSpin 0.8s ease forwards;
+}
+
+.logoutTitle {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--text-primary);
+}
+
+.logoutSub {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.logoutBar {
+  width: 200px;
+  height: 4px;
+  margin-top: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+
+.logoutBarFill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-brand);
+  animation: barFill 1.35s ease-in-out forwards;
+}
+
+.welcomeBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+  border-radius: var(--radius-md);
+  background: rgba(113, 221, 140, 0.12);
+  border: 0.5px solid rgba(113, 221, 140, 0.35);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-primary);
+  animation: slideDown 0.5s cubic-bezier(0.34, 1.2, 0.64, 1) forwards;
+}
+
+.welcomeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: rgba(113, 221, 140, 0.25);
+  font-size: 12px;
+  font-weight: 700;
+  color: #2d8a47;
+  flex-shrink: 0;
+}
+
+.welcomeDismiss {
+  margin-left: auto;
+  padding: 0 var(--space-1);
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.welcomeDismiss:hover {
+  color: var(--text-primary);
+}
+
+@keyframes overlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cardPop {
+  from {
+    opacity: 0;
+    transform: scale(0.88) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes logoSpin {
+  from {
+    transform: rotate(-12deg) scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes barFill {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

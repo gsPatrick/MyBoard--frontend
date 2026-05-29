@@ -1,0 +1,55 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.purple {
+  color: var(--secondary-purple);
+}
+
+.purpleDot {
+  background: var(--secondary-purple);
+}
+
+.green {
+  color: var(--secondary-green);
+}
+
+.greenDot {
+  background: var(--secondary-green);
+}
+
+.blue {
+  color: var(--secondary-blue);
+}
+
+.blueDot {
+  background: var(--secondary-blue);
+}
+
+.orange {
+  color: var(--secondary-orange);
+}
+
+.orangeDot {
+  background: var(--secondary-orange);
+}
+
+.rejected {
+  color: var(--secondary-red);
+}
+
+.rejectedDot {
+  background: var(--secondary-red);
+}

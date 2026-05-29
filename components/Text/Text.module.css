@@ -1,0 +1,51 @@
+.text {
+  color: var(--text-primary);
+}
+
+.h1 {
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.h2 {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.h3 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.body {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.bodySm {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.caption {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.label {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.muted {
+  color: var(--text-secondary);
+}
+
+.semibold {
+  font-weight: 600;
+}

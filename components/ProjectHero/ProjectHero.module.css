@@ -1,0 +1,110 @@
+.hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background: var(--background-2);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-7);
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--text-primary);
+}
+
+.metrics {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-7);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 120px;
+}
+
+.metricStatus {
+  width: 180px;
+  min-width: 180px;
+}
+
+.metricLabel {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.metricValue {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.metricStrong {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+  color: var(--text-primary);
+}
+
+.metricMuted {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.divider {
+  width: 1px;
+  height: 52px;
+  background: var(--border-strong);
+  flex-shrink: 0;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: var(--space-4);
+  min-width: 120px;
+}
+
+.snowLogo {
+  width: 40px;
+  height: 40px;
+}
+
+.noClients {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .metrics {
+    gap: var(--space-4);
+  }
+}

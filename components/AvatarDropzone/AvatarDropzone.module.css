@@ -1,0 +1,131 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 120px;
+  padding: var(--space-4);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--surface-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.zone:hover:not(.zoneDisabled) {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.zoneDragging {
+  border-color: var(--text-secondary);
+  background: var(--surface-hover);
+}
+
+.zoneDisabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.zoneHasPreview {
+  min-height: auto;
+  padding: var(--space-3);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.previewWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.preview {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--border-default);
+}
+
+.previewPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-full);
+  background: var(--surface-hover);
+  color: var(--text-muted);
+  font-size: 24px;
+  font-weight: 500;
+  border: 2px dashed var(--border-default);
+}
+
+.icon {
+  display: flex;
+  color: var(--text-muted);
+}
+
+.text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.removeBtn {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.removeBtn:hover:not(:disabled) {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.removeBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--secondary-red);
+}

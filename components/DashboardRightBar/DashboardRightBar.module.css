@@ -1,0 +1,201 @@
+.rightBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4);
+  background: var(--background-1);
+  flex-shrink: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.contactsBlock {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+  border-radius: var(--radius-full);
+}
+
+.feedItem,
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.contactItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.contactItem:hover {
+  background: var(--surface-muted);
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.iconWrap svg {
+  width: 16px;
+  height: 16px;
+}
+
+.color1 {
+  background: var(--color-1);
+}
+
+.color2 {
+  background: var(--color-2);
+}
+
+.feedText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.feedTitle {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.feedTime {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.activities {
+  position: relative;
+}
+
+.timelineWrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.timelineLine {
+  position: absolute;
+  left: 19px;
+  top: 28px;
+  bottom: 20px;
+  width: 1px;
+  background: var(--border-default);
+}
+
+.activityItem {
+  position: relative;
+  z-index: 1;
+}
+
+.contactBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.contactName {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contactMeta {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contactsScroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: min(420px, 48vh);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+
+.contactsScroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.contactsScroll::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+}
+
+@media (max-width: 1200px) {
+  .rightBar {
+    display: none;
+  }
+}

@@ -1,0 +1,131 @@
+.wrap {
+  position: relative;
+}
+
+.badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--accent, #3b82f6);
+  border: 1.5px solid var(--background-1);
+  pointer-events: none;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 120;
+  width: min(360px, calc(100vw - 32px));
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-1);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  overflow: hidden;
+  animation: dropdownIn 0.18s ease-out;
+}
+
+@keyframes dropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 0.5px solid var(--border-default);
+}
+
+.title {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.markAll {
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.markAll:hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.list {
+  overflow-y: auto;
+  max-height: 340px;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-bottom: 0.5px solid var(--border-default);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background: var(--surface-muted);
+}
+
+.itemUnread {
+  background: var(--surface-muted);
+}
+
+.itemTitle {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-primary);
+}
+
+.itemMessage {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.itemTime {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+}
+
+.empty,
+.loading {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}

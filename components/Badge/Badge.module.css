@@ -1,0 +1,80 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.default {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.default .dot {
+  background: var(--text-muted);
+}
+
+.indigo {
+  background: var(--color-2);
+  color: var(--secondary-indigo);
+}
+
+.indigo .dot {
+  background: var(--secondary-indigo);
+}
+
+.purple {
+  background: rgba(184, 153, 235, 0.12);
+  color: var(--secondary-purple);
+}
+
+.purple .dot {
+  background: var(--secondary-purple);
+}
+
+.green {
+  background: rgba(113, 221, 140, 0.12);
+  color: var(--secondary-green);
+}
+
+.green .dot {
+  background: var(--secondary-green);
+}
+
+.blue {
+  background: rgba(125, 187, 255, 0.12);
+  color: var(--secondary-blue);
+}
+
+.blue .dot {
+  background: var(--secondary-blue);
+}
+
+.orange {
+  background: rgba(255, 181, 91, 0.12);
+  color: var(--secondary-orange);
+}
+
+.orange .dot {
+  background: var(--secondary-orange);
+}
+
+.red {
+  background: rgba(255, 107, 107, 0.12);
+  color: var(--secondary-red);
+}
+
+.red .dot {
+  background: var(--secondary-red);
+}

@@ -1,0 +1,191 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--background-2);
+  border-radius: var(--radius-xl);
+  min-height: 100%;
+  flex: 1;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.calendar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-1) var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.day:hover:not(.dayActive) {
+  background: var(--surface-muted);
+}
+
+.dayLabel {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.dayNumber {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-primary);
+}
+
+.dayActive {
+  background: var(--primary);
+  border-radius: var(--radius-sm);
+  color: #ffffff;
+}
+
+.dayActive .dayLabel,
+.dayActive .dayNumber {
+  color: #ffffff;
+}
+
+.list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.listEmpty {
+  min-height: 180px;
+}
+
+.loadingWrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-2);
+  flex: 1;
+  justify-content: center;
+}
+
+.loadingBar,
+.loadingBarShort {
+  display: block;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.loadingBar {
+  width: 72%;
+}
+
+.loadingBarShort {
+  width: 48%;
+  animation-delay: 0.15s;
+}
+
+.loadingWrap .loadingBar:last-of-type {
+  width: 56%;
+  animation-delay: 0.3s;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.item {
+  position: relative;
+  z-index: 1;
+}
+
+.itemWithConnector::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  top: 34px;
+  bottom: 0;
+  width: 1px;
+  background: var(--border-default);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.itemButton {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.itemButton:hover {
+  background: var(--surface-muted);
+}
+
+.itemOverdue .itemButton {
+  border-color: #e5484d;
+  background: rgba(229, 72, 77, 0.06);
+}
+
+.itemOverdue .itemButton:hover {
+  background: rgba(229, 72, 77, 0.1);
+}
+
+.overdueLabel {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  color: #e5484d;
+  margin-top: 2px;
+}
+
+.itemMeta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-secondary);
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.itemTitle {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+}

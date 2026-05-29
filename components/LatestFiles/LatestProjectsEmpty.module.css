@@ -1,0 +1,87 @@
+.wrap {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 140px;
+  padding: var(--space-4) var(--space-2);
+}
+
+.art {
+  position: relative;
+  width: 100px;
+  height: 88px;
+}
+
+.glow {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 80px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(125, 187, 255, 0.28) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.sheetBack,
+.sheetMid {
+  fill: var(--background-1);
+  stroke: var(--border-default);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.sheetFront {
+  fill: var(--background-1);
+  stroke: var(--border-default);
+  stroke-width: 1;
+}
+
+.sheetLine {
+  stroke: var(--border-default);
+  stroke-width: 1.2;
+}
+
+.sheetBar {
+  fill: var(--secondary-blue);
+  opacity: 0.55;
+}
+
+.sheetBarSoft {
+  fill: var(--secondary-blue);
+  opacity: 0.3;
+}
+
+.plusRing {
+  fill: rgba(113, 221, 140, 0.12);
+  stroke: var(--secondary-green);
+  stroke-width: 1.5;
+}
+
+.plusMark {
+  stroke: var(--secondary-green);
+  stroke-width: 1.5;
+}
+
+.text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+  text-align: center;
+}

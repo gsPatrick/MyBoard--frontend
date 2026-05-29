@@ -1,0 +1,24 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-6);
+  background: var(--background-2);
+  border-radius: var(--radius-xl);
+  margin-top: var(--space-7);
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.empty {
+  padding: var(--space-4) var(--space-3);
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-muted);
+}
