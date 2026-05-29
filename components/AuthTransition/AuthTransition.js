@@ -1,11 +1,19 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./AuthTransition.module.css";
 
 export function LogoutOverlay({ visible }) {
-  if (!visible) return null;
+  const [mounted, setMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!visible || !mounted) return null;
+
+  return createPortal(
     <div className={styles.logoutOverlay} role="status" aria-live="polite" aria-label="Saindo">
       <div className={styles.logoutGlow} aria-hidden="true" />
       <div className={styles.logoutCard}>
@@ -16,7 +24,8 @@ export function LogoutOverlay({ visible }) {
           <span className={styles.logoutBarFill} />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

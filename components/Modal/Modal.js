@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Button from "../Button/Button";
 import IconButton from "../IconButton/IconButton";
 import styles from "./Modal.module.css";
@@ -26,6 +27,12 @@ export default function Modal({
   footer,
   size = "md",
 }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -42,9 +49,9 @@ export default function Modal({
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
+  return createPortal(
     <div className={styles.overlay} onClick={onClose} role="presentation">
       <div
         className={`${styles.modal} ${styles[size]}`}
@@ -64,7 +71,8 @@ export default function Modal({
         <div className={styles.body}>{children}</div>
         {footer && <footer className={styles.footer}>{footer}</footer>}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
