@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Button from "@/components/Button/Button";
+import { useTheme } from "@/components/ThemeProvider/ThemeProvider";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { useDashboardTab } from "@/context/DashboardTabContext";
@@ -11,25 +12,43 @@ import styles from "./OnboardingTour.module.css";
 
 const PADDING = 10;
 const TOOLTIP_GAP = 16;
+const VIEWPORT_MARGIN = 16;
 const HIGHLIGHT_CLASS = "onboarding-highlight-target";
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function computeTooltipPosition(placement, rect, tooltipSize) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const maxLeft = vw - tooltipSize.width - 16;
-  const maxTop = vh - tooltipSize.height - 16;
+function getTooltipBox(top, left, width, height) {
+  return {
+    top,
+    left,
+    right: left + width,
+    bottom: top + height,
+    width,
+    height,
+  };
+}
 
-  if (!rect || placement === "center") {
-    return {
-      top: clamp(vh / 2 - tooltipSize.height / 2, 16, maxTop),
-      left: clamp(vw / 2 - tooltipSize.width / 2, 16, maxLeft),
-    };
-  }
+function boxesOverlap(a, b, gap = 0) {
+  return !(
+    a.right + gap <= b.left ||
+    a.left >= b.right + gap ||
+    a.bottom + gap <= b.top ||
+    a.top >= b.bottom + gap
+  );
+}
 
+function fitsViewport(box, vw, vh) {
+  return (
+    box.top >= VIEWPORT_MARGIN &&
+    box.left >= VIEWPORT_MARGIN &&
+    box.bottom <= vh - VIEWPORT_MARGIN &&
+    box.right <= vw - VIEWPORT_MARGIN
+  );
+}
+
+function positionForPlacement(placement, rect, tooltipSize) {
   let top = rect.top;
   let left = rect.left;
 
@@ -54,9 +73,65 @@ function computeTooltipPosition(placement, rect, tooltipSize) {
       break;
   }
 
-  return {
-    top: clamp(top, 16, maxTop),
-    left: clamp(left, 16, maxLeft),
+  return { top, left };
+}
+
+function getPlacementOrder(preferred) {
+  const order = [preferred, "bottom", "top", "right", "left"];
+  return [...new Set(order)];
+}
+
+function computeTooltipPosition(preferredPlacement, rect, tooltipSize) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
+  const maxTop = vh - tooltipSize.height - VIEWPORT_MARGIN;
+
+  if (!rect || preferredPlacement === "center") {
+    return {
+      top: clamp(vh / 2 - tooltipSize.height / 2, VIEWPORT_MARGIN, maxTop),
+      left: clamp(vw / 2 - tooltipSize.width / 2, VIEWPORT_MARGIN, maxLeft),
+      placement: "center",
+    };
+  }
+
+  const targetBox = {
+    top: rect.top,
+    left: rect.left,
+    right: rect.left + rect.width,
+    bottom: rect.top + rect.height,
+  };
+
+  const placements = getPlacementOrder(preferredPlacement || "bottom");
+  let best = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (const placement of placements) {
+    const raw = positionForPlacement(placement, rect, tooltipSize);
+    const top = clamp(raw.top, VIEWPORT_MARGIN, maxTop);
+    const left = clamp(raw.left, VIEWPORT_MARGIN, maxLeft);
+    const box = getTooltipBox(top, left, tooltipSize.width, tooltipSize.height);
+    const overlaps = boxesOverlap(box, targetBox, 8);
+    const score =
+      (overlaps ? 1000 : 0) +
+      Math.abs(top - raw.top) +
+      Math.abs(left - raw.left) +
+      (placement === preferredPlacement ? 0 : 10);
+
+    if (!overlaps && fitsViewport(box, vw, vh)) {
+      return { top, left, placement };
+    }
+
+    if (score < bestScore) {
+      bestScore = score;
+      best = { top, left, placement };
+    }
+  }
+
+  return best || {
+    top: clamp(rect.bottom + TOOLTIP_GAP, VIEWPORT_MARGIN, maxTop),
+    left: clamp(rect.left, VIEWPORT_MARGIN, maxLeft),
+    placement: "bottom",
   };
 }
 
@@ -73,6 +148,7 @@ export default function OnboardingTour() {
     complete,
   } = useOnboarding();
 
+  const { theme } = useTheme();
   const { setActiveTab } = useDashboardTab();
   const { clearProject, clearClient, clearLucroFilter } = useDashboardNav();
   const { setSidebarsOpen } = useDashboardLayout();
@@ -80,9 +156,13 @@ export default function OnboardingTour() {
   const [mounted, setMounted] = useState(false);
   const [targetRect, setTargetRect] = useState(null);
   const [tooltipSize, setTooltipSize] = useState({ width: 360, height: 220 });
+  const [resolvedPlacement, setResolvedPlacement] = useState("bottom");
+  const [interactiveDone, setInteractiveDone] = useState(false);
+  const themeAtStepRef = useRef(null);
 
   const isLast = stepIndex === totalSteps - 1;
   const isFirst = stepIndex === 0;
+  const isInteractive = Boolean(step?.interactive);
 
   const applyPrepare = useCallback(
     (prepare) => {
@@ -125,7 +205,9 @@ export default function OnboardingTour() {
     }
 
     element.classList.add(HIGHLIGHT_CLASS);
-    element.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+
+    const scrollBlock = step.prepare?.scrollTarget ? "center" : "nearest";
+    element.scrollIntoView({ block: scrollBlock, inline: "nearest", behavior: "smooth" });
 
     window.setTimeout(() => {
       const rect = element.getBoundingClientRect();
@@ -141,6 +223,18 @@ export default function OnboardingTour() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    setInteractiveDone(false);
+    themeAtStepRef.current = theme;
+  }, [stepIndex, step?.id]);
+
+  useEffect(() => {
+    if (!isInteractive || interactiveDone) return;
+    if (themeAtStepRef.current !== null && theme !== themeAtStepRef.current) {
+      setInteractiveDone(true);
+    }
+  }, [theme, isInteractive, interactiveDone]);
 
   useLayoutEffect(() => {
     if (!active || loading || !step) return;
@@ -173,13 +267,24 @@ export default function OnboardingTour() {
     }
   }, [active]);
 
+  const preferredPlacement = step?.placement || "bottom";
+
+  const tooltipPos = useMemo(() => {
+    const result = computeTooltipPosition(preferredPlacement, targetRect, tooltipSize);
+    return result;
+  }, [preferredPlacement, targetRect, tooltipSize]);
+
+  useEffect(() => {
+    setResolvedPlacement(tooltipPos.placement || preferredPlacement);
+  }, [tooltipPos.placement, preferredPlacement]);
+
   if (!mounted || !active || loading || !step) {
     return null;
   }
 
-  const placement = step.placement || "bottom";
-  const tooltipPos = computeTooltipPosition(placement, targetRect, tooltipSize);
   const progress = ((stepIndex + 1) / totalSteps) * 100;
+  const placement = resolvedPlacement;
+  const waitingInteraction = isInteractive && !interactiveDone;
 
   function handlePrimary() {
     if (isLast) {
@@ -190,12 +295,15 @@ export default function OnboardingTour() {
   }
 
   return createPortal(
-    <div className={styles.root} role="presentation">
+    <div
+      className={`${styles.root} ${isInteractive ? styles.rootInteractive : ""}`}
+      role="presentation"
+    >
       {!targetRect && <div className={styles.overlayFull} aria-hidden="true" />}
 
       {targetRect && (
         <div
-          className={styles.spotlight}
+          className={`${styles.spotlight} ${isInteractive ? styles.spotlightInteractive : ""}`}
           style={{
             top: targetRect.top,
             left: targetRect.left,
@@ -235,6 +343,10 @@ export default function OnboardingTour() {
         </h2>
         <p className={styles.body}>{step.body}</p>
 
+        {waitingInteraction && (
+          <p className={styles.interactiveHint}>Clique no botão destacado para continuar</p>
+        )}
+
         <div className={styles.footer}>
           <button type="button" className={styles.skipBtn} onClick={skip}>
             Pular tour
@@ -245,8 +357,12 @@ export default function OnboardingTour() {
                 Voltar
               </Button>
             )}
-            <Button variant="primary" onClick={handlePrimary}>
-              {isLast ? "Começar a usar" : "Próximo"}
+            <Button
+              variant="primary"
+              onClick={handlePrimary}
+              disabled={waitingInteraction}
+            >
+              {isLast ? "Começar a usar" : waitingInteraction ? "Aguardando clique…" : "Próximo"}
             </Button>
           </div>
         </div>

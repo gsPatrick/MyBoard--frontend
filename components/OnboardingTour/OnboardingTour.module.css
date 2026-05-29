@@ -5,6 +5,14 @@
   pointer-events: auto;
 }
 
+.rootInteractive {
+  pointer-events: none;
+}
+
+.rootInteractive .card {
+  pointer-events: auto;
+}
+
 /* Passos centrais (sem alvo) — escurece sem blur */
 .overlayFull {
   position: fixed;
@@ -93,6 +101,17 @@
   margin-bottom: var(--space-5);
 }
 
+.interactiveHint {
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: rgba(98, 95, 255, 0.12);
+  border: 1px solid rgba(98, 95, 255, 0.25);
+}
+
 .footer {
   display: flex;
   align-items: center;
@@ -169,4 +188,28 @@
   position: relative;
   z-index: 1201 !important;
   isolation: isolate;
+}
+
+.rootInteractive :global(.onboarding-highlight-target),
+.rootInteractive :global(.onboarding-highlight-target) * {
+  pointer-events: auto;
+}
+
+@keyframes spotlightPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 0.95),
+      0 0 0 4px rgba(98, 95, 255, 0.55),
+      0 0 24px rgba(98, 95, 255, 0.25),
+      0 0 0 9999px rgba(6, 8, 14, 0.72);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, 1),
+      0 0 0 6px rgba(98, 95, 255, 0.75),
+      0 0 32px rgba(98, 95, 255, 0.4),
+      0 0 0 9999px rgba(6, 8, 14, 0.72);
+  }
 }

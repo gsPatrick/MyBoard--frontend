@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
+import CurrencyInput from "@/components/CurrencyInput/CurrencyInput";
 import {
   createProjectFinancialEntry,
   deleteProjectFinancialEntry,
@@ -10,6 +11,7 @@ import {
 } from "@/api/projectFinancial";
 import { FINANCIAL_ENTRY_TYPES, FINANCIAL_ENTRY_LABELS } from "@/lib/financialLabels";
 import { formatCurrencyBRL } from "@/lib/projectStats";
+import { parseCurrencyInput } from "@/lib/currencyInput";
 import { sumEntryAmounts, parseAmount } from "@/lib/financialStats";
 import sectionStyles from "../ProjectDetailSection.module.css";
 import styles from "./FinancialSection.module.css";
@@ -64,14 +66,15 @@ export default function FinancialSection({ project, onChange }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (!form.title.trim() || !form.amount) return;
+    const amount = parseCurrencyInput(form.amount);
+    if (!form.title.trim() || amount == null || amount <= 0) return;
 
     setSaving(true);
     try {
       await createProjectFinancialEntry(project.id, {
         entry_type: form.entry_type,
         title: form.title.trim(),
-        amount: form.amount,
+        amount,
         entry_date: form.entry_date,
         description: form.description.trim() || undefined,
       });
@@ -144,11 +147,8 @@ export default function FinancialSection({ project, onChange }) {
               ))}
             </select>
           </div>
-          <Input
+          <CurrencyInput
             label="Valor (R$)"
-            type="number"
-            min="0"
-            step="0.01"
             value={form.amount}
             onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
           />

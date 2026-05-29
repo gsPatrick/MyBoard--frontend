@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Modal, { ModalActions } from "@/components/Modal/Modal";
 import Input from "@/components/Input/Input";
+import CurrencyInput from "@/components/CurrencyInput/CurrencyInput";
 import { listClients } from "@/api/clients";
 import { createProject } from "@/api/projects";
 import { normalizeListResponse } from "@/lib/apiList";
+import { parseCurrencyInput } from "@/lib/currencyInput";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
 import formStyles from "../shared/ModalForm.module.css";
@@ -94,8 +96,8 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
       }
 
       if (budget.trim()) {
-        const value = parseFloat(budget.replace(",", "."));
-        if (!Number.isFinite(value) || value < 0) {
+        const value = parseCurrencyInput(budget);
+        if (value == null || value < 0) {
           setError("Valor inválido");
           setLoading(false);
           return;
@@ -202,11 +204,8 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
             onChange={(e) => setDueDate(e.target.value)}
             disabled={loading}
           />
-          <Input
+          <CurrencyInput
             label="Valor (opcional)"
-            type="number"
-            min="0"
-            step="0.01"
             placeholder="0,00"
             value={budget}
             onChange={(e) => setBudget(e.target.value)}

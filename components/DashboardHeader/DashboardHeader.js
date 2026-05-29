@@ -166,7 +166,9 @@ export default function DashboardHeader() {
           <Kbd>{getSearchShortcutLabel()}</Kbd>
         </button>
 
-        <ThemeToggle />
+        <span data-tour="theme-toggle">
+          <ThemeToggle />
+        </span>
 
         <IconButton
           label="Atualizar dados"
