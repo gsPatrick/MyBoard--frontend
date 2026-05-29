@@ -6,7 +6,7 @@ import { updateProject } from "@/api/projects";
 import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_CHIP_STATUS } from "@/lib/projectLabels";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
-import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
+import { PROJECT_ORIGINS, PROJECT_ORIGIN_LABELS } from "@/lib/projectOrigin";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import asideStyles from "./ProjectDetailAside.module.css";
 
@@ -23,8 +23,25 @@ function formatDate(value) {
 
 export default function ProjectDetailAside({ project, onProjectChange }) {
   const [savingPriority, setSavingPriority] = useState(false);
+  const [savingOrigin, setSavingOrigin] = useState(false);
   const statusConfig =
     PROJECT_CHIP_STATUS[project?.status] || PROJECT_CHIP_STATUS.in_progress;
+
+  async function handleOriginChange(event) {
+    const origin = event.target.value;
+    if (!project?.id || origin === project.origin) return;
+
+    setSavingOrigin(true);
+    try {
+      const updated = await updateProject(project.id, { origin });
+      onProjectChange(updated);
+      showSuccessToast("Origem atualizada");
+    } catch {
+      /* mantém anterior */
+    } finally {
+      setSavingOrigin(false);
+    }
+  }
 
   async function handlePriorityChange(event) {
     const priority = event.target.value;
