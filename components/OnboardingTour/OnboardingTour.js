@@ -130,7 +130,30 @@ function computeSidePosition(side, rect, tooltipSize) {
   return { top, left, placement: side, docked: false };
 }
 
-function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock, lockPlacement }) {
+function computeInColumnPosition(anchorRect, targetRect, tooltipSize) {
+  const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
+  const maxTop = vh - tooltipSize.height - VIEWPORT_MARGIN;
+
+  const top = clamp(targetRect.top + 20, VIEWPORT_MARGIN, maxTop);
+  const left = clamp(
+    anchorRect.left + (anchorRect.width - tooltipSize.width) / 2,
+    VIEWPORT_MARGIN,
+    maxLeft
+  );
+
+  return { top, left, placement: "in-column", docked: false };
+}
+
+function computeTooltipPosition({
+  preferredPlacement,
+  rect,
+  anchorRect,
+  tooltipSize,
+  dock,
+  lockPlacement,
+}) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
@@ -143,6 +166,10 @@ function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock, l
       placement: "center",
       docked: false,
     };
+  }
+
+  if (dock === "in-column" && anchorRect && rect) {
+    return computeInColumnPosition(anchorRect, rect, tooltipSize);
   }
 
   if (dock === "bottom" || dock === "top") {
