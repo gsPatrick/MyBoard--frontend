@@ -113,7 +113,32 @@ function shouldAutoDock(rect) {
   return rect.height > vh * 0.32 || rect.width > vw * 0.72;
 }
 
-function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock }) {
+function computeForcedPlacement(placement, rect, tooltipSize) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
+  const maxTop = vh - tooltipSize.height - VIEWPORT_MARGIN;
+
+  const top = clamp(
+    rect.top + rect.height / 2 - tooltipSize.height / 2,
+    VIEWPORT_MARGIN,
+    maxTop
+  );
+
+  let left = VIEWPORT_MARGIN;
+
+  if (placement === "right") {
+    left = clamp(rect.right + TOOLTIP_GAP, VIEWPORT_MARGIN, maxLeft);
+  }
+
+  if (placement === "left") {
+    left = clamp(rect.left - tooltipSize.width - TOOLTIP_GAP, VIEWPORT_MARGIN, maxLeft);
+  }
+
+  return { top, left, placement, docked: false };
+}
+
+function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock, lockPlacement }) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
@@ -130,6 +155,10 @@ function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock })
 
   if (dock === "bottom" || dock === "top") {
     return { ...computeDockedPosition(dock, tooltipSize), docked: true };
+  }
+
+  if (lockPlacement && ["left", "right"].includes(preferredPlacement)) {
+    return computeForcedPlacement(preferredPlacement, rect, tooltipSize);
   }
 
   if (shouldAutoDock(rect) && !["left", "right"].includes(preferredPlacement)) {
@@ -170,6 +199,9 @@ function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock })
   }
 
   if (best && bestScore >= 10000) {
+    if (["left", "right"].includes(preferredPlacement)) {
+      return computeForcedPlacement(preferredPlacement, rect, tooltipSize);
+    }
     return { ...computeDockedPosition("bottom", tooltipSize), docked: true };
   }
 
@@ -344,8 +376,9 @@ export default function OnboardingTour() {
         rect: targetRect,
         tooltipSize,
         dock: step?.tooltipDock || null,
+        lockPlacement: step?.lockPlacement ?? false,
       }),
-    [step?.placement, step?.tooltipDock, targetRect, tooltipSize]
+    [step?.placement, step?.tooltipDock, step?.lockPlacement, targetRect, tooltipSize]
   );
 
   if (!mounted || !active || loading || !step) {
