@@ -258,6 +258,7 @@ export default function OnboardingTour() {
 
   const [mounted, setMounted] = useState(false);
   const [targetRect, setTargetRect] = useState(null);
+  const [anchorRect, setAnchorRect] = useState(null);
   const [tooltipSize, setTooltipSize] = useState({ width: 360, height: 240 });
   const [interactiveDone, setInteractiveDone] = useState(false);
   const [animDirection, setAnimDirection] = useState(1);
@@ -327,6 +328,23 @@ export default function OnboardingTour() {
         width: rect.width + PADDING * 2,
         height: rect.height + PADDING * 2,
       });
+
+      if (step.tooltipAnchor) {
+        const anchorEl = document.querySelector(step.tooltipAnchor);
+        if (anchorEl) {
+          const anchor = anchorEl.getBoundingClientRect();
+          setAnchorRect({
+            top: anchor.top,
+            left: anchor.left,
+            width: anchor.width,
+            height: anchor.height,
+          });
+        } else {
+          setAnchorRect(null);
+        }
+      } else {
+        setAnchorRect(null);
+      }
     }, 50);
   }, [step]);
 
@@ -421,11 +439,12 @@ export default function OnboardingTour() {
       computeTooltipPosition({
         preferredPlacement: step?.placement || "bottom",
         rect: targetRect,
+        anchorRect,
         tooltipSize,
         dock: step?.tooltipDock || null,
         lockPlacement: step?.lockPlacement ?? false,
       }),
-    [step?.placement, step?.tooltipDock, step?.lockPlacement, targetRect, tooltipSize]
+    [step?.placement, step?.tooltipDock, step?.lockPlacement, targetRect, anchorRect, tooltipSize]
   );
 
   if (!mounted || !active || loading || !step) {
