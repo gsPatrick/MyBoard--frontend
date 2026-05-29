@@ -19,10 +19,14 @@
 }
 
 .contactsBlock {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
+}
+
+.contactsScroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .title {
@@ -171,27 +175,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.contactsScroll {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-height: min(420px, 48vh);
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
-}
-
-.contactsScroll::-webkit-scrollbar {
-  width: 4px;
-}
-
-.contactsScroll::-webkit-scrollbar-thumb {
-  background: var(--border-default);
-  border-radius: var(--radius-full);
 }
 
 @media (max-width: 1200px) {

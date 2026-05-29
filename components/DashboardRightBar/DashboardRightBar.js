@@ -214,7 +214,7 @@ export default function DashboardRightBar() {
                 className={styles.contactItem}
                 onClick={() => handleClientClick(client)}
               >
-                <Avatar src={getClientAvatarUrl(client)} name={client.name} size="md" />
+                <Avatar src={getClientAvatarUrl(client)} name={client.name} size="lg" />
                 <span className={styles.contactBody}>
                   <span className={styles.contactName}>{client.name}</span>
                   {client.email && (

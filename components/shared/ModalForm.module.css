@@ -50,6 +50,47 @@
   gap: var(--space-4);
 }
 
+.originGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.originOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background: var(--background-1);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.originOption input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.originOption:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.originOptionActive {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--background-1);
+}
+
 .hint {
   font-size: 12px;
   line-height: 16px;

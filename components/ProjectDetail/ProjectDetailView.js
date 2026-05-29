@@ -25,9 +25,15 @@ import ScopeContractSection from "./sections/ScopeContractSection";
 import DemandsSection from "./sections/DemandsSection";
 import CredentialsSection from "./sections/CredentialsSection";
 import GithubSection from "./sections/GithubSection";
+import MarketplaceSection from "./sections/MarketplaceSection";
+import {
+  getMarketplaceTabLabel,
+  isMarketplaceOrigin,
+  PROJECT_ORIGIN_LABELS,
+} from "@/lib/projectOrigin";
 import styles from "./ProjectDetailView.module.css";
 
-const SECTIONS = [
+const BASE_SECTIONS = [
   { id: "overview", label: "Visão geral" },
   { id: "scope", label: "Escopo" },
   { id: "contract", label: "Contrato" },
@@ -36,6 +42,15 @@ const SECTIONS = [
   { id: "credentials", label: "Credenciais" },
   { id: "github", label: "GitHub" },
 ];
+
+function buildSections(origin) {
+  if (!isMarketplaceOrigin(origin)) return BASE_SECTIONS;
+
+  const platformLabel = getMarketplaceTabLabel(origin);
+  const sections = [...BASE_SECTIONS];
+  sections.splice(1, 0, { id: "marketplace", label: platformLabel });
+  return sections;
+}
 
 function formatDate(value) {
   if (!value) return "—";
@@ -71,6 +86,11 @@ export default function ProjectDetailView() {
     (d) => d.status !== "done" && d.status !== "cancelled"
   ).length;
 
+  const sections = useMemo(
+    () => buildSections(project?.origin),
+    [project?.origin]
+  );
+
   const reload = useCallback(async () => {
     if (!selectedProject?.id) return;
 
@@ -100,6 +120,12 @@ export default function ProjectDetailView() {
     window.addEventListener("myboard:workspace-refresh", reload);
     return () => window.removeEventListener("myboard:workspace-refresh", reload);
   }, [reload]);
+
+  useEffect(() => {
+    if (activeSection === "marketplace" && project && !isMarketplaceOrigin(project.origin)) {
+      setActiveSection("overview");
+    }
+  }, [activeSection, project?.origin]);
 
   async function reloadDetails() {
     if (!selectedProject?.id) return;
@@ -167,6 +193,13 @@ export default function ProjectDetailView() {
                 {project.budget != null ? formatCurrencyBRL(project.budget) : "—"}
               </p>
             </div>
+            <span className={styles.divider} aria-hidden="true" />
+            <div className={styles.metric}>
+              <span className={styles.metricLabel}>Origem</span>
+              <p className={styles.metricValue}>
+                {PROJECT_ORIGIN_LABELS[project.origin] || "Próprio"}
+              </p>
+            </div>
           </div>
         </div>
         <div className={styles.heroSide}>
@@ -197,6 +230,15 @@ export default function ProjectDetailView() {
                 credentialsCount={credentials.length}
                 reposCount={repos.length}
                 onNavigate={setActiveSection}
+              />
+            )}
+
+            {activeSection === "marketplace" && isMarketplaceOrigin(project.origin) && (
+              <MarketplaceSection
+                projectId={project.id}
+                origin={project.origin}
+                flatDetails={flatDetails}
+                onSaved={reloadDetails}
               />
             )}
 

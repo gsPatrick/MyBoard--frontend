@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getRecentProjects } from "@/lib/recentProjects";
+import Avatar from "@/components/Avatar/Avatar";
+import { enrichRecentProjects, getRecentProjects } from "@/lib/recentProjects";
 import { useAnimatedLogout } from "@/hooks/useAnimatedLogout";
 import { LogoutOverlay } from "@/components/AuthTransition/AuthTransition";
 import { groupProjectsByFolder, isHighPriority } from "@/lib/workspaceSidebar";
 import { normalizeListResponse } from "@/lib/apiList";
+import { getClientAvatarUrl } from "@/lib/mediaUrl";
 import { getStoredUser, getToken } from "@/api/client";
 import { getWorkspaceTree } from "@/api/folders";
 import { listProjects } from "@/api/projects";
@@ -181,12 +183,18 @@ export default function DashboardSidebar() {
   const [workspace, setWorkspace] = useState({ tree: [], rootFiles: [] });
   const [highPriorityGroups, setHighPriorityGroups] = useState([]);
   const [recentItems, setRecentItems] = useState([]);
+  const [allProjects, setAllProjects] = useState([]);
   const [expandedIds, setExpandedIds] = useState(new Set());
   const [folderModalOpen, setFolderModalOpen] = useState(false);
   const [newFolderParentId, setNewFolderParentId] = useState(null);
   const [manageFolder, setManageFolder] = useState(null);
 
   const dnd = useWorkspaceTreeDnD(workspace, setWorkspace, setExpandedIds);
+
+  const projectsById = useMemo(
+    () => new Map(allProjects.map((project) => [project.id, project])),
+    [allProjects]
+  );
 
   const loadSidebarData = useCallback(async () => {
     if (!getToken()) {
@@ -220,7 +228,8 @@ export default function DashboardSidebar() {
         rootFiles: treeData?.rootFiles || [],
       });
       setHighPriorityGroups(groupProjectsByFolder(highPriority));
-      setRecentItems(getRecentProjects());
+      setAllProjects(items);
+      setRecentItems(enrichRecentProjects(getRecentProjects(), items));
 
       const rootFolderIds = (treeData?.tree || []).map((f) => f.id);
       setExpandedIds((prev) => new Set([...prev, ...rootFolderIds]));
@@ -241,7 +250,7 @@ export default function DashboardSidebar() {
     }
 
     function onRecentUpdated() {
-      setRecentItems(getRecentProjects());
+      setRecentItems(enrichRecentProjects(getRecentProjects(), allProjects));
     }
 
     window.addEventListener("myboard:workspace-refresh", onRefresh);
@@ -253,7 +262,7 @@ export default function DashboardSidebar() {
       window.removeEventListener("myboard:recent-updated", onRecentUpdated);
       window.removeEventListener("myboard:tenant-changed", onRefresh);
     };
-  }, [loadSidebarData]);
+  }, [loadSidebarData, allProjects]);
 
   function toggleFolder(folderId) {
     setExpandedIds((prev) => {
@@ -290,7 +299,9 @@ export default function DashboardSidebar() {
 
       <aside className={`${styles.sidebar} ${dnd.saving ? styles.sidebarSaving : ""}`}>
         <div className={styles.profile}>
-          <span className={styles.profileName}>{profileName}</span>
+          <span className={styles.profileName} title={profileName}>
+            {profileName}
+          </span>
         </div>
 
         <div className={styles.scrollArea}>
@@ -301,25 +312,40 @@ export default function DashboardSidebar() {
           ) : recentItems.length === 0 ? (
             <SidebarEmptyState>Nenhum recente</SidebarEmptyState>
           ) : (
-            recentItems.map((item) => (
+            recentItems.map((item) => {
+              const fullProject = projectsById.get(item.id);
+              const client = fullProject?.client || item.client;
+              const avatarName = client?.name || item.name;
+
+              return (
               <button
                 key={item.id}
                 type="button"
                 className={`${styles.navItem} ${selectedProjectId === item.id ? styles.active : ""}`}
                 onClick={() =>
-                  handleSelectProject({
-                    id: item.id,
-                    name: item.name,
-                    slug: item.slug,
-                    folder_id: item.folder_id,
-                  })
+                  handleSelectProject(
+                    fullProject || {
+                      id: item.id,
+                      name: item.name,
+                      slug: item.slug,
+                      folder_id: item.folder_id,
+                      client,
+                    }
+                  )
                 }
               >
-                <span className={styles.navArrow} aria-hidden="true" />
-                <span className={styles.dot} aria-hidden="true" />
-                <span className={styles.navLabel}>{item.name}</span>
+                <Avatar
+                  src={getClientAvatarUrl(client)}
+                  name={avatarName}
+                  size="sm"
+                  className={styles.recentAvatar}
+                />
+                <span className={styles.navLabel} title={item.name}>
+                  {item.name}
+                </span>
               </button>
-            ))
+              );
+            })
           )}
         </div>
 

@@ -7,11 +7,13 @@ import { listClients } from "@/api/clients";
 import { createProject } from "@/api/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
+import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
 import formStyles from "../shared/ModalForm.module.css";
 
 export default function NewProjectModal({ isOpen, onClose, onCreated }) {
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState("");
+  const [origin, setOrigin] = useState("own");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
   const [clients, setClients] = useState([]);
@@ -47,6 +49,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
     setClientId("");
     setDueDate("");
     setBudget("");
+    setOrigin("own");
     setError("");
   }
 
@@ -82,6 +85,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
         name: trimmedName,
         client_id: clientId,
         status: "in_progress",
+        origin,
       };
 
       if (dueDate) {
@@ -161,6 +165,33 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
           {!loadingClients && clients.length === 0 && (
             <span className={formStyles.hint}>Cadastre um cliente antes de criar o projeto</span>
           )}
+        </div>
+
+        <div className={formStyles.field}>
+          <span className={formStyles.label}>Origem do projeto</span>
+          <div className={formStyles.originGroup} role="radiogroup" aria-label="Origem do projeto">
+            {PROJECT_ORIGINS.map((item) => (
+              <label
+                key={item.id}
+                className={`${formStyles.originOption} ${
+                  origin === item.id ? formStyles.originOptionActive : ""
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="project-origin"
+                  value={item.id}
+                  checked={origin === item.id}
+                  onChange={() => setOrigin(item.id)}
+                  disabled={loading}
+                />
+                {item.label}
+              </label>
+            ))}
+          </div>
+          <span className={formStyles.hint}>
+            Projetos do 99Freelas ou Workana ganham uma aba com chat, escopo da plataforma e links.
+          </span>
         </div>
 
         <div className={formStyles.row}>

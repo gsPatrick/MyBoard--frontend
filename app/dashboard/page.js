@@ -12,6 +12,7 @@ import { DashboardNavProvider } from "@/context/DashboardNavContext";
 import { DashboardTabProvider } from "@/context/DashboardTabContext";
 import { DashboardLayoutProvider, useDashboardLayout } from "@/context/DashboardLayoutContext";
 import WorkspaceSearch from "@/components/WorkspaceSearch/WorkspaceSearch";
+import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
 import { getToken } from "@/api/client";
 import styles from "./page.module.css";
 
@@ -58,6 +59,7 @@ function DashboardShell() {
         </aside>
       </div>
       <WorkspaceSearch />
+      <DailyFocusModal />
     </>
   );
 }

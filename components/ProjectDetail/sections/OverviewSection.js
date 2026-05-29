@@ -1,5 +1,6 @@
 "use client";
 
+import { getMarketplaceTabLabel, isMarketplaceOrigin } from "@/lib/projectOrigin";
 import sectionStyles from "../ProjectDetailSection.module.css";
 import styles from "../ProjectDetailView.module.css";
 
@@ -10,7 +11,18 @@ export default function OverviewSection({
   reposCount,
   onNavigate,
 }) {
+  const marketplaceLabel = getMarketplaceTabLabel(project?.origin);
+
   const cards = [
+    ...(isMarketplaceOrigin(project?.origin)
+      ? [
+          {
+            id: "marketplace",
+            title: marketplaceLabel,
+            desc: "Chat, escopo da plataforma e links da vaga",
+          },
+        ]
+      : []),
     {
       id: "scope",
       title: "Escopo",

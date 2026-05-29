@@ -5,6 +5,7 @@ import Chip from "@/components/Chip/Chip";
 import { updateProject } from "@/api/projects";
 import { PROJECT_CHIP_STATUS } from "@/lib/projectLabels";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
+import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import asideStyles from "./ProjectDetailAside.module.css";
 
@@ -44,6 +45,28 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
       <section className={asideStyles.card}>
         <h2 className={asideStyles.title}>Resumo</h2>
         <dl className={asideStyles.dl}>
+          <div className={asideStyles.rowStack}>
+            <dt>Origem</dt>
+            <dd>
+              <select
+                className={asideStyles.select}
+                value={project.origin || "own"}
+                onChange={handleOriginChange}
+                disabled={savingOrigin}
+                aria-label="Origem do projeto"
+              >
+                {PROJECT_ORIGINS.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </dd>
+          </div>
+          <div className={asideStyles.row}>
+            <dt>Tipo</dt>
+            <dd>{PROJECT_ORIGIN_LABELS[project.origin] || "Próprio"}</dd>
+          </div>
           <div className={asideStyles.rowStack}>
             <dt>Prioridade</dt>
             <dd>
