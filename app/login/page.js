@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthHero from "@/components/AuthHero/AuthHero";
 import { LoginWelcomeBanner } from "@/components/AuthTransition/AuthTransition";
@@ -120,19 +121,22 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`${styles.page} ${mounted ? styles.pageMounted : ""}`}>
+    <div
+      className={`${styles.page} ${mounted ? styles.pageMounted : ""}`}
+      data-theme="light"
+    >
       <div className={`${styles.heroWrap} ${mounted ? styles.heroMounted : ""}`}>
         <AuthHero />
       </div>
 
       <section className={`${styles.panel} ${mounted ? styles.panelMounted : ""}`}>
         <div className={styles.panelInner}>
-          <div className={styles.mobileBrand}>
+          <Link href="/" className={styles.mobileBrand}>
             <span className={styles.mobileLogo}>M</span>
             <Text variant="h3" as="span">
               MyBoard
             </Text>
-          </div>
+          </Link>
 
           <LoginWelcomeBanner
             visible={showLogoutBanner}
@@ -338,6 +342,10 @@ export default function LoginPage() {
               </form>
             </>
           )}
+
+          <Link href="/" className={styles.homeLink}>
+            ← Voltar para o site
+          </Link>
         </div>
       </section>
     </div>
