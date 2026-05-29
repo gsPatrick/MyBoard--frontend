@@ -132,7 +132,7 @@ function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock })
     return { ...computeDockedPosition(dock, tooltipSize), docked: true };
   }
 
-  if (shouldAutoDock(rect)) {
+  if (shouldAutoDock(rect) && !["left", "right"].includes(preferredPlacement)) {
     return { ...computeDockedPosition("bottom", tooltipSize), docked: true };
   }
 
