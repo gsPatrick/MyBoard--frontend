@@ -111,12 +111,12 @@ export default function LatestFiles() {
 
       <div className={styles.uploadZone}>
         <p className={styles.uploadText}>
-          <span>Drop files here to upload</span>
-          <span className={styles.uploadSep}> or </span>
-          <span>upload files</span>
+          <span>Arraste arquivos aqui para enviar</span>
+          <span className={styles.uploadSep}> ou </span>
+          <span>selecione arquivos</span>
         </p>
         <Button variant="secondary" size="sm">
-          Upload
+          Enviar
         </Button>
       </div>
     </section>

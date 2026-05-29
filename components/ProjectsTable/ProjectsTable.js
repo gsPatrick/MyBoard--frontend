@@ -20,6 +20,10 @@ function formatDueDate(project) {
   });
 }
 
+function formatFolderName(project) {
+  return project.folder?.name || "Raiz";
+}
+
 export default function ProjectsTable({
   projects,
   onProjectClick,
@@ -52,6 +56,15 @@ export default function ProjectsTable({
               </span>
             </span>
           </button>
+        ))}
+      </div>
+
+      <div className={styles.col}>
+        <div className={styles.th}>Pasta</div>
+        {projects.map((project) => (
+          <div key={project.id} className={styles.cell} title={formatFolderName(project)}>
+            {formatFolderName(project)}
+          </div>
         ))}
       </div>
 
