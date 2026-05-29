@@ -11,8 +11,9 @@ import { useOnboarding } from "@/context/OnboardingContext";
 import styles from "./OnboardingTour.module.css";
 
 const PADDING = 10;
-const TOOLTIP_GAP = 16;
+const TOOLTIP_GAP = 20;
 const VIEWPORT_MARGIN = 16;
+const DOCK_GAP = 20;
 const HIGHLIGHT_CLASS = "onboarding-highlight-target";
 
 function clamp(value, min, max) {
@@ -48,6 +49,30 @@ function fitsViewport(box, vw, vh) {
   );
 }
 
+function computeDockedPosition(dock, tooltipSize) {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const left = clamp(
+    vw / 2 - tooltipSize.width / 2,
+    VIEWPORT_MARGIN,
+    vw - tooltipSize.width - VIEWPORT_MARGIN
+  );
+
+  if (dock === "top") {
+    return {
+      top: VIEWPORT_MARGIN + DOCK_GAP,
+      left,
+      placement: "dock-top",
+    };
+  }
+
+  return {
+    top: vh - tooltipSize.height - VIEWPORT_MARGIN - DOCK_GAP,
+    left,
+    placement: "dock-bottom",
+  };
+}
+
 function positionForPlacement(placement, rect, tooltipSize) {
   let top = rect.top;
   let left = rect.left;
@@ -81,7 +106,14 @@ function getPlacementOrder(preferred) {
   return [...new Set(order)];
 }
 
-function computeTooltipPosition(preferredPlacement, rect, tooltipSize) {
+function shouldAutoDock(rect) {
+  if (!rect) return false;
+  const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  return rect.height > vh * 0.32 || rect.width > vw * 0.72;
+}
+
+function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock }) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
@@ -92,7 +124,16 @@ function computeTooltipPosition(preferredPlacement, rect, tooltipSize) {
       top: clamp(vh / 2 - tooltipSize.height / 2, VIEWPORT_MARGIN, maxTop),
       left: clamp(vw / 2 - tooltipSize.width / 2, VIEWPORT_MARGIN, maxLeft),
       placement: "center",
+      docked: false,
     };
+  }
+
+  if (dock === "bottom" || dock === "top") {
+    return { ...computeDockedPosition(dock, tooltipSize), docked: true };
+  }
+
+  if (shouldAutoDock(rect)) {
+    return { ...computeDockedPosition("bottom", tooltipSize), docked: true };
   }
 
   const targetBox = {
@@ -111,28 +152,35 @@ function computeTooltipPosition(preferredPlacement, rect, tooltipSize) {
     const top = clamp(raw.top, VIEWPORT_MARGIN, maxTop);
     const left = clamp(raw.left, VIEWPORT_MARGIN, maxLeft);
     const box = getTooltipBox(top, left, tooltipSize.width, tooltipSize.height);
-    const overlaps = boxesOverlap(box, targetBox, 8);
+    const overlaps = boxesOverlap(box, targetBox, 12);
     const score =
-      (overlaps ? 1000 : 0) +
+      (overlaps ? 10000 : 0) +
       Math.abs(top - raw.top) +
       Math.abs(left - raw.left) +
       (placement === preferredPlacement ? 0 : 10);
 
     if (!overlaps && fitsViewport(box, vw, vh)) {
-      return { top, left, placement };
+      return { top, left, placement, docked: false };
     }
 
     if (score < bestScore) {
       bestScore = score;
-      best = { top, left, placement };
+      best = { top, left, placement, docked: false };
     }
   }
 
-  return best || {
-    top: clamp(rect.bottom + TOOLTIP_GAP, VIEWPORT_MARGIN, maxTop),
-    left: clamp(rect.left, VIEWPORT_MARGIN, maxLeft),
-    placement: "bottom",
-  };
+  if (best && bestScore >= 10000) {
+    return { ...computeDockedPosition("bottom", tooltipSize), docked: true };
+  }
+
+  return (
+    best || {
+      top: clamp(rect.bottom + TOOLTIP_GAP, VIEWPORT_MARGIN, maxTop),
+      left: clamp(rect.left, VIEWPORT_MARGIN, maxLeft),
+      placement: "bottom",
+      docked: false,
+    }
+  );
 }
 
 export default function OnboardingTour() {
@@ -155,10 +203,10 @@ export default function OnboardingTour() {
 
   const [mounted, setMounted] = useState(false);
   const [targetRect, setTargetRect] = useState(null);
-  const [tooltipSize, setTooltipSize] = useState({ width: 360, height: 220 });
-  const [resolvedPlacement, setResolvedPlacement] = useState("bottom");
+  const [tooltipSize, setTooltipSize] = useState({ width: 360, height: 240 });
   const [interactiveDone, setInteractiveDone] = useState(false);
   const themeAtStepRef = useRef(null);
+  const cardRef = useRef(null);
 
   const isLast = stepIndex === totalSteps - 1;
   const isFirst = stepIndex === 0;
@@ -206,7 +254,7 @@ export default function OnboardingTour() {
 
     element.classList.add(HIGHLIGHT_CLASS);
 
-    const scrollBlock = step.prepare?.scrollTarget ? "center" : "nearest";
+    const scrollBlock = step.prepare?.scrollBlock || "nearest";
     element.scrollIntoView({ block: scrollBlock, inline: "nearest", behavior: "smooth" });
 
     window.setTimeout(() => {
@@ -217,7 +265,7 @@ export default function OnboardingTour() {
         width: rect.width + PADDING * 2,
         height: rect.height + PADDING * 2,
       });
-    }, 180);
+    }, 260);
   }, [step]);
 
   useEffect(() => {
@@ -240,7 +288,8 @@ export default function OnboardingTour() {
     if (!active || loading || !step) return;
 
     applyPrepare(step.prepare);
-    const timer = window.setTimeout(measureTarget, 120);
+    setTargetRect(null);
+    const timer = window.setTimeout(measureTarget, 160);
 
     function handleResize() {
       measureTarget();
@@ -267,24 +316,38 @@ export default function OnboardingTour() {
     }
   }, [active]);
 
-  const preferredPlacement = step?.placement || "bottom";
+  useLayoutEffect(() => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setTooltipSize((prev) => {
+      if (
+        Math.abs(rect.width - prev.width) > 2 ||
+        Math.abs(rect.height - prev.height) > 2
+      ) {
+        return { width: rect.width, height: rect.height };
+      }
+      return prev;
+    });
+  }, [stepIndex, step?.body, interactiveDone, targetRect]);
 
-  const tooltipPos = useMemo(() => {
-    const result = computeTooltipPosition(preferredPlacement, targetRect, tooltipSize);
-    return result;
-  }, [preferredPlacement, targetRect, tooltipSize]);
-
-  useEffect(() => {
-    setResolvedPlacement(tooltipPos.placement || preferredPlacement);
-  }, [tooltipPos.placement, preferredPlacement]);
+  const tooltipPos = useMemo(
+    () =>
+      computeTooltipPosition({
+        preferredPlacement: step?.placement || "bottom",
+        rect: targetRect,
+        tooltipSize,
+        dock: step?.tooltipDock || null,
+      }),
+    [step?.placement, step?.tooltipDock, targetRect, tooltipSize]
+  );
 
   if (!mounted || !active || loading || !step) {
     return null;
   }
 
   const progress = ((stepIndex + 1) / totalSteps) * 100;
-  const placement = resolvedPlacement;
   const waitingInteraction = isInteractive && !interactiveDone;
+  const isDocked = tooltipPos.docked;
 
   function handlePrimary() {
     if (isLast) {
@@ -315,21 +378,14 @@ export default function OnboardingTour() {
       )}
 
       <div
-        className={`${styles.card} ${placement === "center" ? styles.cardCenter : ""}`}
+        ref={cardRef}
+        className={`${styles.card} ${tooltipPos.placement === "center" ? styles.cardCenter : ""} ${
+          isDocked ? styles.cardDocked : ""
+        }`}
         style={{ top: tooltipPos.top, left: tooltipPos.left }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="onboarding-title"
-        ref={(node) => {
-          if (!node) return;
-          const rect = node.getBoundingClientRect();
-          if (
-            Math.abs(rect.width - tooltipSize.width) > 2 ||
-            Math.abs(rect.height - tooltipSize.height) > 2
-          ) {
-            setTooltipSize({ width: rect.width, height: rect.height });
-          }
-        }}
       >
         <div className={styles.progressTrack} aria-hidden="true">
           <span className={styles.progressFill} style={{ width: `${progress}%` }} />

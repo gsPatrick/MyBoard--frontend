@@ -96,7 +96,13 @@ export default function DashboardTabs() {
               label={tab.label}
               active={highlightedTab === tab.id}
               onClick={() => handleTabClick(tab.id)}
-              data-tour={tab.id === "projetos" ? "tab-projetos" : undefined}
+              data-tour={
+                tab.id === "projetos"
+                  ? "tab-projetos"
+                  : tab.id === "lucro"
+                    ? "tab-lucro"
+                    : undefined
+              }
             />
           ))}
         </div>

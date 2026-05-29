@@ -44,7 +44,7 @@
 
 .card {
   position: fixed;
-  z-index: 1;
+  z-index: 1300;
   width: min(400px, calc(100vw - 32px));
   padding: var(--space-5);
   border-radius: 20px;
@@ -54,6 +54,14 @@
     var(--background-1);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
   animation: cardIn 0.28s ease;
+}
+
+.cardDocked {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.spotlightInteractive {
+  animation: spotlightPulse 1.6s ease-in-out infinite;
 }
 
 .cardCenter {
@@ -187,7 +195,6 @@
 :global(.onboarding-highlight-target) {
   position: relative;
   z-index: 1201 !important;
-  isolation: isolate;
 }
 
 .rootInteractive :global(.onboarding-highlight-target),

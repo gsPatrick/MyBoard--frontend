@@ -73,7 +73,7 @@ export default function LatestFiles() {
   }, [loadProjects]);
 
   return (
-    <section className={styles.card}>
+    <section className={styles.card} data-tour="central-recent">
       <div className={styles.header}>
         <h2 className={styles.title}>Projetos adicionados recentemente</h2>
       </div>
