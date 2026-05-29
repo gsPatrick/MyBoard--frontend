@@ -5,6 +5,12 @@
   pointer-events: auto;
 }
 
+:global(html.onboarding-active),
+:global(body.onboarding-active) {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
 .rootInteractive {
   pointer-events: none;
 }

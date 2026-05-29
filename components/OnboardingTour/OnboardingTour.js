@@ -17,7 +17,28 @@ const DOCK_GAP = 20;
 const HIGHLIGHT_CLASS = "onboarding-highlight-target";
 
 function clamp(value, min, max) {
+  if (max < min) return min;
   return Math.min(Math.max(value, min), max);
+}
+
+function getContentBounds() {
+  const sidebarLeft = document.querySelector('[data-tour="sidebar-left"]');
+  const sidebarRight = document.querySelector('[data-tour="sidebar-right"]');
+
+  const left = sidebarLeft
+    ? sidebarLeft.getBoundingClientRect().right + VIEWPORT_MARGIN
+    : VIEWPORT_MARGIN;
+
+  const right = sidebarRight
+    ? sidebarRight.getBoundingClientRect().left - VIEWPORT_MARGIN
+    : window.innerWidth - VIEWPORT_MARGIN;
+
+  return {
+    left,
+    right: Math.max(right, left + 280),
+    top: VIEWPORT_MARGIN,
+    bottom: window.innerHeight - VIEWPORT_MARGIN,
+  };
 }
 
 function getTooltipBox(top, left, width, height) {
@@ -114,26 +135,33 @@ function shouldAutoDock(rect) {
 }
 
 function computeForcedPlacement(placement, rect, tooltipSize) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
-  const maxTop = vh - tooltipSize.height - VIEWPORT_MARGIN;
+  const bounds = getContentBounds();
+  const maxLeft = bounds.right - tooltipSize.width;
+  const maxTop = bounds.bottom - tooltipSize.height;
 
   const top = clamp(
     rect.top + rect.height / 2 - tooltipSize.height / 2,
-    VIEWPORT_MARGIN,
+    bounds.top,
     maxTop
   );
 
-  let left = VIEWPORT_MARGIN;
+  let left = bounds.left;
 
   if (placement === "right") {
-    left = clamp(rect.right + TOOLTIP_GAP, VIEWPORT_MARGIN, maxLeft);
+    left = rect.right + TOOLTIP_GAP;
+    if (left + tooltipSize.width > bounds.right) {
+      left = bounds.right - tooltipSize.width;
+    }
   }
 
   if (placement === "left") {
-    left = clamp(rect.left - tooltipSize.width - TOOLTIP_GAP, VIEWPORT_MARGIN, maxLeft);
+    left = rect.left - tooltipSize.width - TOOLTIP_GAP;
+    if (left < bounds.left) {
+      left = bounds.left;
+    }
   }
+
+  left = clamp(left, bounds.left, maxLeft);
 
   return { top, left, placement, docked: false };
 }
@@ -291,18 +319,13 @@ export default function OnboardingTour() {
 
     element.classList.add(HIGHLIGHT_CLASS);
 
-    const scrollBlock = step.prepare?.scrollBlock || "nearest";
-    element.scrollIntoView({ block: scrollBlock, inline: "nearest", behavior: "smooth" });
-
-    window.setTimeout(() => {
-      const rect = element.getBoundingClientRect();
-      setTargetRect({
-        top: rect.top - PADDING,
-        left: rect.left - PADDING,
-        width: rect.width + PADDING * 2,
-        height: rect.height + PADDING * 2,
-      });
-    }, 260);
+    const rect = element.getBoundingClientRect();
+    setTargetRect({
+      top: rect.top - PADDING,
+      left: rect.left - PADDING,
+      width: rect.width + PADDING * 2,
+      height: rect.height + PADDING * 2,
+    });
   }, [step]);
 
   useEffect(() => {
@@ -321,23 +344,57 @@ export default function OnboardingTour() {
     }
   }, [theme, isInteractive, interactiveDone]);
 
+  useEffect(() => {
+    if (!active) return undefined;
+
+    const html = document.documentElement;
+    const body = document.body;
+    const scrollY = window.scrollY;
+
+    html.classList.add("onboarding-active");
+    body.classList.add("onboarding-active");
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+
+    function preventScroll(event) {
+      event.preventDefault();
+    }
+
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
+
+    return () => {
+      html.classList.remove("onboarding-active");
+      body.classList.remove("onboarding-active");
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      window.scrollTo(0, scrollY);
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
+    };
+  }, [active]);
+
   useLayoutEffect(() => {
     if (!active || loading || !step) return;
 
     applyPrepare(step.prepare);
-    const timer = window.setTimeout(measureTarget, 120);
+    const timer = window.setTimeout(measureTarget, 80);
 
     function handleResize() {
       measureTarget();
     }
 
     window.addEventListener("resize", handleResize);
-    window.addEventListener("scroll", handleResize, true);
 
     return () => {
       window.clearTimeout(timer);
       window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleResize, true);
     };
   }, [active, loading, step, stepIndex, applyPrepare, measureTarget]);
 
