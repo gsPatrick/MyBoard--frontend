@@ -1,8 +1,10 @@
 import { ENDPOINTS } from "./api";
 import { apiGet, apiPatch, apiPost, getToken, saveSession, clearSession } from "./client";
 import { ensureActiveTenant } from "@/lib/tenantContext";
+import { clearTenantScopedStorage } from "@/lib/tenantStorage";
 
 export async function register(payload) {
+  clearTenantScopedStorage();
   const data = await apiPost(ENDPOINTS.auth.register, payload, { auth: false });
   saveSession(data);
   await ensureActiveTenant();
@@ -10,6 +12,7 @@ export async function register(payload) {
 }
 
 export async function login(payload) {
+  clearTenantScopedStorage();
   const data = await apiPost(ENDPOINTS.auth.login, payload, { auth: false });
   saveSession(data);
   await ensureActiveTenant();

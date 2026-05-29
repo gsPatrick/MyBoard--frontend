@@ -1,4 +1,5 @@
 import { buildApiUrl } from "./api";
+import { clearTenantScopedStorage } from "@/lib/tenantStorage";
 
 const TOKEN_KEY = "myboard_token";
 const USER_KEY = "myboard_user";
@@ -39,7 +40,7 @@ export function getActiveTenantId() {
     return getStoredTenant()?.id || null;
   }
 
-  return user.tenant_id || getStoredTenant()?.id || null;
+  return user.tenant_id || null;
 }
 
 export function setActiveTenant(tenant) {
@@ -60,6 +61,7 @@ export function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem(TENANT_KEY);
+  clearTenantScopedStorage();
 }
 
 export async function apiClient(path, options = {}) {

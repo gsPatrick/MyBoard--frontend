@@ -1,8 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { getActiveTenantId } from "@/api/client";
+import { buildTenantScopedKey } from "@/lib/tenantStorage";
 
 const STORAGE_KEY = "myboard_dashboard_layout";
+
+function getLayoutStorageKey() {
+  return buildTenantScopedKey(STORAGE_KEY, getActiveTenantId());
+}
 
 function readStoredLayout() {
   if (typeof window === "undefined") {
@@ -10,7 +16,7 @@ function readStoredLayout() {
   }
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getLayoutStorageKey());
     if (!raw) return { leftSidebarOpen: true, rightSidebarOpen: true };
     const parsed = JSON.parse(raw);
     return {
@@ -41,7 +47,7 @@ export function DashboardLayoutProvider({ children }) {
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(
-      STORAGE_KEY,
+      getLayoutStorageKey(),
       JSON.stringify({ leftSidebarOpen, rightSidebarOpen })
     );
   }, [leftSidebarOpen, rightSidebarOpen, hydrated]);
