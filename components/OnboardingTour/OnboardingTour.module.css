@@ -5,20 +5,28 @@
   pointer-events: auto;
 }
 
-.backdrop {
-  position: absolute;
+/* Passos centrais (sem alvo) — escurece sem blur */
+.overlayFull {
+  position: fixed;
   inset: 0;
-  background: rgba(6, 8, 14, 0.55);
-  backdrop-filter: blur(2px);
+  background: rgba(6, 8, 14, 0.72);
+  pointer-events: none;
 }
 
+/*
+  Recorte nítido: só box-shadow escurece o resto.
+  O centro fica transparente e mostra o UI original sem blur.
+*/
 .spotlight {
   position: fixed;
   border-radius: 14px;
-  box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.35),
-    0 0 0 9999px rgba(6, 8, 14, 0.62);
+  background: transparent;
   pointer-events: none;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 0 4px rgba(98, 95, 255, 0.55),
+    0 0 24px rgba(98, 95, 255, 0.25),
+    0 0 0 9999px rgba(6, 8, 14, 0.72);
   transition:
     top 0.25s ease,
     left 0.25s ease,
@@ -28,6 +36,7 @@
 
 .card {
   position: fixed;
+  z-index: 1;
   width: min(400px, calc(100vw - 32px));
   padding: var(--space-5);
   border-radius: 20px;
@@ -154,4 +163,10 @@
     transition: none;
     animation: none;
   }
+}
+
+:global(.onboarding-highlight-target) {
+  position: relative;
+  z-index: 1201 !important;
+  isolation: isolate;
 }

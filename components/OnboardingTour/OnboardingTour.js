@@ -11,6 +11,7 @@ import styles from "./OnboardingTour.module.css";
 
 const PADDING = 10;
 const TOOLTIP_GAP = 16;
+const HIGHLIGHT_CLASS = "onboarding-highlight-target";
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
@@ -108,6 +109,10 @@ export default function OnboardingTour() {
   );
 
   const measureTarget = useCallback(() => {
+    document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((el) => {
+      el.classList.remove(HIGHLIGHT_CLASS);
+    });
+
     if (!step?.target) {
       setTargetRect(null);
       return;
@@ -119,6 +124,7 @@ export default function OnboardingTour() {
       return;
     }
 
+    element.classList.add(HIGHLIGHT_CLASS);
     element.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
 
     window.setTimeout(() => {
@@ -153,8 +159,19 @@ export default function OnboardingTour() {
       window.clearTimeout(timer);
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleResize, true);
+      document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((el) => {
+        el.classList.remove(HIGHLIGHT_CLASS);
+      });
     };
   }, [active, loading, step, stepIndex, applyPrepare, measureTarget]);
+
+  useEffect(() => {
+    if (!active) {
+      document.querySelectorAll(`.${HIGHLIGHT_CLASS}`).forEach((el) => {
+        el.classList.remove(HIGHLIGHT_CLASS);
+      });
+    }
+  }, [active]);
 
   if (!mounted || !active || loading || !step) {
     return null;
@@ -174,7 +191,7 @@ export default function OnboardingTour() {
 
   return createPortal(
     <div className={styles.root} role="presentation">
-      <div className={styles.backdrop} aria-hidden="true" />
+      {!targetRect && <div className={styles.overlayFull} aria-hidden="true" />}
 
       {targetRect && (
         <div
