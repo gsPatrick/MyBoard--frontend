@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useOnboarding } from "@/context/OnboardingContext";
 import Avatar from "@/components/Avatar/Avatar";
 import Button from "@/components/Button/Button";
 import Chip from "@/components/Chip/Chip";
@@ -37,6 +38,7 @@ function CloseIcon() {
 
 export default function DailyFocusModal() {
   const { selectProject } = useDashboardNav();
+  const { active: onboardingActive, loading: onboardingLoading } = useOnboarding();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -44,6 +46,7 @@ export default function DailyFocusModal() {
 
   const load = useCallback(async () => {
     if (!shouldShowDailyFocus()) return;
+    if (onboardingActive || onboardingLoading) return;
 
     setLoading(true);
 
@@ -61,10 +64,20 @@ export default function DailyFocusModal() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [onboardingActive, onboardingLoading]);
 
   useEffect(() => {
     load();
+  }, [load]);
+
+  useEffect(() => {
+    function handleOnboardingFinished() {
+      load();
+    }
+
+    window.addEventListener("myboard:onboarding-finished", handleOnboardingFinished);
+    return () =>
+      window.removeEventListener("myboard:onboarding-finished", handleOnboardingFinished);
   }, [load]);
 
   function dismiss() {

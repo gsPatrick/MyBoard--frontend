@@ -13,6 +13,8 @@ import { DashboardTabProvider } from "@/context/DashboardTabContext";
 import { DashboardLayoutProvider, useDashboardLayout } from "@/context/DashboardLayoutContext";
 import WorkspaceSearch from "@/components/WorkspaceSearch/WorkspaceSearch";
 import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
+import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
+import { OnboardingProvider } from "@/context/OnboardingContext";
 import { getToken } from "@/api/client";
 import styles from "./page.module.css";
 
@@ -59,6 +61,7 @@ function DashboardShell() {
         </aside>
       </div>
       <WorkspaceSearch />
+      <OnboardingTour />
       <DailyFocusModal />
     </>
   );
@@ -84,7 +87,9 @@ export default function DashboardPage() {
     <DashboardTabProvider>
       <DashboardNavProvider>
         <DashboardLayoutProvider>
-          <DashboardShell />
+          <OnboardingProvider>
+            <DashboardShell />
+          </OnboardingProvider>
         </DashboardLayoutProvider>
       </DashboardNavProvider>
     </DashboardTabProvider>

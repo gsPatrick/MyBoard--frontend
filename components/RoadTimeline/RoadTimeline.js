@@ -55,7 +55,7 @@ export default function RoadTimeline() {
   }, [loadProjects]);
 
   return (
-    <section className={styles.card}>
+    <section className={styles.card} data-tour="central-timeline">
       <h2 className={styles.title}>Projetos da semana</h2>
 
       <div className={styles.calendar}>

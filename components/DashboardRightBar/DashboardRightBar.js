@@ -111,7 +111,7 @@ export default function DashboardRightBar() {
   const showActivityLine = activities.length > 1;
 
   return (
-    <aside className={styles.rightBar}>
+    <aside className={styles.rightBar} data-tour="sidebar-right">
       <section className={styles.block}>
         <h2 className={styles.title}>
           Notifications

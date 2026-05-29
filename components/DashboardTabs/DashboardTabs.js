@@ -6,6 +6,7 @@ import Tab from "@/components/Tab/Tab";
 import NewClientModal from "@/components/NewClientModal/NewClientModal";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
 import { DASHBOARD_TABS, useDashboardTab } from "@/context/DashboardTabContext";
+import { useOnboarding } from "@/context/OnboardingContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import styles from "./DashboardTabs.module.css";
 
@@ -44,6 +45,7 @@ export default function DashboardTabs() {
     selectedProject,
   } = useDashboardNav();
   const { activeTab, setActiveTab, refreshDashboard } = useDashboardTab();
+  const { restart: restartOnboarding } = useOnboarding();
   const [menuOpen, setMenuOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
@@ -86,18 +88,19 @@ export default function DashboardTabs() {
 
   return (
     <>
-      <div className={styles.wrap}>
-        <div className={styles.tabs} role="tablist">
+        <div className={styles.wrap}>
+        <div className={styles.tabs} role="tablist" data-tour="dashboard-tabs">
           {DASHBOARD_TABS.map((tab) => (
             <Tab
               key={tab.id}
               label={tab.label}
               active={highlightedTab === tab.id}
               onClick={() => handleTabClick(tab.id)}
+              data-tour={tab.id === "projetos" ? "tab-projetos" : undefined}
             />
           ))}
         </div>
-        <div className={styles.actions}>
+        <div className={styles.actions} data-tour="new-actions">
           <Button
             variant="secondary"
             size="sm"
@@ -120,6 +123,17 @@ export default function DashboardTabs() {
             />
             {menuOpen && (
               <div className={styles.menu} role="menu">
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  role="menuitem"
+                  onClick={() => {
+                    restartOnboarding();
+                    setMenuOpen(false);
+                  }}
+                >
+                  Refazer tour guiado
+                </button>
                 <button
                   type="button"
                   className={styles.menuItem}

@@ -54,6 +54,11 @@ export function DashboardLayoutProvider({ children }) {
     setRightSidebarOpen((open) => !open);
   }, []);
 
+  const setSidebarsOpen = useCallback(({ left, right } = {}) => {
+    if (left !== undefined) setLeftSidebarOpen(left);
+    if (right !== undefined) setRightSidebarOpen(right);
+  }, []);
+
   const openSearch = useCallback(() => {
     setSearchOpen(true);
   }, []);
@@ -74,6 +79,7 @@ export function DashboardLayoutProvider({ children }) {
       rightSidebarOpen,
       toggleLeftSidebar,
       toggleRightSidebar,
+      setSidebarsOpen,
       isRefreshing,
       refreshAll,
       searchOpen,
@@ -85,6 +91,7 @@ export function DashboardLayoutProvider({ children }) {
       rightSidebarOpen,
       toggleLeftSidebar,
       toggleRightSidebar,
+      setSidebarsOpen,
       isRefreshing,
       refreshAll,
       searchOpen,

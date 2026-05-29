@@ -5,6 +5,7 @@ export default function Tab({
   active = false,
   onClick,
   className = "",
+  ...rest
 }) {
   return (
     <button
@@ -13,6 +14,7 @@ export default function Tab({
       onClick={onClick}
       aria-selected={active}
       role="tab"
+      {...rest}
     >
       <span className={styles.label}>{label}</span>
       {active && <span className={styles.indicator} aria-hidden="true" />}

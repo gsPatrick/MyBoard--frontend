@@ -297,7 +297,7 @@ export default function DashboardSidebar() {
     <>
       <LogoutOverlay visible={isLoggingOut} />
 
-      <aside className={`${styles.sidebar} ${dnd.saving ? styles.sidebarSaving : ""}`}>
+      <aside className={`${styles.sidebar} ${dnd.saving ? styles.sidebarSaving : ""}`} data-tour="sidebar-left">
         <div className={styles.profile}>
           <span className={styles.profileName} title={profileName}>
             {profileName}
@@ -305,7 +305,7 @@ export default function DashboardSidebar() {
         </div>
 
         <div className={styles.scrollArea}>
-        <div className={styles.section}>
+        <div className={styles.section} data-tour="sidebar-recent">
           <p className={styles.groupLabel}>Recentes</p>
           {loading ? (
             <span className={styles.skeleton} />
@@ -380,7 +380,7 @@ export default function DashboardSidebar() {
           )}
         </div>
 
-        <div className={styles.section}>
+        <div className={styles.section} data-tour="sidebar-projects">
           <div className={styles.sectionHeader}>
             <p className={styles.groupLabel}>Projetos</p>
             {dnd.saving && <span className={styles.savingHint}>Salvando...</span>}

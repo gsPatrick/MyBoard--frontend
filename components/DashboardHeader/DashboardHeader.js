@@ -157,6 +157,7 @@ export default function DashboardHeader() {
           className={styles.searchTrigger}
           onClick={openSearch}
           aria-label="Pesquisar (atalho Ctrl+K ou Cmd+K)"
+          data-tour="header-search"
         >
           <span className={styles.searchIcon}>
             <SearchIcon />

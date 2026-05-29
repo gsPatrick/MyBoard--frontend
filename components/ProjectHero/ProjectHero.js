@@ -54,7 +54,7 @@ export default function ProjectHero() {
   }, [loadProjects]);
 
   return (
-    <section className={styles.hero}>
+    <section className={styles.hero} data-tour="central-hero">
       <div className={styles.content}>
         <h1 className={styles.title}>{tenantName}</h1>
         <div className={styles.metrics}>
