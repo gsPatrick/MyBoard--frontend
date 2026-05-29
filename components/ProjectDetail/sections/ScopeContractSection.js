@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import { deleteMedia, fetchMediaBlobUrl, listMedia, uploadMedia } from "@/api/media";
+import { showSuccessToast } from "@/lib/toast";
 import { upsertMarkdownDetail } from "@/lib/projectDetailsHelpers";
 import PdfViewerModal from "../PdfViewerModal";
 import sectionStyles from "../ProjectDetailSection.module.css";
@@ -31,7 +32,6 @@ export default function ScopeContractSection({
   const [previewUrls, setPreviewUrls] = useState({});
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [savedAt, setSavedAt] = useState(null);
   const [viewerMedia, setViewerMedia] = useState(null);
 
   useEffect(() => {
@@ -109,8 +109,8 @@ export default function ScopeContractSection({
         existingDetail?.id ? { ...existingDetail, id: detailId } : existingDetail
       );
       setDetailId(detail.id);
-      setSavedAt(Date.now());
       onSaved?.();
+      showSuccessToast("Texto salvo");
     } finally {
       setSaving(false);
     }
@@ -136,6 +136,7 @@ export default function ScopeContractSection({
       });
       await loadAttachments(id);
       onSaved?.();
+      showSuccessToast("PDF anexado");
     } finally {
       setUploading(false);
     }
@@ -145,6 +146,7 @@ export default function ScopeContractSection({
     await deleteMedia(mediaId);
     await loadAttachments(detailId);
     onSaved?.();
+    showSuccessToast("Anexo removido");
   }
 
   return (
@@ -175,7 +177,6 @@ export default function ScopeContractSection({
         />
 
         <div className={sectionStyles.actions}>
-          {savedAt && <span className={sectionStyles.saved}>Salvo</span>}
           <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
             {saving ? "Salvando..." : "Salvar texto"}
           </Button>

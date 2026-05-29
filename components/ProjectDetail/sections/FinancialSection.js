@@ -13,6 +13,7 @@ import { FINANCIAL_ENTRY_TYPES, FINANCIAL_ENTRY_LABELS } from "@/lib/financialLa
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import { parseCurrencyInput } from "@/lib/currencyInput";
 import { sumEntryAmounts, parseAmount } from "@/lib/financialStats";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 import styles from "./FinancialSection.module.css";
 
@@ -87,6 +88,7 @@ export default function FinancialSection({ project, onChange }) {
       });
       await load();
       onChange?.();
+      showSuccessToast("Lançamento registrado com sucesso");
     } finally {
       setSaving(false);
     }
@@ -96,6 +98,7 @@ export default function FinancialSection({ project, onChange }) {
     await deleteProjectFinancialEntry(project.id, entryId);
     await load();
     onChange?.();
+    showSuccessToast("Lançamento excluído");
   }
 
   return (

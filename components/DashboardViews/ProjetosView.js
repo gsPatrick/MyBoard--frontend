@@ -40,6 +40,12 @@ export default function ProjetosView() {
     selectProject(project);
   }
 
+  function handleProjectUpdated(updated) {
+    setProjects((current) =>
+      current.map((project) => (project.id === updated.id ? { ...project, ...updated } : project))
+    );
+  }
+
   return (
     <section className={styles.card}>
       <div className={styles.header}>
@@ -55,6 +61,7 @@ export default function ProjetosView() {
         <ProjectsTable
           projects={projects}
           onProjectClick={handleProjectClick}
+          onProjectUpdated={handleProjectUpdated}
           emptyMessage="Nenhum projeto cadastrado"
         />
       )}

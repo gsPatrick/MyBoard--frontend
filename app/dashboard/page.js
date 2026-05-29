@@ -14,6 +14,7 @@ import { DashboardLayoutProvider, useDashboardLayout } from "@/context/Dashboard
 import WorkspaceSearch from "@/components/WorkspaceSearch/WorkspaceSearch";
 import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
 import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
+import Toaster from "@/components/Toast/Toaster";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { getToken } from "@/api/client";
 import styles from "./page.module.css";
@@ -63,6 +64,7 @@ function DashboardShell() {
       <WorkspaceSearch />
       <OnboardingTour />
       <DailyFocusModal />
+      <Toaster />
     </>
   );
 }

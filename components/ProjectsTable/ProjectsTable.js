@@ -1,10 +1,9 @@
 "use client";
 
 import Avatar from "@/components/Avatar/Avatar";
-import Chip from "@/components/Chip/Chip";
+import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
 import { formatCurrencyBRL } from "@/lib/projectStats";
-import { PROJECT_CHIP_STATUS, PROJECT_STATUS_LABELS } from "@/lib/projectLabels";
 import styles from "./ProjectsTable.module.css";
 
 function formatDueDate(project) {
@@ -27,6 +26,7 @@ function formatFolderName(project) {
 export default function ProjectsTable({
   projects,
   onProjectClick,
+  onProjectUpdated,
   emptyMessage = "Nenhum projeto encontrado",
 }) {
   if (!projects.length) {
@@ -88,20 +88,13 @@ export default function ProjectsTable({
         ))}
       </div>
 
-      <div className={styles.col}>
+      <div className={`${styles.col} ${styles.statusCol}`}>
         <div className={styles.th}>Status</div>
-        {projects.map((project) => {
-          const statusConfig =
-            PROJECT_CHIP_STATUS[project.status] || PROJECT_CHIP_STATUS.in_progress;
-
-          return (
-            <div key={project.id} className={styles.cellStatus}>
-              <Chip status={statusConfig.chip}>
-                {PROJECT_STATUS_LABELS[project.status] || statusConfig.label}
-              </Chip>
-            </div>
-          );
-        })}
+        {projects.map((project) => (
+          <div key={project.id} className={styles.cellStatus}>
+            <ProjectStatusMenu project={project} onUpdated={onProjectUpdated} />
+          </div>
+        ))}
       </div>
     </div>
   );

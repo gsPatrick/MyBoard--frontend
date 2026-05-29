@@ -41,6 +41,12 @@ export default function SpendingsTable() {
     };
   }, [load]);
 
+  function handleProjectUpdated(updated) {
+    setProjects((current) =>
+      current.map((project) => (project.id === updated.id ? { ...project, ...updated } : project))
+    );
+  }
+
   return (
     <section className={styles.card}>
       <h2 className={styles.title}>Projetos em andamento</h2>
@@ -51,6 +57,7 @@ export default function SpendingsTable() {
         <ProjectsTable
           projects={inProgressProjects}
           onProjectClick={selectProject}
+          onProjectUpdated={handleProjectUpdated}
           emptyMessage="Nenhum projeto em andamento"
         />
       )}

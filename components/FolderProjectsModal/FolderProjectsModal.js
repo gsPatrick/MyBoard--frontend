@@ -8,6 +8,7 @@ import { listProjects } from "@/api/projects";
 import { moveProjectToFolder } from "@/api/folders";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
+import { showSuccessToast } from "@/lib/toast";
 import styles from "./FolderProjectsModal.module.css";
 
 function CloseIcon() {
@@ -114,6 +115,7 @@ export default function FolderProjectsModal({ isOpen, folder, onClose }) {
       ]);
 
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
+      showSuccessToast("Projetos da pasta atualizados");
       onClose();
     } catch (err) {
       setError(err.message || "Não foi possível atualizar os projetos da pasta");

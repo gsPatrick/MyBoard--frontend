@@ -6,6 +6,7 @@ import Input from "@/components/Input/Input";
 import { findDetailByKey, MARKETPLACE_DETAIL_SPECS } from "@/lib/projectDetailConfig";
 import { upsertProjectDetail } from "@/lib/projectDetailsHelpers";
 import { getMarketplaceTabLabel } from "@/lib/projectOrigin";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 import styles from "./MarketplaceSection.module.css";
 
@@ -24,7 +25,6 @@ export default function MarketplaceSection({
   const platformLabel = getMarketplaceTabLabel(origin) || "Plataforma";
   const [values, setValues] = useState({});
   const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -61,8 +61,8 @@ export default function MarketplaceSection({
           existing
         );
       }
-      setSavedAt(new Date());
       onSaved?.();
+      showSuccessToast("Informações salvas");
     } catch (err) {
       setError(err.message || "Não foi possível salvar.");
     } finally {
@@ -117,11 +117,6 @@ export default function MarketplaceSection({
           <Button variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? "Salvando..." : "Salvar informações"}
           </Button>
-          {savedAt && (
-            <span className={styles.saved}>
-              Salvo às {savedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-            </span>
-          )}
         </div>
       </section>
     </div>

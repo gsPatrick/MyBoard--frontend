@@ -8,6 +8,7 @@ import { createFolder, moveProjectToFolder } from "@/api/folders";
 import { listProjects } from "@/api/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
+import { showSuccessToast } from "@/lib/toast";
 import formStyles from "../shared/ModalForm.module.css";
 
 export default function NewFolderModal({ isOpen, onClose, parentId = null, onCreated }) {
@@ -91,6 +92,7 @@ export default function NewFolderModal({ isOpen, onClose, parentId = null, onCre
       resetForm();
       onCreated?.(folder);
       onClose();
+      showSuccessToast("Pasta criada com sucesso");
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch (err) {
       setError(err.message || "Não foi possível criar a pasta");

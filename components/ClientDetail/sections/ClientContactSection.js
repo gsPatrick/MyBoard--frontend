@@ -7,6 +7,7 @@ import AvatarDropzone from "@/components/AvatarDropzone/AvatarDropzone";
 import { getClient, updateClient } from "@/api/clients";
 import { uploadMedia } from "@/api/media";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../../ProjectDetail/ProjectDetailSection.module.css";
 
 export default function ClientContactSection({ client, onSaved }) {
@@ -18,7 +19,6 @@ export default function ClientContactSection({ client, onSaved }) {
   const [photoFile, setPhotoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     setName(client.name || "");
@@ -38,7 +38,6 @@ export default function ClientContactSection({ client, onSaved }) {
 
     setSaving(true);
     setError("");
-    setSuccess("");
 
     try {
       let updated = await updateClient(client.id, {
@@ -62,7 +61,7 @@ export default function ClientContactSection({ client, onSaved }) {
       onSaved?.(updated);
 
       setPhotoFile(null);
-      setSuccess("Dados salvos com sucesso");
+      showSuccessToast("Dados do cliente salvos");
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch (err) {
       setError(err.message || "Não foi possível salvar");
@@ -124,7 +123,6 @@ export default function ClientContactSection({ client, onSaved }) {
       </div>
 
       {error && <p className={sectionStyles.empty} style={{ color: "var(--color-danger, #e5484d)" }}>{error}</p>}
-      {success && <p className={sectionStyles.saved}>{success}</p>}
 
       <div className={sectionStyles.actions}>
         <Button variant="primary" onClick={handleSave} disabled={saving}>

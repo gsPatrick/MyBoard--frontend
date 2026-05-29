@@ -81,6 +81,18 @@ export default function ClientDetailView() {
     setActiveTab("lucro");
   }
 
+  function handleProjectUpdated(updated) {
+    setClient((current) => {
+      if (!current?.projects) return current;
+      return {
+        ...current,
+        projects: current.projects.map((project) =>
+          project.id === updated.id ? { ...project, ...updated } : project
+        ),
+      };
+    });
+  }
+
   if (!selectedClient) return null;
 
   if (loading) {
@@ -182,7 +194,11 @@ export default function ClientDetailView() {
             )}
 
             {activeSection === "projects" && (
-              <ClientProjectsSection client={client} projects={projects} />
+              <ClientProjectsSection
+                client={client}
+                projects={projects}
+                onProjectUpdated={handleProjectUpdated}
+              />
             )}
 
             {activeSection === "notes" && (

@@ -9,6 +9,7 @@ import {
   updateProjectDemand,
 } from "@/api/projectDemands";
 import { DEMAND_STATUS_LABELS } from "@/lib/projectDetailConfig";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 
 export default function DemandsSection({ projectId, demands, onChange }) {
@@ -29,6 +30,7 @@ export default function DemandsSection({ projectId, demands, onChange }) {
       setTitle("");
       setDescription("");
       onChange?.();
+      showSuccessToast("Demanda adicionada");
     } finally {
       setSaving(false);
     }
@@ -48,6 +50,7 @@ export default function DemandsSection({ projectId, demands, onChange }) {
   async function handleRemove(demandId) {
     await deleteProjectDemand(projectId, demandId);
     onChange?.();
+    showSuccessToast("Demanda excluída");
   }
 
   const openCount = demands.filter((d) => d.status !== "done" && d.status !== "cancelled").length;

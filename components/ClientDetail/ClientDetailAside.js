@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Chip from "@/components/Chip/Chip";
 import { updateClient } from "@/api/clients";
+import { showSuccessToast } from "@/lib/toast";
 import {
   CLIENT_CHIP_STATUS,
   IMPORTANCE_LEVELS,
@@ -31,6 +32,7 @@ export default function ClientDetailAside({ client, onClientChange }) {
     try {
       const updated = await updateClient(client.id, payload);
       onClientChange(updated);
+      showSuccessToast("Cliente atualizado");
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch {
       /* mantém anterior */

@@ -9,6 +9,7 @@ import { createProject } from "@/api/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { parseCurrencyInput } from "@/lib/currencyInput";
 import { ensureActiveTenant } from "@/lib/tenantContext";
+import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
 import formStyles from "../shared/ModalForm.module.css";
 
@@ -110,6 +111,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
       resetForm();
       onCreated?.(project);
       onClose();
+      showSuccessToast("Projeto criado com sucesso");
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch (err) {
       setError(err.message || "Não foi possível criar o projeto");

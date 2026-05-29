@@ -83,6 +83,11 @@
 
 .cellStatus {
   padding-left: var(--space-2);
+  overflow: visible;
+}
+
+.statusCol {
+  overflow: visible;
 }
 
 .empty {

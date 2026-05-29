@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import { upsertMarkdownDetail } from "@/lib/projectDetailsHelpers";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 
 export default function MarkdownDetailSection({
@@ -17,7 +18,6 @@ export default function MarkdownDetailSection({
 }) {
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState(null);
 
   useEffect(() => {
     const value = existingDetail?.value ?? existingDetail?.value_text ?? "";
@@ -33,8 +33,8 @@ export default function MarkdownDetailSection({
         content,
         existingDetail
       );
-      setSavedAt(Date.now());
       onSaved?.();
+      showSuccessToast("Conteúdo salvo");
     } finally {
       setSaving(false);
     }
@@ -55,7 +55,6 @@ export default function MarkdownDetailSection({
         placeholder={hint}
       />
       <div className={sectionStyles.actions}>
-        {savedAt && <span className={sectionStyles.saved}>Salvo</span>}
         <Button variant="primary" size="sm" onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Salvar"}
         </Button>

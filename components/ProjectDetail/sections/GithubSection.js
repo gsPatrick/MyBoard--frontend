@@ -10,6 +10,7 @@ import {
   updateProjectDetail,
 } from "@/api/projectDetails";
 import { GITHUB_ROLES, parseGithubDetail } from "@/lib/projectDetailConfig";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 
 function repoKey(role, label) {
@@ -97,6 +98,7 @@ export default function GithubSection({ projectId, repos, onChange }) {
       }
       setModalOpen(false);
       onChange?.();
+      showSuccessToast(editing?.id ? "Repositório atualizado" : "Repositório adicionado");
     } finally {
       setSaving(false);
     }
@@ -105,6 +107,7 @@ export default function GithubSection({ projectId, repos, onChange }) {
   async function handleRemove(id) {
     await deleteProjectDetail(projectId, id);
     onChange?.();
+    showSuccessToast("Repositório removido");
   }
 
   return (

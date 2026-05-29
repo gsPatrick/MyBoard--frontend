@@ -7,6 +7,7 @@ import AvatarDropzone from "@/components/AvatarDropzone/AvatarDropzone";
 import { createClient, getClient } from "@/api/clients";
 import { uploadMedia } from "@/api/media";
 import { ensureActiveTenant } from "@/lib/tenantContext";
+import { showSuccessToast } from "@/lib/toast";
 import formStyles from "../shared/ModalForm.module.css";
 
 export default function NewClientModal({ isOpen, onClose, onCreated }) {
@@ -65,6 +66,7 @@ export default function NewClientModal({ isOpen, onClose, onCreated }) {
       resetForm();
       onCreated?.(client);
       onClose();
+      showSuccessToast("Cliente criado com sucesso");
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch (err) {
       setError(err.message || "Não foi possível criar o cliente");

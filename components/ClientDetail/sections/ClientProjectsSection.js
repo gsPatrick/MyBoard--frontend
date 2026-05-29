@@ -4,7 +4,7 @@ import ProjectsTable from "@/components/ProjectsTable/ProjectsTable";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import sectionStyles from "../../ProjectDetail/ProjectDetailSection.module.css";
 
-export default function ClientProjectsSection({ client, projects }) {
+export default function ClientProjectsSection({ client, projects, onProjectUpdated }) {
   const { selectProject } = useDashboardNav();
 
   const enrichedProjects = projects.map((project) => ({
@@ -40,6 +40,7 @@ export default function ClientProjectsSection({ client, projects }) {
         <ProjectsTable
           projects={enrichedProjects}
           onProjectClick={handleProjectClick}
+          onProjectUpdated={onProjectUpdated}
           emptyMessage="Nenhum projeto"
         />
       )}

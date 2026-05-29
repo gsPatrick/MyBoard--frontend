@@ -11,6 +11,7 @@ import {
   updateProjectDetail,
 } from "@/api/projectDetails";
 import { CREDENTIAL_KINDS, parseCredentialDetail } from "@/lib/projectDetailConfig";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 
 function slugKey(label) {
@@ -119,6 +120,7 @@ export default function CredentialsSection({ projectId, credentials, onChange })
       }
       setModalOpen(false);
       onChange?.();
+      showSuccessToast(editing?.id ? "Credencial atualizada" : "Credencial adicionada");
     } finally {
       setSaving(false);
     }
@@ -127,6 +129,7 @@ export default function CredentialsSection({ projectId, credentials, onChange })
   async function handleRemove(id) {
     await deleteProjectDetail(projectId, id);
     onChange?.();
+    showSuccessToast("Credencial removida");
   }
 
   return (

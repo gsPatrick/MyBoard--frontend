@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Chip from "@/components/Chip/Chip";
 import { updateProject } from "@/api/projects";
+import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_CHIP_STATUS } from "@/lib/projectLabels";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
 import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
@@ -33,6 +34,7 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
     try {
       const updated = await updateProject(project.id, { priority });
       onProjectChange(updated);
+      showSuccessToast("Prioridade atualizada");
     } catch {
       /* mantém anterior */
     } finally {

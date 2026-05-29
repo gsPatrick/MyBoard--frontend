@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import { updateClient } from "@/api/clients";
+import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../../ProjectDetail/ProjectDetailSection.module.css";
 
 export default function ClientNotesSection({ client, onSaved }) {
   const [notes, setNotes] = useState(client.notes || "");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     setNotes(client.notes || "");
@@ -16,13 +16,12 @@ export default function ClientNotesSection({ client, onSaved }) {
 
   async function handleSave() {
     setSaving(true);
-    setSaved(false);
     try {
       const updated = await updateClient(client.id, {
         notes: notes.trim() || null,
       });
       onSaved?.(updated);
-      setSaved(true);
+      showSuccessToast("Observações salvas");
       window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch {
       /* ignore */
@@ -51,7 +50,6 @@ export default function ClientNotesSection({ client, onSaved }) {
       />
 
       <div className={sectionStyles.actions}>
-        {saved && <span className={sectionStyles.saved}>Salvo</span>}
         <Button variant="primary" onClick={handleSave} disabled={saving}>
           {saving ? "Salvando..." : "Salvar observações"}
         </Button>
