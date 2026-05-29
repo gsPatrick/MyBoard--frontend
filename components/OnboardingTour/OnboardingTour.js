@@ -21,26 +21,6 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-function getContentBounds() {
-  const sidebarLeft = document.querySelector('[data-tour="sidebar-left"]');
-  const sidebarRight = document.querySelector('[data-tour="sidebar-right"]');
-
-  const left = sidebarLeft
-    ? sidebarLeft.getBoundingClientRect().right + VIEWPORT_MARGIN
-    : VIEWPORT_MARGIN;
-
-  const right = sidebarRight
-    ? sidebarRight.getBoundingClientRect().left - VIEWPORT_MARGIN
-    : window.innerWidth - VIEWPORT_MARGIN;
-
-  return {
-    left,
-    right: Math.max(right, left + 280),
-    top: VIEWPORT_MARGIN,
-    bottom: window.innerHeight - VIEWPORT_MARGIN,
-  };
-}
-
 function getTooltipBox(top, left, width, height) {
   return {
     top,
@@ -134,36 +114,20 @@ function shouldAutoDock(rect) {
   return rect.height > vh * 0.32 || rect.width > vw * 0.72;
 }
 
-function computeForcedPlacement(placement, rect, tooltipSize) {
-  const bounds = getContentBounds();
-  const maxLeft = bounds.right - tooltipSize.width;
-  const maxTop = bounds.bottom - tooltipSize.height;
+function computeSidePosition(side, rect, tooltipSize) {
+  const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  const maxLeft = vw - tooltipSize.width - VIEWPORT_MARGIN;
+  const maxTop = vh - tooltipSize.height - VIEWPORT_MARGIN;
 
-  const top = clamp(
-    rect.top + rect.height / 2 - tooltipSize.height / 2,
-    bounds.top,
-    maxTop
-  );
+  const top = clamp(rect.top + 20, VIEWPORT_MARGIN, maxTop);
 
-  let left = bounds.left;
+  const left =
+    side === "right"
+      ? clamp(rect.right + TOOLTIP_GAP, VIEWPORT_MARGIN, maxLeft)
+      : clamp(rect.left - tooltipSize.width - TOOLTIP_GAP, VIEWPORT_MARGIN, maxLeft);
 
-  if (placement === "right") {
-    left = rect.right + TOOLTIP_GAP;
-    if (left + tooltipSize.width > bounds.right) {
-      left = bounds.right - tooltipSize.width;
-    }
-  }
-
-  if (placement === "left") {
-    left = rect.left - tooltipSize.width - TOOLTIP_GAP;
-    if (left < bounds.left) {
-      left = bounds.left;
-    }
-  }
-
-  left = clamp(left, bounds.left, maxLeft);
-
-  return { top, left, placement, docked: false };
+  return { top, left, placement: side, docked: false };
 }
 
 function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock, lockPlacement }) {
@@ -185,8 +149,12 @@ function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock, l
     return { ...computeDockedPosition(dock, tooltipSize), docked: true };
   }
 
+  if (dock === "side-right" || dock === "side-left") {
+    return computeSidePosition(dock === "side-right" ? "right" : "left", rect, tooltipSize);
+  }
+
   if (lockPlacement && ["left", "right"].includes(preferredPlacement)) {
-    return computeForcedPlacement(preferredPlacement, rect, tooltipSize);
+    return computeSidePosition(preferredPlacement, rect, tooltipSize);
   }
 
   if (shouldAutoDock(rect) && !["left", "right"].includes(preferredPlacement)) {
@@ -228,7 +196,7 @@ function computeTooltipPosition({ preferredPlacement, rect, tooltipSize, dock, l
 
   if (best && bestScore >= 10000) {
     if (["left", "right"].includes(preferredPlacement)) {
-      return computeForcedPlacement(preferredPlacement, rect, tooltipSize);
+      return computeSidePosition(preferredPlacement, rect, tooltipSize);
     }
     return { ...computeDockedPosition("bottom", tooltipSize), docked: true };
   }
@@ -319,13 +287,20 @@ export default function OnboardingTour() {
 
     element.classList.add(HIGHLIGHT_CLASS);
 
-    const rect = element.getBoundingClientRect();
-    setTargetRect({
-      top: rect.top - PADDING,
-      left: rect.left - PADDING,
-      width: rect.width + PADDING * 2,
-      height: rect.height + PADDING * 2,
-    });
+    const scrollBlock = step.prepare?.scrollBlock ?? "center";
+    if (scrollBlock !== "none") {
+      element.scrollIntoView({ block: scrollBlock, inline: "nearest", behavior: "instant" });
+    }
+
+    window.setTimeout(() => {
+      const rect = element.getBoundingClientRect();
+      setTargetRect({
+        top: rect.top - PADDING,
+        left: rect.left - PADDING,
+        width: rect.width + PADDING * 2,
+        height: rect.height + PADDING * 2,
+      });
+    }, 50);
   }, [step]);
 
   useEffect(() => {
@@ -349,15 +324,9 @@ export default function OnboardingTour() {
 
     const html = document.documentElement;
     const body = document.body;
-    const scrollY = window.scrollY;
 
     html.classList.add("onboarding-active");
     body.classList.add("onboarding-active");
-    body.style.position = "fixed";
-    body.style.top = `-${scrollY}px`;
-    body.style.left = "0";
-    body.style.right = "0";
-    body.style.width = "100%";
 
     function preventScroll(event) {
       event.preventDefault();
@@ -369,12 +338,6 @@ export default function OnboardingTour() {
     return () => {
       html.classList.remove("onboarding-active");
       body.classList.remove("onboarding-active");
-      body.style.position = "";
-      body.style.top = "";
-      body.style.left = "";
-      body.style.right = "";
-      body.style.width = "";
-      window.scrollTo(0, scrollY);
       window.removeEventListener("wheel", preventScroll);
       window.removeEventListener("touchmove", preventScroll);
     };
