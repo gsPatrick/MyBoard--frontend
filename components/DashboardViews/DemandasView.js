@@ -1,9 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Button from "@/components/Button/Button";
 import DemandsKanban from "@/components/DemandsKanban/DemandsKanban";
-import NewDemandModal from "@/components/NewDemandModal/NewDemandModal";
 import { listDemands } from "@/api/demands";
 import { listProjects } from "@/api/projects";
 import { updateProjectDemand } from "@/api/projectDemands";
@@ -19,7 +17,6 @@ export default function DemandasView() {
   const [projects, setProjects] = useState([]);
   const [projectFilter, setProjectFilter] = useState("");
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
   const initialLoadDone = useRef(false);
 
   const load = useCallback(
@@ -93,15 +90,6 @@ export default function DemandasView() {
     }
   }
 
-  function handleDemandCreated(demand) {
-    setDemands((current) => {
-      if (projectFilter && demand.project_id !== projectFilter) {
-        return current;
-      }
-      return [...current, demand];
-    });
-  }
-
   function handleOpenProject(project) {
     if (!project?.id) return;
     selectProject(project);
@@ -130,33 +118,23 @@ export default function DemandasView() {
           )}
         </div>
 
-        <div className={styles.actions}>
-          <div className={styles.filters}>
-            <label className={styles.filterLabel} htmlFor="demandas-project-filter">
-              Projeto
-            </label>
-            <select
-              id="demandas-project-filter"
-              className={styles.select}
-              value={projectFilter}
-              onChange={(event) => setProjectFilter(event.target.value)}
-            >
-              <option value="">Todos os projetos</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setModalOpen(true)}
-            disabled={loading || projects.length === 0}
+        <div className={styles.filters}>
+          <label className={styles.filterLabel} htmlFor="demandas-project-filter">
+            Projeto
+          </label>
+          <select
+            id="demandas-project-filter"
+            className={styles.select}
+            value={projectFilter}
+            onChange={(event) => setProjectFilter(event.target.value)}
           >
-            Nova demanda
-          </Button>
+            <option value="">Todos os projetos</option>
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -171,14 +149,6 @@ export default function DemandasView() {
           />
         </div>
       )}
-
-      <NewDemandModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        projects={projects}
-        defaultProjectId={projectFilter}
-        onCreated={handleDemandCreated}
-      />
     </section>
   );
 }

@@ -5,6 +5,10 @@ import Button from "@/components/Button/Button";
 import Tab from "@/components/Tab/Tab";
 import NewClientModal from "@/components/NewClientModal/NewClientModal";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
+import NewDemandModal from "@/components/NewDemandModal/NewDemandModal";
+import { listProjects } from "@/api/projects";
+import { normalizeListResponse } from "@/lib/apiList";
+import { ensureActiveTenant } from "@/lib/tenantContext";
 import { DASHBOARD_TABS, useDashboardTab } from "@/context/DashboardTabContext";
 import { useOnboarding } from "@/context/OnboardingContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";
@@ -49,6 +53,8 @@ export default function DashboardTabs() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [clientModalOpen, setClientModalOpen] = useState(false);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [demandModalOpen, setDemandModalOpen] = useState(false);
+  const [demandProjects, setDemandProjects] = useState([]);
   const menuRef = useRef(null);
 
   const highlightedTab = getHighlightedTab(activeTab, selectedClient, selectedProject);
@@ -86,6 +92,17 @@ export default function DashboardTabs() {
     setActiveTab(tabId);
   }
 
+  async function openDemandModal() {
+    try {
+      await ensureActiveTenant();
+      const data = await listProjects({ limit: 100 });
+      setDemandProjects(normalizeListResponse(data));
+    } catch {
+      setDemandProjects([]);
+    }
+    setDemandModalOpen(true);
+  }
+
   return (
     <>
         <div className={styles.wrap}>
@@ -117,6 +134,14 @@ export default function DashboardTabs() {
           </Button>
           <Button variant="secondary" size="sm" onClick={() => setProjectModalOpen(true)}>
             Novo Projeto
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<PlusIcon />}
+            onClick={openDemandModal}
+          >
+            Nova Demanda
           </Button>
           <div className={styles.menuWrap} ref={menuRef}>
             <Button
@@ -215,6 +240,16 @@ export default function DashboardTabs() {
         onClose={() => setProjectModalOpen(false)}
         onCreated={(project) => {
           selectProject(project);
+        }}
+      />
+
+      <NewDemandModal
+        isOpen={demandModalOpen}
+        onClose={() => setDemandModalOpen(false)}
+        projects={demandProjects}
+        onCreated={() => {
+          refreshDashboard();
+          handleTabClick("demandas");
         }}
       />
     </>
