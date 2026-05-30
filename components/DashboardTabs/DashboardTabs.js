@@ -68,7 +68,7 @@ export default function DashboardTabs() {
   }, [menuOpen]);
 
   function handleTabClick(tabId) {
-    if (tabId === "central") {
+    if (tabId === "central" || tabId === "demandas") {
       clearProject();
       clearClient();
       clearLucroFilter();
@@ -172,6 +172,17 @@ export default function DashboardTabs() {
                   }}
                 >
                   Clientes
+                </button>
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  role="menuitem"
+                  onClick={() => {
+                    handleTabClick("demandas");
+                    setMenuOpen(false);
+                  }}
+                >
+                  Demandas
                 </button>
                 <button
                   type="button"

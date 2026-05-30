@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useMemo, useState } from "react
 
 export const DASHBOARD_TABS = [
   { id: "central", label: "Central" },
+  { id: "demandas", label: "Demandas" },
   { id: "projetos", label: "Projetos" },
   { id: "clientes", label: "Clientes" },
   { id: "lucro", label: "Lucro" },

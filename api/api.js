@@ -31,6 +31,7 @@ export const ENDPOINTS = {
   notifications: `/${API_VERSION}/notifications`,
   activities: `/${API_VERSION}/activities`,
   finance: `/${API_VERSION}/finance`,
+  demands: `/${API_VERSION}/demands`,
   users: `/${API_VERSION}/users`,
   admin: {
     tenants: `/${API_VERSION}/admin/tenants`,

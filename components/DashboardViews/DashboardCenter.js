@@ -8,9 +8,11 @@ import CentralView from "./CentralView";
 import ProjetosView from "./ProjetosView";
 import ClientesView from "./ClientesView";
 import LucroView from "./LucroView";
+import DemandasView from "./DemandasView";
 
 const VIEWS = {
   central: CentralView,
+  demandas: DemandasView,
   projetos: ProjetosView,
   clientes: ClientesView,
   lucro: LucroView,
