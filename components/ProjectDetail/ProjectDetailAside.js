@@ -36,6 +36,7 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
       const updated = await updateProject(project.id, { origin });
       onProjectChange(updated);
       showSuccessToast("Origem atualizada");
+      window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch {
       /* mantém anterior */
     } finally {
