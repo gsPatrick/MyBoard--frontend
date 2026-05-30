@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   deleteProjectDemand,
@@ -39,6 +39,42 @@ function CloseIcon() {
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" width="12" height="12" aria-hidden="true">
+      <path
+        d="M4 6l4 4 4-4"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function getStatusMenuPosition(triggerEl, itemCount) {
+  if (!triggerEl) return { top: 0, left: 0, width: 220 };
+
+  const rect = triggerEl.getBoundingClientRect();
+  const menuWidth = Math.max(rect.width, 220);
+  const menuHeight = itemCount * 36 + 8;
+  const gap = 6;
+
+  let top = rect.bottom + gap;
+  let left = rect.left;
+
+  if (left + menuWidth > window.innerWidth - 8) {
+    left = window.innerWidth - menuWidth - 8;
+  }
+  if (left < 8) left = 8;
+  if (top + menuHeight > window.innerHeight - 8) {
+    top = rect.top - menuHeight - gap;
+  }
+
+  return { top, left, width: menuWidth };
+}
+
 function formatFileSize(bytes) {
   if (!bytes) return "";
   if (bytes < 1024) return `${bytes} B`;
@@ -73,6 +109,12 @@ export default function DemandDetailModal({
   const [attachments, setAttachments] = useState([]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [statusMenuStyle, setStatusMenuStyle] = useState({ top: 0, left: 0, width: 220 });
+
+  const statusWrapRef = useRef(null);
+  const statusTriggerRef = useRef(null);
+  const statusMenuRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
@@ -107,6 +149,7 @@ export default function DemandDetailModal({
 
   useEffect(() => {
     if (!isOpen) return;
+    setStatusOpen(false);
 
     function handleKey(event) {
       if (event.key === "Escape") onClose?.();
@@ -116,10 +159,99 @@ export default function DemandDetailModal({
     return () => document.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
+  useLayoutEffect(() => {
+    if (!statusOpen) return;
+    setStatusMenuStyle(
+      getStatusMenuPosition(statusTriggerRef.current, DEMAND_KANBAN_COLUMNS.length)
+    );
+  }, [statusOpen]);
+
+  useEffect(() => {
+    if (!statusOpen) return;
+
+    function handleClickOutside(event) {
+      if (
+        statusWrapRef.current?.contains(event.target) ||
+        statusMenuRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+      setStatusOpen(false);
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") setStatusOpen(false);
+    }
+
+    function handleReposition() {
+      setStatusMenuStyle(
+        getStatusMenuPosition(statusTriggerRef.current, DEMAND_KANBAN_COLUMNS.length)
+      );
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    window.addEventListener("resize", handleReposition);
+    window.addEventListener("scroll", handleReposition, true);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+      window.removeEventListener("resize", handleReposition);
+      window.removeEventListener("scroll", handleReposition, true);
+    };
+  }, [statusOpen]);
+
   if (!mounted || !isOpen || !demand) return null;
 
   const project = demand.project;
   const isDone = status === "done";
+  const activeStatusColumn =
+    DEMAND_KANBAN_COLUMNS.find((column) => column.id === status) || DEMAND_KANBAN_COLUMNS[0];
+
+  const statusMenu =
+    statusOpen &&
+    createPortal(
+      <div
+        ref={statusMenuRef}
+        className={styles.statusMenu}
+        role="listbox"
+        aria-label="Alterar status da demanda"
+        style={{
+          top: statusMenuStyle.top,
+          left: statusMenuStyle.left,
+          minWidth: statusMenuStyle.width,
+        }}
+      >
+        {DEMAND_KANBAN_COLUMNS.map((column) => {
+          const isActive = column.id === status;
+
+          return (
+            <button
+              key={column.id}
+              type="button"
+              role="option"
+              aria-selected={isActive}
+              className={`${styles.statusMenuItem} ${isActive ? styles.statusMenuItemActive : ""}`}
+              onClick={(event) => {
+                event.stopPropagation();
+                setStatusOpen(false);
+                handleStatusChange(column.id);
+              }}
+              disabled={saving}
+            >
+              <span
+                className={styles.statusDot}
+                style={{ background: column.accent }}
+                aria-hidden="true"
+              />
+              {DEMAND_STATUS_LABELS[column.id]}
+            </button>
+          );
+        })}
+      </div>,
+      document.body
+    );
 
   async function persist(payload) {
     setSaving(true);
@@ -232,7 +364,9 @@ export default function DemandDetailModal({
     }
   }
 
-  return createPortal(
+  return (
+    <>
+      {createPortal(
     <div className={styles.overlay} role="presentation" onClick={onClose}>
       <div
         className={styles.modal}
@@ -344,25 +478,30 @@ export default function DemandDetailModal({
 
             <div className={styles.section}>
               <p className={styles.sectionLabel}>Status</p>
-              <div className={styles.statusGrid}>
-                {DEMAND_KANBAN_COLUMNS.map((column) => (
-                  <button
-                    key={column.id}
-                    type="button"
-                    className={`${styles.statusBtn} ${
-                      status === column.id ? styles.statusBtnActive : ""
-                    }`}
-                    onClick={() => handleStatusChange(column.id)}
-                    disabled={saving}
-                  >
-                    <span
-                      className={styles.statusDot}
-                      style={{ background: column.accent }}
-                      aria-hidden="true"
-                    />
-                    {DEMAND_STATUS_LABELS[column.id]}
-                  </button>
-                ))}
+              <div className={styles.statusSelectWrap} ref={statusWrapRef}>
+                <button
+                  ref={statusTriggerRef}
+                  type="button"
+                  className={styles.statusTrigger}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setStatusOpen((current) => !current);
+                  }}
+                  disabled={saving}
+                  aria-haspopup="listbox"
+                  aria-expanded={statusOpen}
+                  aria-label={`Status: ${DEMAND_STATUS_LABELS[status]}. Clique para alterar`}
+                >
+                  <span
+                    className={styles.statusDot}
+                    style={{ background: activeStatusColumn.accent }}
+                    aria-hidden="true"
+                  />
+                  <span className={styles.statusTriggerLabel}>
+                    {DEMAND_STATUS_LABELS[status]}
+                  </span>
+                  <ChevronIcon />
+                </button>
               </div>
             </div>
           </div>
@@ -434,5 +573,8 @@ export default function DemandDetailModal({
       </div>
     </div>,
     document.body
+      )}
+      {statusMenu}
+    </>
   );
 }
