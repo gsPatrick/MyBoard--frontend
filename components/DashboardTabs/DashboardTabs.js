@@ -132,7 +132,12 @@ export default function DashboardTabs() {
           >
             Novo Cliente
           </Button>
-          <Button variant="secondary" size="sm" onClick={() => setProjectModalOpen(true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<PlusIcon />}
+            onClick={() => setProjectModalOpen(true)}
+          >
             Novo Projeto
           </Button>
           <Button

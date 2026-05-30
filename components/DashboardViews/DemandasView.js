@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DemandsKanban from "@/components/DemandsKanban/DemandsKanban";
+import DemandDetailModal from "@/components/DemandDetailModal/DemandDetailModal";
 import { listDemands } from "@/api/demands";
 import { listProjects } from "@/api/projects";
-import { updateProjectDemand } from "@/api/projectDemands";
+import { createProjectDemand, updateProjectDemand } from "@/api/projectDemands";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { showSuccessToast } from "@/lib/toast";
@@ -16,6 +17,7 @@ export default function DemandasView() {
   const [demands, setDemands] = useState([]);
   const [projects, setProjects] = useState([]);
   const [projectFilter, setProjectFilter] = useState("");
+  const [selectedDemand, setSelectedDemand] = useState(null);
   const [loading, setLoading] = useState(true);
   const initialLoadDone = useRef(false);
 
@@ -68,30 +70,65 @@ export default function DemandasView() {
     [demands]
   );
 
+  function upsertDemand(updated) {
+    setDemands((current) => {
+      const exists = current.some((item) => item.id === updated.id);
+      if (projectFilter && updated.project_id !== projectFilter) {
+        return exists ? current.filter((item) => item.id !== updated.id) : current;
+      }
+      if (exists) {
+        return current.map((item) => (item.id === updated.id ? { ...item, ...updated } : item));
+      }
+      return [...current, updated];
+    });
+    setSelectedDemand((current) =>
+      current?.id === updated.id ? { ...current, ...updated } : current
+    );
+  }
+
   async function handleStatusChange(demand, nextStatus) {
     if (!demand?.id || demand.status === nextStatus) return;
 
     const previousStatus = demand.status;
-    setDemands((current) =>
-      current.map((item) =>
-        item.id === demand.id ? { ...item, status: nextStatus } : item
-      )
-    );
+    upsertDemand({ ...demand, status: nextStatus });
 
     try {
       await updateProjectDemand(demand.project_id, demand.id, { status: nextStatus });
       showSuccessToast("Demanda atualizada");
     } catch {
-      setDemands((current) =>
-        current.map((item) =>
-          item.id === demand.id ? { ...item, status: previousStatus } : item
-        )
-      );
+      upsertDemand({ ...demand, status: previousStatus });
     }
+  }
+
+  async function handleQuickCreate({ title, projectId, status }) {
+    const project = projects.find((item) => item.id === projectId);
+    const created = await createProjectDemand(projectId, { title, status });
+    upsertDemand({
+      ...created,
+      project: project
+        ? {
+            id: project.id,
+            name: project.name,
+            color: project.color,
+            client: project.client,
+          }
+        : { id: projectId, name: "Projeto" },
+    });
+    showSuccessToast("Demanda criada");
+  }
+
+  function handleDemandUpdated(updated) {
+    upsertDemand(updated);
+  }
+
+  function handleDemandDeleted(demandId) {
+    setDemands((current) => current.filter((item) => item.id !== demandId));
+    setSelectedDemand(null);
   }
 
   function handleOpenProject(project) {
     if (!project?.id) return;
+    setSelectedDemand(null);
     selectProject(project);
   }
 
@@ -101,7 +138,7 @@ export default function DemandasView() {
         <div className={styles.headerMain}>
           <h2 className={styles.title}>Demandas</h2>
           <p className={styles.subtitle}>
-            Arraste os cards entre as colunas para atualizar o status
+            Clique em um cartão para ver detalhes ou arraste entre colunas
           </p>
           {!loading && (
             <div className={styles.stats}>
@@ -144,11 +181,24 @@ export default function DemandasView() {
         <div className={styles.boardWrap}>
           <DemandsKanban
             demands={demands}
+            projects={projects}
+            projectFilter={projectFilter}
             onStatusChange={handleStatusChange}
+            onCardClick={setSelectedDemand}
             onOpenProject={handleOpenProject}
+            onQuickCreate={handleQuickCreate}
           />
         </div>
       )}
+
+      <DemandDetailModal
+        demand={selectedDemand}
+        isOpen={Boolean(selectedDemand)}
+        onClose={() => setSelectedDemand(null)}
+        onUpdated={handleDemandUpdated}
+        onDeleted={handleDemandDeleted}
+        onOpenProject={handleOpenProject}
+      />
     </section>
   );
 }
