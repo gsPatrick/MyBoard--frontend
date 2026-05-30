@@ -418,18 +418,6 @@ export default function DemandDetailModal({
             </div>
 
             <div className={styles.section}>
-              <p className={styles.sectionLabel}>Notas</p>
-              <textarea
-                className={styles.textarea}
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                onBlur={handleNotesBlur}
-                placeholder="Anotações rápidas, links, lembretes..."
-                disabled={saving}
-              />
-            </div>
-
-            <div className={styles.section}>
               <div className={styles.sectionHeader}>
                 <p className={styles.sectionLabel}>Anexos</p>
                 <label className={styles.uploadBtn}>
@@ -503,6 +491,18 @@ export default function DemandDetailModal({
                   <ChevronIcon />
                 </button>
               </div>
+            </div>
+
+            <div className={styles.section}>
+              <p className={styles.sectionLabel}>Notas</p>
+              <textarea
+                className={styles.textarea}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                onBlur={handleNotesBlur}
+                placeholder="Anotações rápidas, links, lembretes..."
+                disabled={saving}
+              />
             </div>
           </div>
 
