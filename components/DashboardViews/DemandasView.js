@@ -1,7 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Button from "@/components/Button/Button";
 import DemandsKanban from "@/components/DemandsKanban/DemandsKanban";
+import NewDemandModal from "@/components/NewDemandModal/NewDemandModal";
 import { listDemands } from "@/api/demands";
 import { listProjects } from "@/api/projects";
 import { updateProjectDemand } from "@/api/projectDemands";
@@ -17,34 +19,50 @@ export default function DemandasView() {
   const [projects, setProjects] = useState([]);
   const [projectFilter, setProjectFilter] = useState("");
   const [loading, setLoading] = useState(true);
-  const [movingId, setMovingId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const initialLoadDone = useRef(false);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      await ensureActiveTenant();
-      const params = projectFilter ? { project_id: projectFilter } : {};
-      const [demandsData, projectsData] = await Promise.all([
-        listDemands(params),
-        listProjects({ limit: 100 }),
-      ]);
-      setDemands(normalizeListResponse(demandsData));
-      setProjects(normalizeListResponse(projectsData));
-    } catch {
-      setDemands([]);
-      setProjects([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [projectFilter]);
+  const load = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) setLoading(true);
+      try {
+        await ensureActiveTenant();
+        const params = projectFilter ? { project_id: projectFilter } : {};
+        const [demandsData, projectsData] = await Promise.all([
+          listDemands(params),
+          listProjects({ limit: 100 }),
+        ]);
+        setDemands(normalizeListResponse(demandsData));
+        setProjects(normalizeListResponse(projectsData));
+      } catch {
+        if (!silent) {
+          setDemands([]);
+          setProjects([]);
+        }
+      } finally {
+        if (!silent) setLoading(false);
+        initialLoadDone.current = true;
+      }
+    },
+    [projectFilter]
+  );
 
   useEffect(() => {
     load();
-    window.addEventListener("myboard:workspace-refresh", load);
-    window.addEventListener("myboard:tenant-changed", load);
+  }, [load]);
+
+  useEffect(() => {
+    function handleRefresh() {
+      if (initialLoadDone.current) {
+        load({ silent: true });
+      }
+    }
+
+    window.addEventListener("myboard:workspace-refresh", handleRefresh);
+    window.addEventListener("myboard:tenant-changed", handleRefresh);
     return () => {
-      window.removeEventListener("myboard:workspace-refresh", load);
-      window.removeEventListener("myboard:tenant-changed", load);
+      window.removeEventListener("myboard:workspace-refresh", handleRefresh);
+      window.removeEventListener("myboard:tenant-changed", handleRefresh);
     };
   }, [load]);
 
@@ -57,7 +75,6 @@ export default function DemandasView() {
     if (!demand?.id || demand.status === nextStatus) return;
 
     const previousStatus = demand.status;
-    setMovingId(demand.id);
     setDemands((current) =>
       current.map((item) =>
         item.id === demand.id ? { ...item, status: nextStatus } : item
@@ -67,16 +84,22 @@ export default function DemandasView() {
     try {
       await updateProjectDemand(demand.project_id, demand.id, { status: nextStatus });
       showSuccessToast("Demanda atualizada");
-      window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
     } catch {
       setDemands((current) =>
         current.map((item) =>
           item.id === demand.id ? { ...item, status: previousStatus } : item
         )
       );
-    } finally {
-      setMovingId(null);
     }
+  }
+
+  function handleDemandCreated(demand) {
+    setDemands((current) => {
+      if (projectFilter && demand.project_id !== projectFilter) {
+        return current;
+      }
+      return [...current, demand];
+    });
   }
 
   function handleOpenProject(project) {
@@ -85,64 +108,77 @@ export default function DemandasView() {
   }
 
   return (
-    <section className={styles.card}>
+    <section className={styles.wrap}>
       <div className={styles.header}>
         <div className={styles.headerMain}>
           <h2 className={styles.title}>Demandas</h2>
           <p className={styles.subtitle}>
             Arraste os cards entre as colunas para atualizar o status
           </p>
+          {!loading && (
+            <div className={styles.stats}>
+              <span className={styles.stat}>
+                <strong>{demands.length}</strong> demanda(s)
+              </span>
+              <span className={styles.statDot} aria-hidden="true">
+                ·
+              </span>
+              <span className={styles.stat}>
+                <strong>{openCount}</strong> em aberto
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className={styles.filters}>
-          <label className={styles.filterLabel} htmlFor="demandas-project-filter">
-            Projeto
-          </label>
-          <select
-            id="demandas-project-filter"
-            className={styles.select}
-            value={projectFilter}
-            onChange={(event) => setProjectFilter(event.target.value)}
+        <div className={styles.actions}>
+          <div className={styles.filters}>
+            <label className={styles.filterLabel} htmlFor="demandas-project-filter">
+              Projeto
+            </label>
+            <select
+              id="demandas-project-filter"
+              className={styles.select}
+              value={projectFilter}
+              onChange={(event) => setProjectFilter(event.target.value)}
+            >
+              <option value="">Todos os projetos</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => setModalOpen(true)}
+            disabled={loading || projects.length === 0}
           >
-            <option value="">Todos os projetos</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            Nova demanda
+          </Button>
         </div>
       </div>
 
+      {loading && <p className={styles.loading}>Carregando demandas...</p>}
+
       {!loading && (
-        <div className={styles.stats}>
-          <span className={styles.stat}>
-            <strong>{demands.length}</strong> demanda(s)
-          </span>
-          <span className={styles.stat}>
-            <strong>{openCount}</strong> em aberto
-          </span>
+        <div className={styles.boardWrap}>
+          <DemandsKanban
+            demands={demands}
+            onStatusChange={handleStatusChange}
+            onOpenProject={handleOpenProject}
+          />
         </div>
       )}
 
-      {loading && <p className={styles.loading}>Carregando demandas...</p>}
-
-      {!loading && demands.length === 0 && (
-        <p className={styles.empty}>
-          Nenhuma demanda encontrada
-          {projectFilter ? " neste projeto" : ""}. Crie demandas dentro de um projeto para
-          vê-las aqui.
-        </p>
-      )}
-
-      {!loading && demands.length > 0 && (
-        <DemandsKanban
-          demands={demands}
-          movingId={movingId}
-          onStatusChange={handleStatusChange}
-          onOpenProject={handleOpenProject}
-        />
-      )}
+      <NewDemandModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        projects={projects}
+        defaultProjectId={projectFilter}
+        onCreated={handleDemandCreated}
+      />
     </section>
   );
 }

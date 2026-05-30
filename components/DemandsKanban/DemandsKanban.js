@@ -48,7 +48,7 @@ function DemandCard({ demand, dragging, onDragStart, onDragEnd, onOpenProject })
   );
 }
 
-export default function DemandsKanban({ demands, onStatusChange, onOpenProject, movingId }) {
+export default function DemandsKanban({ demands, onStatusChange, onOpenProject }) {
   const [draggingId, setDraggingId] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
 
@@ -131,7 +131,7 @@ export default function DemandsKanban({ demands, onStatusChange, onOpenProject, 
                   <DemandCard
                     key={demand.id}
                     demand={demand}
-                    dragging={draggingId === demand.id || movingId === demand.id}
+                    dragging={draggingId === demand.id}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onOpenProject={onOpenProject}
