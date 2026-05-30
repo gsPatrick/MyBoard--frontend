@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Chip from "@/components/Chip/Chip";
+import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import { updateProject } from "@/api/projects";
 import { showSuccessToast } from "@/lib/toast";
-import { PROJECT_CHIP_STATUS } from "@/lib/projectLabels";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
 import { PROJECT_ORIGINS, PROJECT_ORIGIN_LABELS } from "@/lib/projectOrigin";
 import { formatCurrencyBRL } from "@/lib/projectStats";
@@ -24,8 +23,10 @@ function formatDate(value) {
 export default function ProjectDetailAside({ project, onProjectChange }) {
   const [savingPriority, setSavingPriority] = useState(false);
   const [savingOrigin, setSavingOrigin] = useState(false);
-  const statusConfig =
-    PROJECT_CHIP_STATUS[project?.status] || PROJECT_CHIP_STATUS.in_progress;
+
+  function handleProjectUpdated(updated) {
+    onProjectChange({ ...project, ...updated });
+  }
 
   async function handleOriginChange(event) {
     const origin = event.target.value;
@@ -105,10 +106,10 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
               </select>
             </dd>
           </div>
-          <div className={asideStyles.row}>
+          <div className={asideStyles.rowStack}>
             <dt>Status</dt>
             <dd>
-              <Chip status={statusConfig.chip}>{statusConfig.label}</Chip>
+              <ProjectStatusMenu project={project} onUpdated={handleProjectUpdated} />
             </dd>
           </div>
           <div className={asideStyles.row}>

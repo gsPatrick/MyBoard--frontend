@@ -144,17 +144,137 @@
   border-color: var(--border-strong);
 }
 
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.sectionHeader .sectionLabel {
+  margin-bottom: 0;
+}
+
+.uploadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+.uploadBtn:hover {
+  background: var(--surface-hover);
+}
+
+.uploadInput {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.attachmentsEmpty {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.attachmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-2);
+}
+
+.attachmentLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  flex: 1;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.attachmentLink:hover {
+  color: var(--primary);
+}
+
+.attachmentName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.attachmentSize {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.attachmentRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.attachmentRemove:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--secondary-red) 10%, transparent);
+  color: var(--secondary-red);
+}
+
 .statusGrid {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
 }
 
 .statusBtn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 12px;
+  padding: 7px 11px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   background: var(--background-2);
@@ -162,18 +282,26 @@
   font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition:
     border-color var(--transition-fast),
     background var(--transition-fast),
     color var(--transition-fast);
 }
 
-.statusBtn:hover {
+.statusBtn:hover:not(.statusBtnActive) {
   border-color: var(--border-strong);
   color: var(--text-primary);
 }
 
 .statusBtnActive {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--background-1);
+}
+
+.statusBtnActive:hover {
   border-color: var(--text-primary);
   background: var(--text-primary);
   color: var(--background-1);

@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   deleteProjectDemand,
   updateProjectDemand,
 } from "@/api/projectDemands";
+import { deleteMedia, fetchMediaBlobUrl, listMedia, uploadMedia } from "@/api/media";
 import { DEMAND_KANBAN_COLUMNS } from "@/lib/demandKanban";
 import { DEMAND_STATUS_LABELS } from "@/lib/projectDetailConfig";
-import { showSuccessToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import styles from "./DemandDetailModal.module.css";
 
 function CheckIcon() {
@@ -38,6 +39,13 @@ function CloseIcon() {
   );
 }
 
+function formatFileSize(bytes) {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function formatDate(value) {
   if (!value) return "—";
   const date = new Date(value);
@@ -60,8 +68,11 @@ export default function DemandDetailModal({
   const [mounted, setMounted] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("pending");
+  const [attachments, setAttachments] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -71,8 +82,28 @@ export default function DemandDetailModal({
     if (!demand) return;
     setTitle(demand.title || "");
     setDescription(demand.description || "");
+    setNotes(demand.notes || "");
     setStatus(demand.status || "pending");
   }, [demand]);
+
+  const loadAttachments = useCallback(async (demandId) => {
+    if (!demandId) {
+      setAttachments([]);
+      return;
+    }
+
+    try {
+      const files = await listMedia("project_demand", demandId, { kind: "attachment" });
+      setAttachments(Array.isArray(files) ? files : []);
+    } catch {
+      setAttachments([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!demand?.id) return;
+    loadAttachments(demand.id);
+  }, [demand?.id, loadAttachments]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -119,6 +150,57 @@ export default function DemandDetailModal({
     if (trimmed === current) return;
     await persist({ description: trimmed || null });
     showSuccessToast("Descrição atualizada");
+  }
+
+  async function handleNotesBlur() {
+    const trimmed = notes.trim();
+    const current = demand.notes || "";
+    if (trimmed === current) return;
+    await persist({ notes: trimmed || null });
+    showSuccessToast("Notas atualizadas");
+  }
+
+  async function handleUpload(event) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || uploading) return;
+
+    setUploading(true);
+    try {
+      await uploadMedia({
+        file,
+        entityType: "project_demand",
+        entityId: demand.id,
+        kind: "attachment",
+      });
+      await loadAttachments(demand.id);
+      showSuccessToast("Anexo adicionado");
+    } catch (err) {
+      showErrorToast(err.message || "Não foi possível enviar o arquivo");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleOpenAttachment(file) {
+    try {
+      const blobUrl = await fetchMediaBlobUrl(file.id);
+      window.open(blobUrl, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    } catch (err) {
+      showErrorToast(err.message || "Não foi possível abrir o arquivo");
+    }
+  }
+
+  async function handleRemoveAttachment(mediaId) {
+    if (uploading) return;
+    try {
+      await deleteMedia(mediaId);
+      await loadAttachments(demand.id);
+      showSuccessToast("Anexo removido");
+    } catch (err) {
+      showErrorToast(err.message || "Não foi possível remover o anexo");
+    }
   }
 
   async function handleStatusChange(nextStatus) {
@@ -199,6 +281,65 @@ export default function DemandDetailModal({
                 placeholder="Adicione uma descrição mais detalhada..."
                 disabled={saving}
               />
+            </div>
+
+            <div className={styles.section}>
+              <p className={styles.sectionLabel}>Notas</p>
+              <textarea
+                className={styles.textarea}
+                value={notes}
+                onChange={(event) => setNotes(event.target.value)}
+                onBlur={handleNotesBlur}
+                placeholder="Anotações rápidas, links, lembretes..."
+                disabled={saving}
+              />
+            </div>
+
+            <div className={styles.section}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.sectionLabel}>Anexos</p>
+                <label className={styles.uploadBtn}>
+                  <input
+                    type="file"
+                    className={styles.uploadInput}
+                    onChange={handleUpload}
+                    disabled={uploading || saving}
+                    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.zip"
+                  />
+                  {uploading ? "Enviando..." : "Adicionar arquivo"}
+                </label>
+              </div>
+              {attachments.length === 0 ? (
+                <p className={styles.attachmentsEmpty}>Nenhum anexo ainda.</p>
+              ) : (
+                <ul className={styles.attachmentsList}>
+                  {attachments.map((file) => (
+                    <li key={file.id} className={styles.attachmentItem}>
+                      <button
+                        type="button"
+                        className={styles.attachmentLink}
+                        onClick={() => handleOpenAttachment(file)}
+                      >
+                        <span className={styles.attachmentName}>{file.original_name}</span>
+                        {file.size_bytes ? (
+                          <span className={styles.attachmentSize}>
+                            {formatFileSize(file.size_bytes)}
+                          </span>
+                        ) : null}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.attachmentRemove}
+                        onClick={() => handleRemoveAttachment(file.id)}
+                        disabled={uploading}
+                        aria-label={`Remover ${file.original_name}`}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className={styles.section}>

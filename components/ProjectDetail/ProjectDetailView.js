@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Tab from "@/components/Tab/Tab";
-import Chip from "@/components/Chip/Chip";
+import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import { getProject } from "@/api/projects";
 import { listProjectDemands } from "@/api/projectDemands";
 import { useDashboardNav } from "@/context/DashboardNavContext";
@@ -13,11 +13,12 @@ import {
   SCOPE_DETAIL_KEY,
 } from "@/lib/projectDetailConfig";
 import { loadGroupedProjectDetails } from "@/lib/projectDetailsHelpers";
-import {
-  PROJECT_CHIP_STATUS,
-  PROJECT_STATUS_LABELS,
-} from "@/lib/projectLabels";
 import { formatCurrencyBRL } from "@/lib/projectStats";
+import {
+  getMarketplaceTabLabel,
+  isMarketplaceOrigin,
+  PROJECT_ORIGIN_LABELS,
+} from "@/lib/projectOrigin";
 import ProjectDetailAside from "./ProjectDetailAside";
 import OverviewSection from "./sections/OverviewSection";
 import FinancialSection from "./sections/FinancialSection";
@@ -26,11 +27,6 @@ import DemandsSection from "./sections/DemandsSection";
 import CredentialsSection from "./sections/CredentialsSection";
 import GithubSection from "./sections/GithubSection";
 import MarketplaceSection from "./sections/MarketplaceSection";
-import {
-  getMarketplaceTabLabel,
-  isMarketplaceOrigin,
-  PROJECT_ORIGIN_LABELS,
-} from "@/lib/projectOrigin";
 import styles from "./ProjectDetailView.module.css";
 
 const BASE_SECTIONS = [
@@ -156,9 +152,11 @@ export default function ProjectDetailView() {
     );
   }
 
-  const statusConfig =
-    PROJECT_CHIP_STATUS[project.status] || PROJECT_CHIP_STATUS.in_progress;
   const displayName = project.name || selectedProject.name;
+
+  function handleProjectUpdated(updated) {
+    setProject((current) => ({ ...current, ...updated }));
+  }
 
   return (
     <div className={styles.page}>
@@ -179,7 +177,7 @@ export default function ProjectDetailView() {
           <div className={styles.metrics}>
             <div className={styles.metric}>
               <span className={styles.metricLabel}>Status</span>
-              <Chip status={statusConfig.chip}>{statusConfig.label}</Chip>
+              <ProjectStatusMenu project={project} onUpdated={handleProjectUpdated} />
             </div>
             <span className={styles.divider} aria-hidden="true" />
             <div className={styles.metric}>
@@ -203,9 +201,7 @@ export default function ProjectDetailView() {
           </div>
         </div>
         <div className={styles.heroSide}>
-          <Chip status={statusConfig.chip}>
-            {PROJECT_STATUS_LABELS[project.status] || project.status}
-          </Chip>
+          <ProjectStatusMenu project={project} onUpdated={handleProjectUpdated} />
         </div>
       </header>
 

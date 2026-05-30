@@ -37,6 +37,7 @@ function getMenuPosition(triggerEl) {
 export default function ProjectStatusMenu({ project, onUpdated }) {
   const wrapRef = useRef(null);
   const triggerRef = useRef(null);
+  const menuRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(project.status);
@@ -55,7 +56,12 @@ export default function ProjectStatusMenu({ project, onUpdated }) {
     if (!open) return;
 
     function handleClickOutside(event) {
-      if (wrapRef.current?.contains(event.target)) return;
+      if (
+        wrapRef.current?.contains(event.target) ||
+        menuRef.current?.contains(event.target)
+      ) {
+        return;
+      }
       setOpen(false);
     }
 
@@ -109,6 +115,7 @@ export default function ProjectStatusMenu({ project, onUpdated }) {
     open &&
     createPortal(
       <div
+        ref={menuRef}
         className={styles.menu}
         role="listbox"
         aria-label="Alterar status do projeto"
