@@ -212,7 +212,7 @@ export default function ProjectDetailView() {
       <div className={styles.layout}>
         <div className={styles.main}>
           <nav className={styles.tabs} role="tablist" aria-label="Seções do projeto">
-            {SECTIONS.map((section) => (
+            {sections.map((section) => (
               <Tab
                 key={section.id}
                 label={section.label}
