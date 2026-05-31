@@ -74,7 +74,7 @@ export default function DashboardTabs() {
   }, [menuOpen]);
 
   function handleTabClick(tabId) {
-    if (tabId === "central" || tabId === "demandas" || tabId === "board") {
+    if (tabId === "central" || tabId === "agenda" || tabId === "demandas" || tabId === "board" || tabId === "configuracoes") {
       clearProject();
       clearClient();
       clearLucroFilter();
@@ -101,6 +101,26 @@ export default function DashboardTabs() {
       setDemandProjects([]);
     }
     setDemandModalOpen(true);
+  }
+
+  useEffect(() => {
+    function handleShortcut(event) {
+      const action = event.detail?.action;
+      if (action === "modal.newClient") {
+        setClientModalOpen(true);
+      } else if (action === "modal.newProject") {
+        setProjectModalOpen(true);
+      } else if (action === "modal.newDemand") {
+        openDemandModal();
+      }
+    }
+
+    window.addEventListener("myboard:shortcut", handleShortcut);
+    return () => window.removeEventListener("myboard:shortcut", handleShortcut);
+  }, []);
+
+  if (activeTab === "configuracoes") {
+    return null;
   }
 
   return (
@@ -164,6 +184,17 @@ export default function DashboardTabs() {
                   className={styles.menuItem}
                   role="menuitem"
                   onClick={() => {
+                    handleTabClick("configuracoes");
+                    setMenuOpen(false);
+                  }}
+                >
+                  Configurações
+                </button>
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  role="menuitem"
+                  onClick={() => {
                     restartOnboarding();
                     setMenuOpen(false);
                   }}
@@ -202,6 +233,17 @@ export default function DashboardTabs() {
                   }}
                 >
                   Clientes
+                </button>
+                <button
+                  type="button"
+                  className={styles.menuItem}
+                  role="menuitem"
+                  onClick={() => {
+                    handleTabClick("agenda");
+                    setMenuOpen(false);
+                  }}
+                >
+                  Agenda
                 </button>
                 <button
                   type="button"

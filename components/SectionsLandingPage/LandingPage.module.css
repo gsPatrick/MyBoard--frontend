@@ -30,22 +30,10 @@
   letter-spacing: -0.02em;
 }
 
-.brandMark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #000;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-[data-theme="dark"] .brandMark {
-  background: #fff;
-  color: #000;
+.brandLogo {
+  display: block;
+  height: clamp(48px, 5vw, 58px);
+  width: auto;
 }
 
 .navLinks {
@@ -124,6 +112,22 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-7);
+}
+
+.heroVisual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 320px;
+}
+
+.heroLogo {
+  display: block;
+  width: min(100%, 420px);
+  height: auto;
+  max-height: clamp(240px, 34vw, 380px);
+  object-fit: contain;
 }
 
 /* —— Impact center —— */
@@ -439,17 +443,11 @@
 }
 
 .footerLogo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
+  display: block;
+  height: clamp(148px, 22vw, 200px);
+  width: auto;
+  max-width: min(320px, 85%);
   margin-bottom: var(--space-5);
-  border-radius: 14px;
-  background: var(--text-primary);
-  color: var(--background-1);
-  font-size: 28px;
-  font-weight: 700;
 }
 
 .footerTagline {
@@ -511,6 +509,16 @@
 
   .heroActions {
     justify-content: center;
+  }
+
+  .heroVisual {
+    min-height: auto;
+    margin-top: var(--space-6);
+  }
+
+  .heroLogo {
+    width: min(88vw, 320px);
+    max-height: clamp(200px, 52vw, 300px);
   }
 
   .featureGrid {

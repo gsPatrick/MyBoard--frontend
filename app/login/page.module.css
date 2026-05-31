@@ -61,17 +61,10 @@
   opacity: 0.85;
 }
 
-.mobileLogo {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #000;
-  color: #fff;
-  font-weight: 700;
-  font-size: 15px;
+.brandLogo {
+  display: block;
+  height: clamp(48px, 5vw, 58px);
+  width: auto;
 }
 
 .stagger1 {

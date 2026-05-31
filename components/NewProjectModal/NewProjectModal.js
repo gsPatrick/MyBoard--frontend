@@ -172,27 +172,22 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
         </div>
 
         <div className={formStyles.field}>
-          <span className={formStyles.label}>Origem do projeto</span>
-          <div className={formStyles.originGroup} role="radiogroup" aria-label="Origem do projeto">
+          <label htmlFor="project-origin" className={formStyles.label}>
+            Origem do projeto
+          </label>
+          <select
+            id="project-origin"
+            className={formStyles.select}
+            value={origin}
+            onChange={(event) => setOrigin(event.target.value)}
+            disabled={loading}
+          >
             {PROJECT_ORIGINS.map((item) => (
-              <label
-                key={item.id}
-                className={`${formStyles.originOption} ${
-                  origin === item.id ? formStyles.originOptionActive : ""
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="project-origin"
-                  value={item.id}
-                  checked={origin === item.id}
-                  onChange={() => setOrigin(item.id)}
-                  disabled={loading}
-                />
+              <option key={item.id} value={item.id}>
                 {item.label}
-              </label>
+              </option>
             ))}
-          </div>
+          </select>
           <span className={formStyles.hint}>
             Projetos do 99Freelas ou Workana ganham uma aba com chat, escopo da plataforma e links.
           </span>

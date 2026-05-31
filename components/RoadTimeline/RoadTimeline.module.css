@@ -16,6 +16,37 @@
   color: var(--text-primary);
 }
 
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.headerMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.countBadge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.subtitle {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+
 .calendar {
   display: flex;
   align-items: center;
@@ -72,8 +103,60 @@
   flex: 1;
 }
 
+.listViewport {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.listViewportCarousel::before,
+.listViewportCarousel::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.listViewportCarousel::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--background-2), transparent);
+}
+
+.listViewportCarousel::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--background-2), transparent);
+}
+
+.listScroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-height: 360px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-default) transparent;
+}
+
+.listScroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.listScroll::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: var(--radius-full);
+}
+
 .listEmpty {
   min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .loadingWrap {
@@ -188,4 +271,44 @@
   font-size: 14px;
   line-height: 20px;
   color: var(--text-primary);
+}
+
+.itemTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+.badgeEvent {
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  color: var(--primary);
+}
+
+.badgeProject {
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+}
+
+.badgeDemand {
+  background: color-mix(in srgb, #f59e0b 18%, transparent);
+  color: #b45309;
+}
+
+.itemEvent .itemButton {
+  border-color: color-mix(in srgb, var(--primary) 24%, transparent);
+}
+
+.itemDemand .itemButton {
+  border-color: color-mix(in srgb, #f59e0b 24%, transparent);
 }

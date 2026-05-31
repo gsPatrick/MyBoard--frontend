@@ -10,28 +10,45 @@ import ClientesView from "./ClientesView";
 import LucroView from "./LucroView";
 import DemandasView from "./DemandasView";
 import BoardView from "./BoardView";
+import AgendaView from "./AgendaView";
+import ConfiguracoesView from "./ConfiguracoesView";
 
 const VIEWS = {
   central: CentralView,
+  agenda: AgendaView,
   demandas: DemandasView,
   board: BoardView,
   projetos: ProjetosView,
   clientes: ClientesView,
   lucro: LucroView,
+  configuracoes: ConfiguracoesView,
 };
 
 export default function DashboardCenter() {
   const { selectedProject, selectedClient } = useDashboardNav();
   const { activeTab } = useDashboardTab();
 
-  if (selectedClient && activeTab !== "lucro" && activeTab !== "board") {
+  if (activeTab === "configuracoes") {
+    return <ConfiguracoesView />;
+  }
+
+  if (selectedClient && activeTab !== "lucro" && activeTab !== "board" && activeTab !== "agenda") {
     return <ClientDetailView />;
   }
 
-  if (selectedProject && activeTab !== "lucro" && activeTab !== "board") {
+  if (selectedProject && activeTab !== "lucro" && activeTab !== "board" && activeTab !== "agenda") {
     return <ProjectDetailView />;
   }
 
+  const showBoard = activeTab === "board";
   const View = VIEWS[activeTab] || CentralView;
-  return <View />;
+
+  return (
+    <>
+      <div style={{ display: showBoard ? "block" : "none" }} aria-hidden={!showBoard}>
+        <BoardView />
+      </div>
+      {!showBoard && <View />}
+    </>
+  );
 }

@@ -132,10 +132,7 @@ export default function LoginPage() {
       <section className={`${styles.panel} ${mounted ? styles.panelMounted : ""}`}>
         <div className={styles.panelInner}>
           <Link href="/" className={styles.mobileBrand}>
-            <span className={styles.mobileLogo}>M</span>
-            <Text variant="h3" as="span">
-              MyBoard
-            </Text>
+            <img src="/myboardlogo.png" alt="MyBoard" className={styles.brandLogo} />
           </Link>
 
           <LoginWelcomeBanner

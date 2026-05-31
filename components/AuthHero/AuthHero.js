@@ -7,8 +7,7 @@ export default function AuthHero() {
     <aside className={styles.hero} aria-hidden="true">
       <div className={styles.inner}>
         <Link href="/" className={styles.brand}>
-          <span className={styles.brandMark}>M</span>
-          <span className={styles.brandName}>MyBoard</span>
+          <img src="/myboardlogo.png" alt="MyBoard" className={styles.brandLogo} />
         </Link>
 
         <div className={styles.copy}>

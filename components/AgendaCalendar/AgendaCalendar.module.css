@@ -1,0 +1,353 @@
+.weekView {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--background-2);
+}
+
+.weekHeader {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border-default);
+  background: var(--background-1);
+}
+
+.timeGutter {
+  border-right: 1px solid var(--border-default);
+}
+
+.weekDayHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-3) var(--space-2);
+  border-right: 1px solid var(--border-default);
+}
+
+.weekDayHeader:last-child {
+  border-right: none;
+}
+
+.weekDayHeaderToday {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.weekDayLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.weekDayNumber {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--text-primary);
+}
+
+.weekDayHeaderToday .weekDayNumber {
+  color: var(--primary);
+}
+
+.weekBody {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  max-height: calc(100vh - 320px);
+  min-height: 640px;
+  overflow: auto;
+}
+
+.timeColumn {
+  border-right: 1px solid var(--border-default);
+  background: var(--background-1);
+}
+
+.timeLabel {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.weekGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  position: relative;
+}
+
+.dayColumn {
+  position: relative;
+  border-right: 1px solid var(--border-default);
+}
+
+.dayColumn:last-child {
+  border-right: none;
+}
+
+.hourSlot {
+  width: 100%;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid var(--border-default);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.hourSlot:hover {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+.hourSlotPast {
+  cursor: not-allowed;
+  opacity: 0.35;
+  background: var(--surface-muted);
+}
+
+.hourSlotPast:hover {
+  background: var(--surface-muted);
+}
+
+.allDayRow {
+  display: grid;
+  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border-default);
+  background: var(--background-1);
+}
+
+.allDayLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-right: 1px solid var(--border-default);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.allDayCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 44px;
+  padding: 4px;
+  border-right: 1px solid var(--border-default);
+}
+
+.allDayCell:last-child {
+  border-right: none;
+}
+
+.allDayCellToday {
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+.allDayWrap {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  z-index: 2;
+}
+
+.timedEventWrap {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  z-index: 2;
+  min-height: 28px;
+  touch-action: none;
+}
+
+.timedEventDragging {
+  z-index: 5;
+  opacity: 0.92;
+}
+
+.eventChipDraggable {
+  cursor: grab;
+}
+
+.eventChipDraggable:active {
+  cursor: grabbing;
+}
+
+.eventChipInactive {
+  opacity: 0.62;
+}
+
+.eventChipInactive .eventTitle {
+  text-decoration: line-through;
+}
+
+.eventChip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-left: 3px solid var(--primary);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--primary) 14%, var(--background-1));
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.eventChip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.eventChipCompact {
+  padding: 4px 6px;
+  border-left-width: 2px;
+}
+
+.eventTime {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.eventTitle {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.eventMeta {
+  font-size: 10px;
+  line-height: 14px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.monthView {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: var(--background-2);
+}
+
+.monthWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid var(--border-default);
+  background: var(--background-1);
+}
+
+.monthWeekday {
+  padding: var(--space-3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.monthCell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-2);
+  min-height: 120px;
+  padding: var(--space-2);
+  border: none;
+  border-right: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--background-2);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.monthCell:hover {
+  background: var(--surface-muted);
+}
+
+.monthCellMuted {
+  opacity: 0.55;
+}
+
+.monthCellToday {
+  background: color-mix(in srgb, var(--primary) 8%, var(--background-2));
+}
+
+.monthCellPast {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.monthCellPast:hover {
+  background: var(--background-2);
+}
+
+.monthDayNumber {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.monthEvents {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.monthEventBtn,
+.allDayEventBtn {
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.monthMore {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
+
+@media (max-width: 900px) {
+  .weekBody {
+    min-height: 520px;
+  }
+
+  .monthCell {
+    min-height: 96px;
+  }
+}

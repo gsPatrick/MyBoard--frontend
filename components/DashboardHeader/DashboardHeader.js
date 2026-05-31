@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import Kbd from "@/components/Kbd/Kbd";
 import IconButton from "@/components/IconButton/IconButton";
 import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
@@ -8,7 +7,8 @@ import NotificationsDropdown from "@/components/NotificationsDropdown/Notificati
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { DASHBOARD_TABS, useDashboardTab } from "@/context/DashboardTabContext";
-import { getSearchShortcutLabel, isSearchShortcut } from "@/lib/keyboardShortcut";
+import { useKeyboardShortcuts } from "@/context/KeyboardShortcutsContext";
+import { formatBinding } from "@/lib/keyboardShortcuts";
 import styles from "./DashboardHeader.module.css";
 
 function SidebarIcon() {
@@ -67,6 +67,24 @@ function PanelIcon() {
   );
 }
 
+function SettingsIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <path
+        d="M12.7 9.5a1 1 0 0 0 .2 1.1l.1.1a1.2 1.2 0 1 1-1.7 1.7l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V13a1.2 1.2 0 0 1-2.4 0v-.1a1 1 0 0 0-.7-.9 1 1 0 0 0-1.1.2l-.1.1a1.2 1.2 0 1 1-1.7-1.7l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H3a1.2 1.2 0 0 1 0-2.4h.1a1 1 0 0 0 .9-.7 1 1 0 0 0-.2-1.1l-.1-.1a1.2 1.2 0 1 1 1.7-1.7l.1.1a1 1 0 0 0 1.1.2h.1a1 1 0 0 0 .6-.9V3a1.2 1.2 0 0 1 2.4 0v.1a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1.2 1.2 0 1 1 1.7 1.7l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6H13a1.2 1.2 0 0 1 0 2.4h-.1a1 1 0 0 0-.9.6Z"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function SearchIcon() {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -86,32 +104,31 @@ export default function DashboardHeader() {
     refreshAll,
     openSearch,
   } = useDashboardLayout();
-  const { activeTab } = useDashboardTab();
+  const { activeTab, setActiveTab } = useDashboardTab();
   const { selectedProject, selectedClient } = useDashboardNav();
+  const { bindings } = useKeyboardShortcuts();
 
   const highlightedTab =
-    activeTab === "lucro"
-      ? "lucro"
-      : selectedClient
-        ? "clientes"
-        : selectedProject
-          ? "projetos"
-          : activeTab;
+    activeTab === "configuracoes"
+      ? "configuracoes"
+      : activeTab === "lucro"
+        ? "lucro"
+        : selectedClient
+          ? "clientes"
+          : selectedProject
+            ? "projetos"
+            : activeTab;
 
   const activeTabLabel =
-    DASHBOARD_TABS.find((tab) => tab.id === highlightedTab)?.label || "Central";
+    activeTab === "configuracoes"
+      ? "Configurações"
+      : DASHBOARD_TABS.find((tab) => tab.id === highlightedTab)?.label || "Central";
 
-  useEffect(() => {
-    function handleKeyDown(event) {
-      if (isSearchShortcut(event)) {
-        event.preventDefault();
-        openSearch();
-      }
-    }
+  const searchShortcutLabel = formatBinding(bindings["search.open"]);
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [openSearch]);
+  function openSettings() {
+    setActiveTab("configuracoes");
+  }
 
   return (
     <header className={styles.header}>
@@ -163,8 +180,18 @@ export default function DashboardHeader() {
             <SearchIcon />
           </span>
           <span className={styles.searchPlaceholder}>Pesquisar</span>
-          <Kbd>{getSearchShortcutLabel()}</Kbd>
+          <Kbd>{searchShortcutLabel}</Kbd>
         </button>
+
+        <IconButton
+          label="Configurações"
+          size="md"
+          variant="ghost"
+          onClick={openSettings}
+          aria-pressed={activeTab === "configuracoes"}
+        >
+          <SettingsIcon />
+        </IconButton>
 
         <span data-tour="theme-toggle">
           <ThemeToggle />

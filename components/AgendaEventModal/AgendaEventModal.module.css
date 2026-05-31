@@ -1,0 +1,159 @@
+.formBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-height: min(58vh, 420px);
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-right: -4px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border-default);
+}
+
+.sectionHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+
+.kindToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.kindToggleThree {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.kindOption {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--background-2);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.kindOption:hover {
+  border-color: var(--border-strong);
+}
+
+.kindOptionActive {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 8%, var(--background-2));
+}
+
+.kindOptionDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.kindOption input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kindLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kindDescription {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--text-muted);
+}
+
+.timeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.scheduleRow {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 56px;
+  padding: var(--space-3);
+  border: 0.5px solid transparent;
+  border-radius: var(--radius-lg);
+  background: var(--surface-muted);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 20px;
+  resize: vertical;
+  outline: none;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.textarea:focus {
+  border-color: var(--border-strong);
+}
+
+.colorSelectWrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.colorSelect {
+  flex: 1;
+}
+
+.colorDot {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.conditionalBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (max-width: 560px) {
+  .scheduleRow,
+  .timeRow {
+    grid-template-columns: 1fr;
+  }
+
+  .kindToggle,
+  .kindToggleThree {
+    grid-template-columns: 1fr;
+  }
+
+  .formBody {
+    max-height: min(62vh, 380px);
+  }
+}

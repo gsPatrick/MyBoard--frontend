@@ -24,7 +24,7 @@ export default function RoadTimelineEmpty() {
           />
         </svg>
       </div>
-      <p className={styles.text}>Nenhum projeto em aberto neste dia</p>
+      <p className={styles.text}>Nada na timeline deste dia</p>
     </div>
   );
 }

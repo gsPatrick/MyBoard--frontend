@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import Button from "@/components/Button/Button";
-import MarketingHeroVisual from "@/components/MarketingHeroVisual/MarketingHeroVisual";
 import styles from "./LandingPage.module.css";
 
 const FEATURES = [
@@ -128,8 +127,7 @@ export default function LandingPage() {
     <div className={styles.page} data-theme="light">
       <header className={styles.nav}>
         <Link href="/" className={styles.brand}>
-          <span className={styles.brandMark}>M</span>
-          <span>MyBoard</span>
+          <img src="/myboardlogo.png" alt="MyBoard" className={styles.brandLogo} />
         </Link>
         <nav className={styles.navLinks}>
           <a href="#funcionalidades">Funcionalidades</a>
@@ -165,7 +163,9 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
-        <MarketingHeroVisual />
+        <div className={styles.heroVisual}>
+          <img src="/myboardlogo.png" alt="MyBoard" className={styles.heroLogo} />
+        </div>
       </section>
 
       <section className={styles.impactCenter}>
@@ -234,7 +234,7 @@ export default function LandingPage() {
       <footer className={styles.footer}>
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
-            <span className={styles.footerLogo}>M</span>
+            <img src="/myboardlogo.png" alt="MyBoard" className={styles.footerLogo} />
             <p className={styles.footerTagline}>
               MyBoard — o painel para quem vive de projetos, prazos e clientes.
             </p>

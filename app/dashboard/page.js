@@ -11,6 +11,7 @@ import { useTheme } from "@/components/ThemeProvider/ThemeProvider";
 import { DashboardNavProvider } from "@/context/DashboardNavContext";
 import { DashboardTabProvider } from "@/context/DashboardTabContext";
 import { DashboardLayoutProvider, useDashboardLayout } from "@/context/DashboardLayoutContext";
+import { KeyboardShortcutsProvider } from "@/context/KeyboardShortcutsContext";
 import WorkspaceSearch from "@/components/WorkspaceSearch/WorkspaceSearch";
 import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
 import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
@@ -89,9 +90,11 @@ export default function DashboardPage() {
     <DashboardTabProvider>
       <DashboardNavProvider>
         <DashboardLayoutProvider>
-          <OnboardingProvider>
-            <DashboardShell />
-          </OnboardingProvider>
+          <KeyboardShortcutsProvider>
+            <OnboardingProvider>
+              <DashboardShell />
+            </OnboardingProvider>
+          </KeyboardShortcutsProvider>
         </DashboardLayoutProvider>
       </DashboardNavProvider>
     </DashboardTabProvider>

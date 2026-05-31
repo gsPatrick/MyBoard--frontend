@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import ExcalidrawCanvas from "@/components/ExcalidrawCanvas/ExcalidrawCanvas";
 import { useTheme } from "@/components/ThemeProvider/ThemeProvider";
+import { useDashboardTab } from "@/context/DashboardTabContext";
 import {
   createBoard,
   deleteBoard,
@@ -62,6 +63,7 @@ function formatBoardLabel(board) {
 
 export default function BoardView() {
   const { theme } = useTheme();
+  const { activeTab } = useDashboardTab();
   const [boards, setBoards] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeBoard, setActiveBoard] = useState(null);
@@ -77,10 +79,11 @@ export default function BoardView() {
 
   const pendingScene = useRef(serializeScene([], EMPTY_SCENE.appState, {}));
   const saveTimer = useRef(null);
-  const skipSave = useRef(true);
+  const isHydratingRef = useRef(true);
   const persistSceneRef = useRef(null);
   const activeBoardRef = useRef(null);
   const draftModeRef = useRef(false);
+  const hydrateTimerRef = useRef(null);
 
   const excalidrawTheme = theme === "dark" ? "dark" : "light";
 
@@ -103,6 +106,15 @@ export default function BoardView() {
     setProjects(normalizeListResponse(projectsData));
   }, []);
 
+  const beginSceneHydration = useCallback(() => {
+    isHydratingRef.current = true;
+    if (hydrateTimerRef.current) window.clearTimeout(hydrateTimerRef.current);
+    hydrateTimerRef.current = window.setTimeout(() => {
+      isHydratingRef.current = false;
+      hydrateTimerRef.current = null;
+    }, 450);
+  }, []);
+
   const selectBoard = useCallback((board) => {
     if (!board) return;
 
@@ -120,9 +132,9 @@ export default function BoardView() {
     setCanvasKey(board.id);
     setStoredBoardId(board.id);
     pendingScene.current = normalized;
-    skipSave.current = true;
+    beginSceneHydration();
     setSaveState("saved");
-  }, [excalidrawTheme]);
+  }, [beginSceneHydration, excalidrawTheme]);
 
   const initialize = useCallback(async () => {
     setLoading(true);
@@ -157,6 +169,7 @@ export default function BoardView() {
     initialize();
     return () => {
       if (saveTimer.current) window.clearTimeout(saveTimer.current);
+      if (hydrateTimerRef.current) window.clearTimeout(hydrateTimerRef.current);
     };
   }, [initialize]);
 
@@ -199,7 +212,7 @@ export default function BoardView() {
       saveTimer.current = null;
     }
 
-    if (draftModeRef.current || !activeBoardRef.current?.id || skipSave.current) return;
+    if (draftModeRef.current || !activeBoardRef.current?.id || isHydratingRef.current) return;
 
     await persistSceneRef.current?.(pendingScene.current, { silent: true });
   }, []);
@@ -220,18 +233,19 @@ export default function BoardView() {
   function handleSceneChange(elements, appState, files) {
     pendingScene.current = serializeScene(elements, appState, files, excalidrawTheme);
 
-    if (skipSave.current) {
-      skipSave.current = false;
-      return;
-    }
-
-    if (draftMode) {
-      setSaveState("idle");
+    if (isHydratingRef.current || draftMode) {
+      if (draftMode) setSaveState("idle");
       return;
     }
 
     scheduleAutoSave();
   }
+
+  useEffect(() => {
+    if (activeTab !== "board") {
+      flushPendingSave();
+    }
+  }, [activeTab, flushPendingSave]);
 
   useEffect(() => {
     function handleVisibilityChange() {
@@ -309,7 +323,7 @@ export default function BoardView() {
     setScene(emptyScene);
     setCanvasKey(`draft-${Date.now()}`);
     pendingScene.current = emptyScene;
-    skipSave.current = true;
+    beginSceneHydration();
     setSaveState("idle");
   }
 
@@ -411,14 +425,20 @@ export default function BoardView() {
     return "Pronto";
   }, [draftMode, saveState]);
 
+  const isBoardVisible = activeTab === "board" || isFullscreen;
+
   const canvasBlock = (
     <div className={`${styles.canvasShell} ${isFullscreen ? styles.canvasShellFullscreen : ""}`}>
-      <ExcalidrawCanvas
-        sceneKey={canvasKey}
-        scene={scene}
-        theme={excalidrawTheme}
-        onSceneChange={handleSceneChange}
-      />
+      {isBoardVisible ? (
+        <ExcalidrawCanvas
+          sceneKey={canvasKey}
+          scene={scene}
+          theme={excalidrawTheme}
+          onSceneChange={handleSceneChange}
+        />
+      ) : (
+        <div className={styles.canvasPlaceholder} aria-hidden="true" />
+      )}
     </div>
   );
 

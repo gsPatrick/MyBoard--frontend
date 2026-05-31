@@ -32,17 +32,10 @@
   opacity: 0.85;
 }
 
-.brandMark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: #000;
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
+.brandLogo {
+  display: block;
+  height: clamp(52px, 5.5vw, 64px);
+  width: auto;
 }
 
 .eyebrow {

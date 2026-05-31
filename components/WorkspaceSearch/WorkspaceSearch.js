@@ -8,9 +8,10 @@ import { listProjects } from "@/api/projects";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
 import { normalizeListResponse } from "@/lib/apiList";
-import { getSearchShortcutLabel } from "@/lib/keyboardShortcut";
+import { formatBinding } from "@/lib/keyboardShortcuts";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
+import { useKeyboardShortcuts } from "@/context/KeyboardShortcutsContext";
 import styles from "./WorkspaceSearch.module.css";
 
 function SearchIcon() {
@@ -43,6 +44,7 @@ function useDebouncedValue(value, delay = 280) {
 export default function WorkspaceSearch() {
   const { searchOpen, closeSearch } = useDashboardLayout();
   const { selectProject, selectClient } = useDashboardNav();
+  const { bindings } = useKeyboardShortcuts();
   const inputRef = useRef(null);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -252,7 +254,7 @@ export default function WorkspaceSearch() {
             <Kbd>↓</Kbd> navegar · <Kbd>Enter</Kbd> abrir · <Kbd>Esc</Kbd> fechar
           </span>
           <span>
-            <Kbd>{getSearchShortcutLabel()}</Kbd>
+            <Kbd>{formatBinding(bindings["search.open"])}</Kbd>
           </span>
         </div>
       </div>
