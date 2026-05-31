@@ -9,10 +9,12 @@ import ProjetosView from "./ProjetosView";
 import ClientesView from "./ClientesView";
 import LucroView from "./LucroView";
 import DemandasView from "./DemandasView";
+import BoardView from "./BoardView";
 
 const VIEWS = {
   central: CentralView,
   demandas: DemandasView,
+  board: BoardView,
   projetos: ProjetosView,
   clientes: ClientesView,
   lucro: LucroView,
@@ -22,11 +24,11 @@ export default function DashboardCenter() {
   const { selectedProject, selectedClient } = useDashboardNav();
   const { activeTab } = useDashboardTab();
 
-  if (selectedClient && activeTab !== "lucro") {
+  if (selectedClient && activeTab !== "lucro" && activeTab !== "board") {
     return <ClientDetailView />;
   }
 
-  if (selectedProject && activeTab !== "lucro") {
+  if (selectedProject && activeTab !== "lucro" && activeTab !== "board") {
     return <ProjectDetailView />;
   }
 

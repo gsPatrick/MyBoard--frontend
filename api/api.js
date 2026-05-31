@@ -32,6 +32,7 @@ export const ENDPOINTS = {
   activities: `/${API_VERSION}/activities`,
   finance: `/${API_VERSION}/finance`,
   demands: `/${API_VERSION}/demands`,
+  boards: `/${API_VERSION}/boards`,
   users: `/${API_VERSION}/users`,
   admin: {
     tenants: `/${API_VERSION}/admin/tenants`,

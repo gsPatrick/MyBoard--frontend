@@ -74,7 +74,7 @@ export default function DashboardTabs() {
   }, [menuOpen]);
 
   function handleTabClick(tabId) {
-    if (tabId === "central" || tabId === "demandas") {
+    if (tabId === "central" || tabId === "demandas" || tabId === "board") {
       clearProject();
       clearClient();
       clearLucroFilter();
