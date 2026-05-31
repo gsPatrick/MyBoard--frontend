@@ -87,14 +87,116 @@
   color: var(--secondary-red);
 }
 
-.canvasShell {
+.saveStatusPending {
+  color: var(--secondary-blue);
+}
+
+.fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  background: var(--background-1);
+}
+
+.fullscreenBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--background-2);
+  flex-shrink: 0;
+}
+
+.fullscreenBarMain {
+  min-width: 0;
+  max-width: min(360px, 40vw);
+}
+
+.fullscreenBoardPicker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.fullscreenBoardPicker::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.fullscreenBoardSelect {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 18px 0 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  cursor: pointer;
+  appearance: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fullscreenBoardSelect:hover {
+  color: var(--primary);
+}
+
+.fullscreenBoardSelect:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.fullscreenTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fullscreenMeta {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.canvasShellFullscreen {
   flex: 1;
-  min-height: 560px;
-  height: calc(100vh - 320px);
+  height: auto;
+  min-height: 0;
+  border: none;
+  border-radius: 0;
+}
+
+.canvasShell {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: calc(100vh - 280px);
+  min-height: 640px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   overflow: hidden;
-  background: var(--background-2);
+  background: var(--background-1);
 }
 
 @media (max-width: 900px) {

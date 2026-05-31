@@ -17,7 +17,7 @@ import { normalizeListResponse } from "@/lib/apiList";
 import {
   EMPTY_SCENE,
   getStoredBoardId,
-  sceneToInitialData,
+  normalizeScene,
   serializeScene,
   setStoredBoardId,
 } from "@/lib/excalidraw";
@@ -25,7 +25,35 @@ import { ensureActiveTenant } from "@/lib/tenantContext";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import styles from "./BoardView.module.css";
 
-const SAVE_DEBOUNCE_MS = 1400;
+const SAVE_DEBOUNCE_MS = 900;
+
+function FullscreenIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" width="14" height="14" aria-hidden="true">
+      <path
+        d="M2.5 6V3.5A1 1 0 0 1 3.5 2.5H6M10 2.5h2.5A1 1 0 0 1 13.5 3.5V6M13.5 10v2.5a1 1 0 0 1-1 1H10M6 13.5H3.5a1 1 0 0 1-1-1V10"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ExitFullscreenIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" width="14" height="14" aria-hidden="true">
+      <path
+        d="M6 2.5H3.5A1 1 0 0 0 2.5 3.5V6M10 2.5h2.5A1 1 0 0 1 13.5 3.5V6M2.5 10v2.5A1 1 0 0 0 3.5 13.5H6M13.5 10v2.5a1 1 0 0 1-1 1H10"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 function formatBoardLabel(board) {
   if (!board?.project?.name) return board?.name || "Board";
@@ -41,14 +69,18 @@ export default function BoardView() {
   const [boardName, setBoardName] = useState("");
   const [projectId, setProjectId] = useState("");
   const [listFilter, setListFilter] = useState("all");
-  const [initialData, setInitialData] = useState(sceneToInitialData(EMPTY_SCENE));
+  const [scene, setScene] = useState(() => normalizeScene(EMPTY_SCENE, "light"));
   const [canvasKey, setCanvasKey] = useState("loading");
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState("idle");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const pendingScene = useRef(serializeScene([], EMPTY_SCENE.appState, {}));
   const saveTimer = useRef(null);
   const skipSave = useRef(true);
+  const persistSceneRef = useRef(null);
+  const activeBoardRef = useRef(null);
+  const draftModeRef = useRef(false);
 
   const excalidrawTheme = theme === "dark" ? "dark" : "light";
 
@@ -83,17 +115,14 @@ export default function BoardView() {
     setActiveBoard(board);
     setBoardName(board.name || "");
     setProjectId(board.project_id || "");
-    setInitialData(sceneToInitialData(board.scene_data));
+    const normalized = normalizeScene(board.scene_data, excalidrawTheme);
+    setScene(normalized);
     setCanvasKey(board.id);
     setStoredBoardId(board.id);
-    pendingScene.current = serializeScene(
-      board.scene_data?.elements || [],
-      board.scene_data?.appState || EMPTY_SCENE.appState,
-      board.scene_data?.files || {}
-    );
+    pendingScene.current = normalized;
     skipSave.current = true;
     setSaveState("saved");
-  }, []);
+  }, [excalidrawTheme]);
 
   const initialize = useCallback(async () => {
     setLoading(true);
@@ -132,27 +161,64 @@ export default function BoardView() {
   }, [initialize]);
 
   const persistScene = useCallback(
-    async (scene) => {
-      if (!scene || draftMode || !activeBoard?.id) return;
+    async (nextScene, { silent = false } = {}) => {
+      if (!nextScene || draftModeRef.current || !activeBoardRef.current?.id) return;
 
       setSaveState("saving");
       try {
-        const updated = await updateBoard(activeBoard.id, { scene_data: scene });
+        const updated = await updateBoard(activeBoardRef.current.id, {
+          scene_data: nextScene,
+        });
         setActiveBoard(updated);
+        activeBoardRef.current = updated;
         setBoards((current) =>
           current.map((item) => (item.id === updated.id ? { ...item, ...updated } : item))
         );
         setSaveState("saved");
       } catch {
         setSaveState("error");
-        showErrorToast("Erro ao salvar o board");
+        if (!silent) showErrorToast("Erro ao salvar o board");
       }
     },
-    [activeBoard?.id, draftMode]
+    []
   );
 
+  persistSceneRef.current = persistScene;
+
+  useEffect(() => {
+    activeBoardRef.current = activeBoard;
+  }, [activeBoard]);
+
+  useEffect(() => {
+    draftModeRef.current = draftMode;
+  }, [draftMode]);
+
+  const flushPendingSave = useCallback(async () => {
+    if (saveTimer.current) {
+      window.clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+
+    if (draftModeRef.current || !activeBoardRef.current?.id || skipSave.current) return;
+
+    await persistSceneRef.current?.(pendingScene.current, { silent: true });
+  }, []);
+
+  const scheduleAutoSave = useCallback(() => {
+    if (draftModeRef.current || !activeBoardRef.current?.id) {
+      setSaveState("idle");
+      return;
+    }
+
+    setSaveState("pending");
+    if (saveTimer.current) window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      persistSceneRef.current?.(pendingScene.current);
+    }, SAVE_DEBOUNCE_MS);
+  }, []);
+
   function handleSceneChange(elements, appState, files) {
-    pendingScene.current = serializeScene(elements, appState, files);
+    pendingScene.current = serializeScene(elements, appState, files, excalidrawTheme);
 
     if (skipSave.current) {
       skipSave.current = false;
@@ -164,12 +230,49 @@ export default function BoardView() {
       return;
     }
 
-    setSaveState("idle");
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
-      persistScene(pendingScene.current);
-    }, SAVE_DEBOUNCE_MS);
+    scheduleAutoSave();
   }
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden") {
+        flushPendingSave();
+      }
+    }
+
+    function handleBeforeUnload() {
+      if (saveTimer.current) {
+        window.clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+      }
+    }
+
+    window.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      flushPendingSave();
+    };
+  }, [flushPendingSave]);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setIsFullscreen(false);
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
 
   async function handleSaveDraft() {
     const trimmedName = boardName.trim();
@@ -202,9 +305,10 @@ export default function BoardView() {
     setActiveBoard(null);
     setBoardName("Novo board");
     setProjectId("");
-    setInitialData(sceneToInitialData(EMPTY_SCENE));
+    const emptyScene = normalizeScene(EMPTY_SCENE, excalidrawTheme);
+    setScene(emptyScene);
     setCanvasKey(`draft-${Date.now()}`);
-    pendingScene.current = serializeScene([], EMPTY_SCENE.appState, {});
+    pendingScene.current = emptyScene;
     skipSave.current = true;
     setSaveState("idle");
   }
@@ -212,6 +316,8 @@ export default function BoardView() {
   async function handleBoardSelect(boardId) {
     if (!boardId) return;
     if (draftMode && !window.confirm("Descartar o board novo e abrir outro?")) return;
+
+    await flushPendingSave();
 
     try {
       const board = await getBoard(boardId);
@@ -270,17 +376,127 @@ export default function BoardView() {
     }
   }
 
+  const boardSelectOptions = useMemo(
+    () =>
+      boards.map((board) => (
+        <option key={board.id} value={board.id}>
+          {formatBoardLabel(board)}
+          {board.is_default ? " (principal)" : ""}
+        </option>
+      )),
+    [boards]
+  );
+
+  const filteredBoardSelectOptions = useMemo(
+    () =>
+      filteredBoards.map((board) => (
+        <option key={board.id} value={board.id}>
+          {formatBoardLabel(board)}
+          {board.is_default ? " (principal)" : ""}
+        </option>
+      )),
+    [filteredBoards]
+  );
+
+  const activeProjectLabel = projectId
+    ? projects.find((item) => item.id === projectId)?.name || "Projeto"
+    : "Workspace";
+
   const saveLabel = useMemo(() => {
-    if (draftMode) return "Novo board (não salvo)";
+    if (draftMode) return "Rascunho — salve para persistir";
     if (saveState === "saving") return "Salvando...";
-    if (saveState === "saved") return "Salvo";
+    if (saveState === "saved") return "Salvo automaticamente";
     if (saveState === "error") return "Erro ao salvar";
-    if (saveState === "idle") return "Alterações pendentes";
+    if (saveState === "pending") return "Salvando em breve...";
     return "Pronto";
   }, [draftMode, saveState]);
 
+  const canvasBlock = (
+    <div className={`${styles.canvasShell} ${isFullscreen ? styles.canvasShellFullscreen : ""}`}>
+      <ExcalidrawCanvas
+        sceneKey={canvasKey}
+        scene={scene}
+        theme={excalidrawTheme}
+        onSceneChange={handleSceneChange}
+      />
+    </div>
+  );
+
+  const toolbarActions = (
+    <>
+      <span
+        className={`${styles.saveStatus} ${
+          saveState === "saved"
+            ? styles.saveStatusOk
+            : saveState === "error"
+              ? styles.saveStatusError
+              : saveState === "pending" || saveState === "saving"
+                ? styles.saveStatusPending
+                : ""
+        }`}
+      >
+        {saveLabel}
+      </span>
+      <Button
+        variant="secondary"
+        size="sm"
+        icon={isFullscreen ? <ExitFullscreenIcon /> : <FullscreenIcon />}
+        onClick={() => setIsFullscreen((current) => !current)}
+      >
+        {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+      </Button>
+      <Button variant="secondary" size="sm" onClick={handleNewBoard}>
+        Novo board
+      </Button>
+      {draftMode ? (
+        <Button variant="primary" size="sm" onClick={handleSaveDraft}>
+          Salvar board
+        </Button>
+      ) : (
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={() => persistScene(pendingScene.current)}
+          disabled={saveState === "saving"}
+        >
+          Salvar agora
+        </Button>
+      )}
+      {!draftMode && activeBoard && !activeBoard.is_default && (
+        <Button variant="secondary" size="sm" onClick={handleDeleteBoard}>
+          Excluir
+        </Button>
+      )}
+    </>
+  );
+
   if (loading) {
     return <p className={styles.loading}>Carregando board...</p>;
+  }
+
+  if (isFullscreen) {
+    return (
+      <div className={styles.fullscreenOverlay} data-tour="board-view">
+        <header className={styles.fullscreenBar}>
+          <div className={styles.fullscreenBarMain}>
+            <div className={styles.fullscreenBoardPicker}>
+              <select
+                className={styles.fullscreenBoardSelect}
+                value={draftMode ? "" : activeBoard?.id || ""}
+                onChange={(event) => handleBoardSelect(event.target.value)}
+                aria-label="Trocar board"
+              >
+                {draftMode && <option value="">Novo board (rascunho)</option>}
+                {boardSelectOptions}
+              </select>
+            </div>
+            <p className={styles.fullscreenMeta}>{activeProjectLabel}</p>
+          </div>
+          <div className={styles.toolbarActions}>{toolbarActions}</div>
+        </header>
+        {canvasBlock}
+      </div>
+    );
   }
 
   return (
@@ -298,12 +514,7 @@ export default function BoardView() {
               onChange={(event) => handleBoardSelect(event.target.value)}
             >
               {draftMode && <option value="">Novo board (rascunho)</option>}
-              {filteredBoards.map((board) => (
-                <option key={board.id} value={board.id}>
-                  {formatBoardLabel(board)}
-                  {board.is_default ? " (principal)" : ""}
-                </option>
-              ))}
+              {filteredBoardSelectOptions}
             </select>
           </div>
 
@@ -361,51 +572,10 @@ export default function BoardView() {
           </div>
         </div>
 
-        <div className={styles.toolbarActions}>
-          <span
-            className={`${styles.saveStatus} ${
-              saveState === "saved"
-                ? styles.saveStatusOk
-                : saveState === "error"
-                  ? styles.saveStatusError
-                  : ""
-            }`}
-          >
-            {saveLabel}
-          </span>
-          <Button variant="secondary" size="sm" onClick={handleNewBoard}>
-            Novo board
-          </Button>
-          {draftMode ? (
-            <Button variant="primary" size="sm" onClick={handleSaveDraft}>
-              Salvar board
-            </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => persistScene(pendingScene.current)}
-              disabled={saveState === "saving"}
-            >
-              Salvar agora
-            </Button>
-          )}
-          {!draftMode && activeBoard && !activeBoard.is_default && (
-            <Button variant="secondary" size="sm" onClick={handleDeleteBoard}>
-              Excluir
-            </Button>
-          )}
-        </div>
+        <div className={styles.toolbarActions}>{toolbarActions}</div>
       </div>
 
-      <div className={styles.canvasShell}>
-        <ExcalidrawCanvas
-          boardKey={canvasKey}
-          initialData={initialData}
-          theme={excalidrawTheme}
-          onSceneChange={handleSceneChange}
-        />
-      </div>
+      {canvasBlock}
     </div>
   );
 }
