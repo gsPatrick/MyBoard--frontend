@@ -15,6 +15,7 @@ import { KeyboardShortcutsProvider } from "@/context/KeyboardShortcutsContext";
 import WorkspaceSearch from "@/components/WorkspaceSearch/WorkspaceSearch";
 import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
 import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
+import OnboardingWelcomeModal from "@/components/OnboardingWelcomeModal/OnboardingWelcomeModal";
 import Toaster from "@/components/Toast/Toaster";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { getToken } from "@/api/client";
@@ -64,6 +65,7 @@ function DashboardShell() {
       </div>
       <WorkspaceSearch />
       <OnboardingTour />
+      <OnboardingWelcomeModal />
       <DailyFocusModal />
       <Toaster />
     </>

@@ -118,13 +118,21 @@ export default function DailyFocusModal() {
   }, [load]);
 
   useEffect(() => {
-    function handleOnboardingFinished() {
+    function handleOnboardingFinished(event) {
+      if (event.detail?.status === "completed") return;
+      load();
+    }
+
+    function handleWelcomeClosed() {
       load();
     }
 
     window.addEventListener("myboard:onboarding-finished", handleOnboardingFinished);
-    return () =>
+    window.addEventListener("myboard:onboarding-welcome-closed", handleWelcomeClosed);
+    return () => {
       window.removeEventListener("myboard:onboarding-finished", handleOnboardingFinished);
+      window.removeEventListener("myboard:onboarding-welcome-closed", handleWelcomeClosed);
+    };
   }, [load]);
 
   function dismiss() {

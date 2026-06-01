@@ -101,7 +101,9 @@ export function OnboardingProvider({ children }) {
       }));
     } finally {
       setActive(false);
-      window.dispatchEvent(new CustomEvent("myboard:onboarding-finished"));
+      window.dispatchEvent(
+        new CustomEvent("myboard:onboarding-finished", { detail: { status } })
+      );
     }
   }, [stepIndex]);
 
