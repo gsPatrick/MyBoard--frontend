@@ -192,6 +192,54 @@
   color: #e67700;
 }
 
+.pairingSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+.pairingForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.pairingBox {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, #228be6 30%, var(--border-default));
+  background: color-mix(in srgb, #228be6 8%, var(--background-1));
+}
+
+.pairingLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pairingCode {
+  font-size: 28px;
+  line-height: 1.1;
+  letter-spacing: 0.18em;
+  color: var(--text-primary);
+}
+
+.pairingHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
 .cardSuccess {
   border-color: color-mix(in srgb, #2f9e44 24%, var(--border-default));
 }

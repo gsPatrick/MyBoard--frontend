@@ -119,7 +119,7 @@ export default function ClientWhatsappLinks({ clientId }) {
           <p className={styles.searchLabel}>Buscar e vincular número</p>
           <WhatsappChatSearch
             mode="phone"
-            placeholder="Buscar número no WhatsApp conectado…"
+            placeholder="Nome ou número — Enter para buscar"
             disabled={adding}
             onSelect={handleSelect}
           />

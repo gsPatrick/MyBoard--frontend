@@ -179,8 +179,8 @@ export default function ProjectWhatsappSection({ projectId }) {
             mode={searchMode}
             placeholder={
               searchMode === "group"
-                ? "Buscar grupo no WhatsApp conectado…"
-                : "Buscar número no WhatsApp conectado…"
+                ? "Nome do grupo — Enter para buscar"
+                : "Nome ou número — Enter para buscar"
             }
             disabled={adding}
             onSelect={handleSelect}

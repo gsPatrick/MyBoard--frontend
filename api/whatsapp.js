@@ -4,10 +4,11 @@ export async function listWhatsappInstances() {
   return apiClient("/v1/whatsapp/instances");
 }
 
-export async function getWhatsappSetup({ statusOnly = false, refreshQr = false } = {}) {
+export async function getWhatsappSetup({ statusOnly = false, refreshQr = false, phone = "" } = {}) {
   const params = new URLSearchParams();
   if (statusOnly) params.set("status_only", "1");
   if (refreshQr) params.set("refresh_qr", "1");
+  if (phone) params.set("phone", phone.replace(/\D/g, ""));
   const query = params.toString();
   return apiClient(`/v1/whatsapp/setup${query ? `?${query}` : ""}`);
 }

@@ -1,32 +1,44 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
+import Button from "@/components/Button/Button";
 import SearchInput from "@/components/SearchInput/SearchInput";
 import { searchWhatsappChats } from "@/api/whatsapp";
 import styles from "./WhatsappChatSearch.module.css";
 
 export default function WhatsappChatSearch({
   mode = "phone",
-  placeholder = "Buscar número no WhatsApp conectado…",
+  placeholder = "Buscar por nome ou número…",
   onSelect,
   disabled = false,
 }) {
   const [query, setQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("Digite e pressione Enter para buscar.");
   const [results, setResults] = useState([]);
 
   const searchType = mode === "group" ? "group" : mode === "all" ? "all" : "phone";
 
   const runSearch = useCallback(
     async (term) => {
+      const trimmed = term.trim();
+      if (!trimmed) {
+        setSubmittedQuery("");
+        setResults([]);
+        setMessage("Digite e pressione Enter para buscar.");
+        return;
+      }
+
+      setSubmittedQuery(trimmed);
       setLoading(true);
       setMessage("");
+
       try {
         const data = await searchWhatsappChats({
-          q: term,
+          q: trimmed,
           type: searchType,
-          limit: 30,
+          limit: 40,
         });
 
         if (!data?.connected) {
@@ -36,9 +48,7 @@ export default function WhatsappChatSearch({
         }
 
         setResults(data.results || []);
-        if (!data.results?.length) {
-          setMessage(term ? "Nenhum resultado para essa busca." : "Nenhuma conversa encontrada.");
-        }
+        setMessage(data.message || (data.results?.length ? "" : "Nenhum resultado para essa busca."));
       } catch (error) {
         setResults([]);
         setMessage(error.message || "Não foi possível buscar conversas.");
@@ -49,31 +59,44 @@ export default function WhatsappChatSearch({
     [searchType]
   );
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      runSearch(query.trim());
-    }, 280);
-    return () => window.clearTimeout(timer);
-  }, [query, runSearch]);
-
-  const visibleResults = useMemo(() => results.slice(0, 20), [results]);
+  function handleSubmit(event) {
+    event?.preventDefault?.();
+    runSearch(query);
+  }
 
   return (
     <div className={styles.wrap}>
-      <SearchInput
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder={placeholder}
-        disabled={disabled || loading}
-        aria-label="Buscar WhatsApp"
-      />
+      <form className={styles.searchForm} onSubmit={handleSubmit}>
+        <SearchInput
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              handleSubmit();
+            }
+          }}
+          placeholder={placeholder}
+          disabled={disabled || loading}
+          aria-label="Buscar WhatsApp"
+          shortcut=""
+        />
+        <Button type="submit" size="sm" disabled={disabled || loading || !query.trim()}>
+          {loading ? "Buscando…" : "Buscar"}
+        </Button>
+      </form>
 
+      {submittedQuery && !loading && (
+        <p className={styles.hint}>
+          Resultados para <strong>{submittedQuery}</strong>
+        </p>
+      )}
       {loading && <p className={styles.hint}>Buscando…</p>}
       {!loading && message && <p className={styles.hint}>{message}</p>}
 
-      {visibleResults.length > 0 && (
+      {results.length > 0 && (
         <ul className={styles.list}>
-          {visibleResults.map((item) => (
+          {results.map((item) => (
             <li key={`${item.type}:${item.jid || item.external_id}`}>
               <button
                 type="button"
@@ -84,13 +107,13 @@ export default function WhatsappChatSearch({
                 <span className={styles.itemMain}>
                   {item.type === "group" ? (
                     <>
-                      <strong>{item.name || "Grupo"}</strong>
-                      <small>Grupo · {item.external_id}</small>
+                      <strong>{item.name || item.display || "Grupo"}</strong>
+                      <small>Grupo WhatsApp</small>
                     </>
                   ) : (
                     <>
-                      <strong>{item.display}</strong>
-                      {item.name && item.name !== item.display && <small>{item.name}</small>}
+                      <strong>{item.name || item.display}</strong>
+                      <small>{item.display !== item.name ? item.display : item.phone_e164 || item.external_id}</small>
                     </>
                   )}
                 </span>

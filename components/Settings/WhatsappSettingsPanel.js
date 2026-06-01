@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
+import Input from "@/components/Input/Input";
 import { getWhatsappSetup } from "@/api/whatsapp";
 import { getStoredUser } from "@/api/client";
 import { showErrorToast } from "@/lib/toast";
@@ -44,6 +45,7 @@ export default function WhatsappSettingsPanel() {
   const [refreshingQr, setRefreshingQr] = useState(false);
   const [setup, setSetup] = useState(null);
   const [countdown, setCountdown] = useState(null);
+  const [pairingPhone, setPairingPhone] = useState("");
   const qrRefreshLock = useRef(false);
 
   const canEdit = ["admin", "developer"].includes(getStoredUser()?.role);
@@ -62,13 +64,13 @@ export default function WhatsappSettingsPanel() {
   }, []);
 
   const loadSetup = useCallback(
-    async ({ silent = false, statusOnly = false, refreshQr = false, preserveQr = false } = {}) => {
+    async ({ silent = false, statusOnly = false, refreshQr = false, preserveQr = false, phone = "" } = {}) => {
       if (!silent) setLoading(true);
-      else if (refreshQr) setRefreshingQr(true);
+      else if (refreshQr || phone) setRefreshingQr(true);
       else setRefreshing(true);
 
       try {
-        const data = await getWhatsappSetup({ statusOnly, refreshQr });
+        const data = await getWhatsappSetup({ statusOnly, refreshQr, phone });
         applySetup(data, { preserveQr: preserveQr || statusOnly });
       } catch (error) {
         showErrorToast(error.message || "Não foi possível carregar o WhatsApp.");
@@ -199,9 +201,13 @@ export default function WhatsappSettingsPanel() {
                     <p className={styles.qrError}>{qrPayload.error}</p>
                   )}
                   {qrPayload?.pairingCode && (
-                    <p className={settingsPanelStyles.cardText}>
-                      Código: <strong>{qrPayload.pairingCode}</strong>
-                    </p>
+                    <div className={styles.pairingBox}>
+                      <span className={styles.pairingLabel}>Código de pareamento</span>
+                      <strong className={styles.pairingCode}>{qrPayload.pairingCode}</strong>
+                      <p className={styles.pairingHint}>
+                        No WhatsApp Business: Dispositivos conectados → Conectar com número de telefone → digite este código.
+                      </p>
+                    </div>
                   )}
                   {!qrPayload?.base64 && !qrPayload?.error && !qrPayload?.pairingCode && (
                     <p className={settingsPanelStyles.cardText}>
@@ -222,6 +228,38 @@ export default function WhatsappSettingsPanel() {
                       <span>{refreshingQr ? "Gerando QR…" : "Sem QR no momento"}</span>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {!setup?.connected && canEdit && (
+              <div className={styles.pairingSection}>
+                <h4 className={styles.qrHelpTitle}>WhatsApp Business (código)</h4>
+                <p className={settingsPanelStyles.cardText}>
+                  Se o QR não funcionar no Business, informe o número com DDI e gere o código de pareamento.
+                </p>
+                <div className={styles.pairingForm}>
+                  <Input
+                    label="Número do WhatsApp Business"
+                    placeholder="5511999999999"
+                    value={pairingPhone}
+                    onChange={(event) => setPairingPhone(event.target.value)}
+                    disabled={refreshingQr}
+                  />
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled={refreshingQr || pairingPhone.replace(/\D/g, "").length < 10}
+                    onClick={() =>
+                      loadSetup({
+                        silent: true,
+                        refreshQr: true,
+                        phone: pairingPhone.replace(/\D/g, ""),
+                      })
+                    }
+                  >
+                    {refreshingQr ? "Gerando código…" : "Gerar código de pareamento"}
+                  </Button>
                 </div>
               </div>
             )}
