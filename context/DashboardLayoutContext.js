@@ -84,6 +84,7 @@ export function DashboardLayoutProvider({ children }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [boardFullscreen, setBoardFullscreen] = useState(false);
+  const [boardFullscreenBordieHidden, setBoardFullscreenBordieHidden] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -247,6 +248,8 @@ export function DashboardLayoutProvider({ children }) {
       closeSearch,
       boardFullscreen,
       setBoardFullscreen,
+      boardFullscreenBordieHidden,
+      setBoardFullscreenBordieHidden,
     }),
     [
       leftSidebarMode,
@@ -275,6 +278,8 @@ export function DashboardLayoutProvider({ children }) {
       closeSearch,
       boardFullscreen,
       setBoardFullscreen,
+      boardFullscreenBordieHidden,
+      setBoardFullscreenBordieHidden,
     ]
   );
 

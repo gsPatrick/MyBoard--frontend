@@ -75,6 +75,21 @@
   color: var(--text-muted);
 }
 
+.sideNavSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.sideNavSection + .sideNavSection {
+  margin-top: var(--space-2);
+}
+
+.sideNavSectionDivider {
+  height: 1px;
+  margin: var(--space-2) var(--space-2) var(--space-3);
+  background: var(--border-default);
+}
+
 .sideNavGroup {
   display: flex;
   flex-direction: column;

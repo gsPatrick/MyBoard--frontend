@@ -61,6 +61,82 @@
   box-shadow: none;
 }
 
+.boardEdgeToggle {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: var(--background-2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transform: translateY(-50%);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+  opacity: 0.75;
+  transition:
+    opacity var(--transition-fast),
+    color var(--transition-fast),
+    background var(--transition-fast),
+    width var(--transition-fast);
+}
+
+.boardEdgeToggle svg {
+  width: 12px;
+  height: 12px;
+}
+
+.boardEdgeToggle:hover {
+  opacity: 1;
+  width: 20px;
+  color: var(--secondary-indigo);
+  background: var(--background-1);
+}
+
+.boardRestoreTab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  z-index: 2101;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 22px;
+  height: 52px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background: var(--background-2);
+  color: var(--secondary-indigo);
+  cursor: pointer;
+  box-shadow: -3px 0 14px rgba(0, 0, 0, 0.12);
+  transform: translateY(-50%);
+  opacity: 0.88;
+  transition:
+    opacity var(--transition-fast),
+    width var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.boardRestoreTab svg {
+  width: 11px;
+  height: 11px;
+}
+
+.boardRestoreTab:hover {
+  opacity: 1;
+  width: 26px;
+  background: var(--background-1);
+}
+
 .panelResizing,
 .panelDragging {
   user-select: none;

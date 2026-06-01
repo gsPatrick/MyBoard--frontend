@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import AccountSettingsPanel from "@/components/Settings/AccountSettingsPanel";
+import AiSettingsPanel from "@/components/Settings/AiSettingsPanel";
 import InterfaceSettingsPanel from "@/components/Settings/InterfaceSettingsPanel";
 import MyWalletSettingsPanel from "@/components/Settings/MyWalletSettingsPanel";
 import PrivacySettingsPanel from "@/components/Settings/PrivacySettingsPanel";
 import SettingsLayout from "@/components/Settings/SettingsLayout";
 import ShortcutsSettingsPanel from "@/components/Settings/ShortcutsSettingsPanel";
+import WhatsappSettingsPanel from "@/components/Settings/WhatsappSettingsPanel";
 import { useDashboardTab } from "@/context/DashboardTabContext";
 import styles from "./ConfiguracoesView.module.css";
 
@@ -25,11 +27,13 @@ export default function ConfiguracoesView() {
         onTabChange={setActiveSettingsTab}
         onBack={handleBack}
       >
+        {activeSettingsTab === "ai" && <AiSettingsPanel />}
+        {activeSettingsTab === "whatsapp" && <WhatsappSettingsPanel />}
+        {activeSettingsTab === "privacy" && <PrivacySettingsPanel />}
         {activeSettingsTab === "account" && <AccountSettingsPanel />}
         {activeSettingsTab === "interface" && <InterfaceSettingsPanel />}
         {activeSettingsTab === "mywallet" && <MyWalletSettingsPanel />}
         {activeSettingsTab === "shortcuts" && <ShortcutsSettingsPanel />}
-        {activeSettingsTab === "privacy" && <PrivacySettingsPanel />}
       </SettingsLayout>
     </div>
   );

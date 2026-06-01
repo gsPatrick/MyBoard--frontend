@@ -19,6 +19,7 @@ import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
 import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
 import OnboardingWelcomeModal from "@/components/OnboardingWelcomeModal/OnboardingWelcomeModal";
 import BordieChat from "@/components/BordieChat/BordieChat";
+import BordieActionOverlay from "@/components/BordieActionOverlay/BordieActionOverlay";
 import Toaster from "@/components/Toast/Toaster";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { BordieChatProvider, useBordieChat } from "@/context/BordieChatContext";
@@ -33,8 +34,11 @@ function DashboardShell() {
     rightSidebarOpen,
     contentWidth,
     boardFullscreen,
+    boardFullscreenBordieHidden,
   } = useDashboardLayout();
   const { bordieDocked } = useBordieChat();
+
+  const showBoardFullscreenBordie = bordieDocked && boardFullscreen && !boardFullscreenBordieHidden;
 
   const layoutClass = [
     styles.dashboard,
@@ -43,7 +47,8 @@ function DashboardShell() {
     !bordieDocked && rightSidebarMode === SIDEBAR_MODE.HIDDEN && styles.rightClosed,
     !bordieDocked && rightSidebarMode === SIDEBAR_MODE.COMPACT && styles.rightCompact,
     bordieDocked && styles.bordieDocked,
-    bordieDocked && boardFullscreen && styles.boardFullscreenBordie,
+    showBoardFullscreenBordie && styles.boardFullscreenBordie,
+    boardFullscreen && boardFullscreenBordieHidden && styles.boardFullscreenBordieHidden,
     contentWidth === CONTENT_WIDTH.FULL && styles.contentFull,
   ]
     .filter(Boolean)
@@ -85,6 +90,7 @@ function DashboardShell() {
         </aside>
       </div>
       <WorkspaceSearch />
+      <BordieActionOverlay />
       <BordieChat />
       <OnboardingTour />
       <OnboardingWelcomeModal />

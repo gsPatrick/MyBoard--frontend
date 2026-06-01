@@ -1,0 +1,106 @@
+.page {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--background-1, #0f0f0f);
+}
+
+.mockApp {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 280px;
+  min-height: calc(100vh - 48px);
+  border: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--background-2, #141414);
+}
+
+.mockSidebar,
+.mockBordie,
+.mockHeader,
+.mockCanvas {
+  padding: 20px;
+}
+
+.mockSidebar {
+  border-right: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.mockMain {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mockHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-bottom: 1px solid var(--border-default, rgba(255, 255, 255, 0.08));
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.mockHeader strong {
+  color: var(--text-primary);
+  font-size: 15px;
+}
+
+.mockCanvas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.mockCanvas h1 {
+  margin: 0;
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+.mockCanvas p {
+  margin: 0;
+  max-width: 56ch;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mockBordie {
+  position: relative;
+  z-index: 10020;
+  border-left: 1px solid rgba(173, 173, 251, 0.35);
+  background: color-mix(in srgb, var(--background-2, #141414) 88%, rgba(173, 173, 251, 0.12));
+  color: var(--text-primary);
+}
+
+.mockBordie p {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.mockBordie small {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+@media (max-width: 960px) {
+  .mockApp {
+    grid-template-columns: 1fr;
+  }
+
+  .mockBordie {
+    border-left: none;
+    border-top: 1px solid rgba(173, 173, 251, 0.35);
+  }
+}

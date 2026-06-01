@@ -26,6 +26,7 @@ import {
 } from "@/lib/excalidraw";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { BORDIE_DOCK_WIDTH_CSS } from "@/lib/bordieLayout";
+import { setBordieActionOverlay } from "@/lib/bordieActionOverlay";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import styles from "./BoardView.module.css";
 
@@ -74,39 +75,29 @@ function ExitFullscreenIcon() {
   );
 }
 
-function HideHeaderIcon() {
+function ChevronUpIcon() {
   return (
-    <svg viewBox="0 0 16 16" fill="none" width="14" height="14" aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" width="12" height="12" aria-hidden="true">
       <path
-        d="M3 10h10M8 4v6"
+        d="M4 10l4-4 4 4"
         stroke="currentColor"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinecap="round"
-      />
-      <path
-        d="M5.5 4h5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
 }
 
-function ShowHeaderIcon() {
+function ChevronDownIcon() {
   return (
-    <svg viewBox="0 0 16 16" fill="none" width="14" height="14" aria-hidden="true">
+    <svg viewBox="0 0 16 16" fill="none" width="12" height="12" aria-hidden="true">
       <path
-        d="M3 6h10M8 6v6"
+        d="M4 6l4 4 4-4"
         stroke="currentColor"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinecap="round"
-      />
-      <path
-        d="M5.5 12h5"
-        stroke="currentColor"
-        strokeWidth="1.2"
-        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -120,8 +111,12 @@ function formatBoardLabel(board) {
 export default function BoardView() {
   const { theme } = useTheme();
   const { activeTab } = useDashboardTab();
-  const { bordieDocked, bordieOpen, dockBordie } = useBordieChat();
-  const { setBoardFullscreen } = useDashboardLayout();
+  const { bordieDocked, bordieOpen, dockBordie, setBoardContext } = useBordieChat();
+  const {
+    setBoardFullscreen,
+    boardFullscreenBordieHidden,
+    setBoardFullscreenBordieHidden,
+  } = useDashboardLayout();
   const [boards, setBoards] = useState([]);
   const [projects, setProjects] = useState([]);
   const [activeBoard, setActiveBoard] = useState(null);
@@ -300,6 +295,89 @@ export default function BoardView() {
     scheduleAutoSave();
   }
 
+  const applyBordieScene = useCallback(
+    async (sceneData) => {
+      if (!sceneData || !activeBoardRef.current?.id) return;
+
+      const normalized = normalizeScene(sceneData, excalidrawTheme);
+      beginSceneHydration();
+      setScene(normalized);
+      setCanvasKey(`${activeBoardRef.current.id}:${Date.now()}`);
+      pendingScene.current = normalized;
+      setSaveState("pending");
+
+      try {
+        const updated = await updateBoard(activeBoardRef.current.id, {
+          scene_data: normalized,
+        });
+        setActiveBoard(updated);
+        activeBoardRef.current = updated;
+        setSaveState("saved");
+        showSuccessToast("Board atualizado pelo Bordie");
+      } catch {
+        setSaveState("error");
+        showErrorToast("Não foi possível salvar alterações do Bordie");
+      } finally {
+        setBordieActionOverlay(false);
+      }
+    },
+    [beginSceneHydration, excalidrawTheme]
+  );
+
+  useEffect(() => {
+    if (!activeBoard) {
+      setBoardContext(null);
+      return;
+    }
+
+    const currentScene = pendingScene.current || scene;
+    const visible = (currentScene.elements || []).filter((el) => !el.isDeleted);
+
+    setBoardContext({
+      id: activeBoard.id,
+      name: activeBoard.name,
+      scene_data: currentScene,
+      summary: {
+        element_count: visible.length,
+        labels: visible
+          .map((el) => el.text || el.originalText || el.type)
+          .filter(Boolean)
+          .slice(0, 30),
+      },
+    });
+  }, [activeBoard, scene, setBoardContext]);
+
+  useEffect(() => {
+    function handleApplyScene(event) {
+      const { boardId, sceneData } = event.detail || {};
+      if (boardId && activeBoardRef.current?.id && boardId !== activeBoardRef.current.id) {
+        return;
+      }
+      applyBordieScene(sceneData);
+    }
+
+    function handleBordieAction(event) {
+      const { action } = event.detail || {};
+      if (action === "board.clear-selection" && pendingScene.current?.elements) {
+        const next = {
+          ...pendingScene.current,
+          appState: {
+            ...pendingScene.current.appState,
+            selectedElementIds: {},
+          },
+        };
+        applyBordieScene(next);
+      }
+    }
+
+    window.addEventListener("myboard:bordie-apply-scene", handleApplyScene);
+    window.addEventListener("myboard:bordie-action", handleBordieAction);
+    return () => {
+      window.removeEventListener("myboard:bordie-apply-scene", handleApplyScene);
+      window.removeEventListener("myboard:bordie-action", handleBordieAction);
+    };
+  }, [applyBordieScene]);
+
   useEffect(() => {
     if (activeTab !== "board") {
       flushPendingSave();
@@ -336,8 +414,14 @@ export default function BoardView() {
 
   useEffect(() => {
     setBoardFullscreen(isFullscreen);
-    return () => setBoardFullscreen(false);
-  }, [isFullscreen, setBoardFullscreen]);
+    if (!isFullscreen) {
+      setBoardFullscreenBordieHidden(false);
+    }
+    return () => {
+      setBoardFullscreen(false);
+      setBoardFullscreenBordieHidden(false);
+    };
+  }, [isFullscreen, setBoardFullscreen, setBoardFullscreenBordieHidden]);
 
   useEffect(() => {
     if (!isFullscreen) return;
@@ -369,6 +453,10 @@ export default function BoardView() {
       const next = !current;
       if (next && bordieOpen) {
         dockBordie();
+        setBoardFullscreenBordieHidden(false);
+      }
+      if (!next) {
+        setBoardFullscreenBordieHidden(false);
       }
       return next;
     });
@@ -520,9 +608,14 @@ export default function BoardView() {
   }, [draftMode, saveState]);
 
   const isBoardVisible = activeTab === "board" || isFullscreen;
+  const showBordieBesideBoard = isFullscreen && bordieDocked && !boardFullscreenBordieHidden;
 
   const canvasBlock = (
-    <div className={`${styles.canvasShell} ${isFullscreen ? styles.canvasShellFullscreen : ""}`}>
+    <div
+      className={`${styles.canvasShell} ${isFullscreen ? styles.canvasShellFullscreen : ""} ${
+        isFullscreen && fullscreenBarHidden ? styles.canvasShellFullscreenEdge : ""
+      }`}
+    >
       {isBoardVisible ? (
         <ExcalidrawCanvas
           sceneKey={canvasKey}
@@ -559,16 +652,6 @@ export default function BoardView() {
       >
         {isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
       </Button>
-      {isFullscreen && (
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={fullscreenBarHidden ? <ShowHeaderIcon /> : <HideHeaderIcon />}
-          onClick={handleToggleFullscreenBar}
-        >
-          {fullscreenBarHidden ? "Mostrar barra" : "Ocultar barra"}
-        </Button>
-      )}
       <Button variant="secondary" size="sm" onClick={handleNewBoard}>
         Novo board
       </Button>
@@ -602,10 +685,10 @@ export default function BoardView() {
     return (
       <div
         className={`${styles.fullscreenOverlay} ${
-          bordieDocked ? styles.fullscreenOverlayBordieDocked : ""
+          showBordieBesideBoard ? styles.fullscreenOverlayBordieDocked : ""
         }`}
         style={
-          bordieDocked
+          showBordieBesideBoard
             ? { "--bordie-dock-width": BORDIE_DOCK_WIDTH_CSS }
             : undefined
         }
@@ -627,30 +710,28 @@ export default function BoardView() {
               <p className={styles.fullscreenMeta}>{activeProjectLabel}</p>
             </div>
             <div className={styles.toolbarActions}>{toolbarActions}</div>
+            <button
+              type="button"
+              className={styles.boardHeaderEdgeToggle}
+              onClick={handleToggleFullscreenBar}
+              aria-label="Ocultar barra do board"
+              title="Ocultar barra"
+            >
+              <ChevronUpIcon />
+            </button>
           </header>
         )}
 
         {fullscreenBarHidden && (
-          <div className={styles.fullscreenFloatingControls}>
-            <button
-              type="button"
-              className={styles.fullscreenBarReveal}
-              onClick={handleToggleFullscreenBar}
-              aria-label="Mostrar barra do board"
-            >
-              <ShowHeaderIcon />
-              <span>Barra do board</span>
-            </button>
-            <button
-              type="button"
-              className={styles.fullscreenExitChip}
-              onClick={() => setIsFullscreen(false)}
-              aria-label="Sair da tela cheia"
-            >
-              <ExitFullscreenIcon />
-              <span>Sair</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className={styles.boardHeaderRestoreTab}
+            onClick={handleToggleFullscreenBar}
+            aria-label="Mostrar barra do board"
+            title="Mostrar barra"
+          >
+            <ChevronDownIcon />
+          </button>
         )}
 
         {canvasBlock}

@@ -26,6 +26,7 @@ import ScopeContractSection from "./sections/ScopeContractSection";
 import DemandsSection from "./sections/DemandsSection";
 import CredentialsSection from "./sections/CredentialsSection";
 import GithubSection from "./sections/GithubSection";
+import ProjectWhatsappSection from "./sections/ProjectWhatsappSection";
 import MarketplaceSection from "./sections/MarketplaceSection";
 import styles from "./ProjectDetailView.module.css";
 
@@ -37,6 +38,7 @@ const BASE_SECTIONS = [
   { id: "financial", label: "Financeiro" },
   { id: "credentials", label: "Credenciais" },
   { id: "github", label: "GitHub" },
+  { id: "whatsapp", label: "WhatsApp" },
 ];
 
 function buildSections(origin) {
@@ -290,6 +292,10 @@ export default function ProjectDetailView() {
                 repos={repos}
                 onChange={reloadDetails}
               />
+            )}
+
+            {activeSection === "whatsapp" && (
+              <ProjectWhatsappSection projectId={project.id} />
             )}
           </div>
         </div>

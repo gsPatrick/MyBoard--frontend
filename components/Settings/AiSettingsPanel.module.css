@@ -1,0 +1,42 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.maskedKey {
+  margin-top: var(--space-2);
+  font-size: 12px;
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+}
+
+.statusOk {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--status-success, #2f9e44);
+}
+
+.statusError {
+  margin-top: var(--space-2);
+  font-size: 13px;
+  color: var(--status-danger, #e03131);
+}

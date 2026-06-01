@@ -1,10 +1,10 @@
 "use client";
 
-import { SETTINGS_TABS } from "@/lib/settingsTabs";
+import { SETTINGS_TAB_GROUPS } from "@/lib/settingsTabs";
 import styles from "./SettingsLayout.module.css";
 
 export default function SettingsLayout({
-  activeTab = "shortcuts",
+  activeTab = "account",
   onTabChange,
   onBack,
   children,
@@ -20,27 +20,30 @@ export default function SettingsLayout({
           )}
           <h1 className={styles.title}>Configurações</h1>
           <p className={styles.subtitle}>
-            Conta, layout, MyWallet, atalhos e preferências do workspace.
+            IA, WhatsApp, privacidade e preferências do workspace.
           </p>
         </div>
       </header>
 
       <div className={styles.body}>
         <nav className={styles.sideNav} aria-label="Seções de configurações" data-tour="settings-nav">
-          <p className={styles.sideNavLabel}>Seções</p>
-          {SETTINGS_TABS.map((tab, index) => (
-            <div key={tab.id} className={styles.sideNavGroup}>
-              {index > 0 && <div className={styles.sideNavDivider} role="separator" />}
-              <button
-                type="button"
-                className={`${styles.sideNavItem} ${
-                  activeTab === tab.id ? styles.sideNavItemActive : ""
-                }`}
-                aria-current={activeTab === tab.id ? "page" : undefined}
-                onClick={() => onTabChange?.(tab.id)}
-              >
-                {tab.label}
-              </button>
+          {SETTINGS_TAB_GROUPS.map((group, groupIndex) => (
+            <div key={group.id} className={styles.sideNavSection}>
+              {groupIndex > 0 && <div className={styles.sideNavSectionDivider} role="separator" />}
+              <p className={styles.sideNavLabel}>{group.label}</p>
+              {group.tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  className={`${styles.sideNavItem} ${
+                    activeTab === tab.id ? styles.sideNavItemActive : ""
+                  }`}
+                  aria-current={activeTab === tab.id ? "page" : undefined}
+                  onClick={() => onTabChange?.(tab.id)}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
           ))}
         </nav>

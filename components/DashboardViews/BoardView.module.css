@@ -98,72 +98,81 @@
   display: flex;
   flex-direction: column;
   background: var(--background-1);
+  overflow: hidden;
 }
 
 .fullscreenOverlayBordieDocked {
   right: var(--bordie-dock-width, max(280px, 20vw));
-  border-right: 1px solid var(--border-default);
 }
 
-.fullscreenBarReveal {
+.boardHeaderEdgeToggle {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  z-index: 3;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  justify-content: center;
+  width: 40px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   background: var(--background-2);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 500;
+  color: var(--text-muted);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  opacity: 0.82;
+  transform: translate(-50%, 50%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  opacity: 0.75;
   transition:
     opacity var(--transition-fast),
+    color var(--transition-fast),
     background var(--transition-fast),
-    color var(--transition-fast);
+    height var(--transition-fast);
 }
 
-.fullscreenFloatingControls {
+.boardHeaderEdgeToggle:hover {
+  opacity: 1;
+  height: 20px;
+  color: var(--text-primary);
+  background: var(--background-1);
+}
+
+.boardHeaderRestoreTab {
   position: absolute;
-  top: 10px;
+  top: 0;
   left: 50%;
   z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  transform: translateX(-50%);
-}
-
-.fullscreenExitChip {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  justify-content: center;
+  width: 52px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
   background: var(--background-2);
-  color: var(--text-secondary);
-  font-size: 11px;
-  font-weight: 500;
+  color: var(--text-muted);
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  opacity: 0.82;
+  transform: translateX(-50%);
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.12);
+  opacity: 0.88;
   transition:
     opacity var(--transition-fast),
-    background var(--transition-fast),
-    color var(--transition-fast);
+    height var(--transition-fast),
+    color var(--transition-fast),
+    background var(--transition-fast);
 }
 
-.fullscreenBarReveal:hover,
-.fullscreenExitChip:hover {
+.boardHeaderRestoreTab:hover {
   opacity: 1;
+  height: 26px;
   color: var(--text-primary);
   background: var(--background-1);
 }
 
 .fullscreenBar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -244,10 +253,16 @@
 
 .canvasShellFullscreen {
   flex: 1;
+  width: 100%;
   height: auto;
   min-height: 0;
   border: none;
   border-radius: 0;
+}
+
+.canvasShellFullscreenEdge {
+  min-height: 100%;
+  height: 100%;
 }
 
 .canvasShell {
@@ -256,8 +271,8 @@
   width: 100%;
   height: calc(100vh - 280px);
   min-height: 640px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
+  border: none;
+  border-radius: 0;
   overflow: hidden;
   background: var(--background-1);
 }

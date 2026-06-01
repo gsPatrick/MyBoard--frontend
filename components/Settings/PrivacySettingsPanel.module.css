@@ -1,10 +1,77 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 .list {
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
+}
+
+.policyOptions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.policyOption {
+  display: flex;
   gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-1);
+  cursor: pointer;
+}
+
+.policyOptionActive {
+  border-color: color-mix(in srgb, var(--accent, #228be6) 50%, var(--border-default));
+  background: color-mix(in srgb, var(--accent, #228be6) 6%, var(--background-1));
+}
+
+.policyCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.policyCopy strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.policyCopy small {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .cardMuted {
-  background: color-mix(in srgb, var(--surface-muted) 80%, var(--background-1));
-  border-style: dashed;
+  opacity: 0.88;
 }

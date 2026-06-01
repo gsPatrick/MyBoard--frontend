@@ -4,7 +4,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Kbd from "@/components/Kbd/Kbd";
 import IconButton from "@/components/IconButton/IconButton";
-import { sendBordieCommand, sendBordieMessage } from "@/api/bordie";
+import {
+  canAutoApplyBoardAction,
+  dispatchBordieSceneApply,
+  executeBordieAction,
+  getBordiePolicy,
+  isBoardAction,
+  sendBordieCommand,
+  sendBordieMessage,
+} from "@/api/bordie";
+import { setBordieActionOverlay, withBordieActionOverlay } from "@/lib/bordieActionOverlay";
 import { getStoredUser } from "@/api/client";
 import { useBordieChat } from "@/context/BordieChatContext";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
@@ -94,6 +103,34 @@ function FloatIcon() {
   );
 }
 
+function ChevronRightIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M6 4l4 4-4 4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronLeftIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M10 4L6 8l4 4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function createChatMessage(role, content) {
   return {
     id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -121,12 +158,18 @@ function persistPrefs({ size, position, displayMode, dockPanel }) {
 }
 
 export default function BordieChat() {
-  const { bordieOpen, bordieDocked, displayMode, closeBordie, dockBordie, floatBordie } =
+  const { bordieOpen, bordieDocked, displayMode, closeBordie, dockBordie, floatBordie, boardContext } =
     useBordieChat();
   const { activeTab, setActiveTab } = useDashboardTab();
   const { selectedProject, selectedClient, clearProject, clearClient, clearLucroFilter } =
     useDashboardNav();
-  const { openSearch, refreshAll } = useDashboardLayout();
+  const {
+    openSearch,
+    refreshAll,
+    boardFullscreen,
+    boardFullscreenBordieHidden,
+    setBoardFullscreenBordieHidden,
+  } = useDashboardLayout();
   const { bindings } = useKeyboardShortcuts();
 
   const [mounted, setMounted] = useState(false);
@@ -148,6 +191,7 @@ export default function BordieChat() {
   const [chatInput, setChatInput] = useState("");
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState("");
+  const [policyMode, setPolicyMode] = useState(null);
 
   const commandInputRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -157,12 +201,75 @@ export default function BordieChat() {
   const sizeRef = useRef(BORDIE_DEFAULT_SIZE);
 
   const context = useMemo(
-    () => buildBordieContext({ activeTab, selectedProject, selectedClient }),
-    [activeTab, selectedProject, selectedClient]
+    () => buildBordieContext({ activeTab, selectedProject, selectedClient, boardContext, policyMode }),
+    [activeTab, selectedProject, selectedClient, boardContext, policyMode]
+  );
+
+  useEffect(() => {
+    getBordiePolicy()
+      .then((data) => setPolicyMode(data?.mode || null))
+      .catch(() => {});
+
+    function handlePolicyUpdated() {
+      getBordiePolicy()
+        .then((data) => setPolicyMode(data?.mode || null))
+        .catch(() => {});
+    }
+
+    window.addEventListener("myboard:bordie-policy-updated", handlePolicyUpdated);
+    return () => window.removeEventListener("myboard:bordie-policy-updated", handlePolicyUpdated);
+  }, []);
+
+  const handleBordieAction = useCallback(
+    async (action) => {
+      if (!action?.type) return;
+
+      const actionLabel = action.payload?.explanation || action.type;
+
+      if (isBoardAction(action) && canAutoApplyBoardAction(action)) {
+        setBordieActionOverlay(true, actionLabel);
+        dispatchBordieSceneApply({
+          boardId: action.payload?.board_id,
+          sceneData: action.payload?.proposed_scene,
+          explanation: action.payload?.explanation,
+        });
+        return { ok: true, local: true };
+      }
+
+      const needsConfirm =
+        action.requires_confirmation === true ||
+        policyMode === "always_confirm";
+
+      if (needsConfirm) {
+        const label = action.payload?.explanation || action.type;
+        const confirmed = window.confirm(`Bordie quer executar: ${label}\n\nConfirmar?`);
+        if (!confirmed) {
+          return { ok: false, cancelled: true };
+        }
+      }
+
+      if (isBoardAction(action) && action.payload?.proposed_scene) {
+        setBordieActionOverlay(true, actionLabel);
+        dispatchBordieSceneApply({
+          boardId: action.payload?.board_id,
+          sceneData: action.payload.proposed_scene,
+          explanation: action.payload?.explanation,
+        });
+        return { ok: true, local: true };
+      }
+
+      return withBordieActionOverlay(
+        () => executeBordieAction({ action, confirmed: true }),
+        actionLabel
+      );
+    },
+    [policyMode]
   );
 
   const userName = getStoredUser()?.name?.trim().split(" ")[0] || "Você";
   const isDocked = displayMode === BORDIE_DISPLAY.DOCKED;
+  const boardFullscreenDock =
+    activeTab === "board" && boardFullscreen && isDocked;
   const showActionsPane = !isDocked || dockPanel === BORDIE_DOCK_PANEL.ACTIONS;
   const showChatPane = !isDocked || dockPanel === BORDIE_DOCK_PANEL.CHAT;
 
@@ -234,10 +341,15 @@ export default function BordieChat() {
       setStatusMessage({ type: "loading", text: "Bordie está processando…" });
 
       try {
-        const { message, offline } = await sendBordieCommand({ prompt: trimmed, context });
+        const { message, offline, action, actions } = await sendBordieCommand({ prompt: trimmed, context });
         const resultText = message || "Comando recebido.";
         setStatusMessage({ type: offline ? "info" : "success", text: resultText });
         appendChatAssistant(resultText);
+
+        const primary = action || actions?.[0];
+        if (primary) {
+          await handleBordieAction(primary);
+        }
       } catch (error) {
         setStatusMessage({
           type: "error",
@@ -247,7 +359,7 @@ export default function BordieChat() {
         setIsRunning(false);
       }
     },
-    [context, isRunning, appendChatAssistant]
+    [context, isRunning, appendChatAssistant, handleBordieAction]
   );
 
   const handlers = useMemo(
@@ -543,13 +655,18 @@ export default function BordieChat() {
 
     try {
       const history = nextMessages.map(({ role, content }) => ({ role, content }));
-      const { reply } = await sendBordieMessage({
+      const { reply, action, actions } = await sendBordieMessage({
         message: trimmed,
         context,
         history: history.slice(0, -1),
       });
 
       setChatMessages((current) => [...current, createChatMessage("assistant", reply || "…")]);
+
+      const primary = action || actions?.[0];
+      if (primary) {
+        await handleBordieAction(primary);
+      }
     } catch (error) {
       setChatError(error.message || "Não foi possível enviar a mensagem.");
       setChatMessages((current) => current.slice(0, -1));
@@ -585,6 +702,18 @@ export default function BordieChat() {
       onPointerUp={finishInteraction}
       onPointerCancel={finishInteraction}
     >
+      {boardFullscreenDock && !boardFullscreenBordieHidden && (
+        <button
+          type="button"
+          className={styles.boardEdgeToggle}
+          onClick={() => setBoardFullscreenBordieHidden(true)}
+          aria-label="Ocultar Bordie"
+          title="Ocultar Bordie"
+        >
+          <ChevronRightIcon />
+        </button>
+      )}
+
       <header
         className={styles.header}
         onPointerDown={beginDrag}
@@ -871,6 +1000,22 @@ export default function BordieChat() {
       )}
     </div>
   );
+
+  if (isDocked && boardFullscreenDock && boardFullscreenBordieHidden) {
+    return createPortal(
+      <button
+        type="button"
+        className={styles.boardRestoreTab}
+        onClick={() => setBoardFullscreenBordieHidden(false)}
+        aria-label="Mostrar Bordie"
+        title="Mostrar Bordie"
+      >
+        <ChevronLeftIcon />
+        <StarIcon />
+      </button>,
+      document.body
+    );
+  }
 
   if (isDocked && dockRoot) {
     return createPortal(panel, dockRoot);

@@ -1,0 +1,101 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.instanceList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instanceItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-1);
+}
+
+.instanceMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.instanceActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.stateBadge {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stateOpen {
+  background: color-mix(in srgb, #2f9e44 16%, transparent);
+  color: #2f9e44;
+}
+
+.stateConnecting {
+  background: color-mix(in srgb, #fab005 18%, transparent);
+  color: #e67700;
+}
+
+.stateClosed {
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  color: var(--text-muted);
+}
+
+.createForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.qrImage {
+  display: block;
+  width: min(100%, 280px);
+  margin: var(--space-3) 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.qrRaw {
+  overflow: auto;
+  max-height: 240px;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--background-1);
+  font-size: 12px;
+}
+
+.cardMuted {
+  opacity: 0.92;
+}
+
+.statusRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.cardSuccess {
+  border-color: color-mix(in srgb, #2f9e44 24%, var(--border-default));
+}

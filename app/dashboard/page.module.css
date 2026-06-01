@@ -44,6 +44,21 @@
 
 .boardFullscreenBordie .rightSlot {
   z-index: 2100;
+  border-left: none;
+}
+
+.boardFullscreenBordieHidden.bordieDocked {
+  --sidebar-right-width: 0px;
+}
+
+.boardFullscreenBordieHidden {
+  --sidebar-right-width: 0px;
+}
+
+.boardFullscreenBordieHidden .rightSlot {
+  visibility: hidden;
+  pointer-events: none;
+  border-left: none;
 }
 
 .bordieDockRoot {

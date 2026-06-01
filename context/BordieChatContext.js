@@ -13,11 +13,16 @@ export function BordieChatProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [displayMode, setDisplayModeState] = useState(BORDIE_DISPLAY.FLOATING);
   const [hydrated, setHydrated] = useState(false);
+  const [boardContext, setBoardContextState] = useState(null);
 
   useEffect(() => {
     const prefs = readBordiePrefs();
     setDisplayModeState(prefs.displayMode);
     setHydrated(true);
+  }, []);
+
+  const setBoardContext = useCallback((next) => {
+    setBoardContextState(next);
   }, []);
 
   const persistDisplayMode = useCallback((mode) => {
@@ -66,6 +71,8 @@ export function BordieChatProvider({ children }) {
       bordieOpen: isOpen,
       bordieDocked,
       displayMode,
+      boardContext,
+      setBoardContext,
       openBordie,
       closeBordie,
       toggleBordie,
@@ -78,6 +85,8 @@ export function BordieChatProvider({ children }) {
       isOpen,
       bordieDocked,
       displayMode,
+      boardContext,
+      setBoardContext,
       openBordie,
       closeBordie,
       toggleBordie,
