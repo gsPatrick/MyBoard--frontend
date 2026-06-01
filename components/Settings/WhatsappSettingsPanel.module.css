@@ -244,6 +244,61 @@
   border-color: color-mix(in srgb, #2f9e44 24%, var(--border-default));
 }
 
+.dangerCard {
+  border-color: color-mix(in srgb, #e5484d 28%, var(--border-default));
+}
+
+.dangerBtn {
+  color: #e5484d !important;
+}
+
+.dangerBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, #e5484d 10%, transparent) !important;
+}
+
+.dangerBtnSolid {
+  background: #e5484d !important;
+  color: #fff !important;
+  border-color: #e5484d !important;
+}
+
+.dangerBtnSolid:hover:not(:disabled) {
+  background: #d03f43 !important;
+}
+
+.disconnectModal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.disconnectLead,
+.disconnectNote {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.disconnectList {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.disconnectList li + li {
+  margin-top: 6px;
+}
+
+.disconnectNote {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, #fab005 10%, var(--background-1));
+  border: 1px solid color-mix(in srgb, #fab005 24%, var(--border-default));
+}
+
 @media (max-width: 640px) {
   .wrap {
     max-width: none;

@@ -13,6 +13,10 @@ export async function getWhatsappSetup({ statusOnly = false, refreshQr = false, 
   return apiClient(`/v1/whatsapp/setup${query ? `?${query}` : ""}`);
 }
 
+export async function disconnectWhatsapp() {
+  return apiClient("/v1/whatsapp/disconnect", { method: "POST" });
+}
+
 export async function searchWhatsappChats({ q = "", type = "all", limit = 30 } = {}) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);

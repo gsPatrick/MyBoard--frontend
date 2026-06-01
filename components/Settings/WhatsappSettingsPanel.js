@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
-import { getWhatsappSetup } from "@/api/whatsapp";
+import Modal from "@/components/Modal/Modal";
+import { disconnectWhatsapp, getWhatsappSetup } from "@/api/whatsapp";
 import { getStoredUser } from "@/api/client";
-import { showErrorToast } from "@/lib/toast";
+import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";
 import styles from "./WhatsappSettingsPanel.module.css";
 
@@ -46,6 +47,8 @@ export default function WhatsappSettingsPanel() {
   const [setup, setSetup] = useState(null);
   const [countdown, setCountdown] = useState(null);
   const [pairingPhone, setPairingPhone] = useState("");
+  const [disconnectOpen, setDisconnectOpen] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
   const qrRefreshLock = useRef(false);
 
   const canEdit = ["admin", "developer"].includes(getStoredUser()?.role);
@@ -128,6 +131,28 @@ export default function WhatsappSettingsPanel() {
       refreshQrCode();
     }
   }, [countdown, setup?.connected, setup?.qr_expired, setup?.qr?.base64, refreshQrCode]);
+
+  async function handleDisconnect() {
+    setDisconnecting(true);
+    try {
+      const result = await disconnectWhatsapp();
+      setDisconnectOpen(false);
+      setSetup({
+        connected: false,
+        instance: result?.instance || {
+          ...setup?.instance,
+          connection_state: "close",
+        },
+        qr: null,
+      });
+      showSuccessToast("WhatsApp desconectado e vínculos removidos.");
+      await loadSetup({ silent: true, refreshQr: true });
+    } catch (error) {
+      showErrorToast(error.message || "Não foi possível desconectar o WhatsApp.");
+    } finally {
+      setDisconnecting(false);
+    }
+  }
 
   const instance = setup?.instance;
   const qrPayload = setup?.qr;
@@ -274,8 +299,60 @@ export default function WhatsappSettingsPanel() {
               </p>
             </article>
           )}
+
+          {canEdit && instance && (
+            <article className={`${settingsPanelStyles.card} ${styles.dangerCard}`}>
+              <h3 className={settingsPanelStyles.cardTitle}>Desconectar WhatsApp</h3>
+              <p className={settingsPanelStyles.cardText}>
+                Encerra a sessão do número conectado e remove todos os vínculos de clientes e projetos
+                desta organização.
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={styles.dangerBtn}
+                disabled={disconnecting}
+                onClick={() => setDisconnectOpen(true)}
+              >
+                Desconectar WhatsApp
+              </Button>
+            </article>
+          )}
         </div>
       )}
+
+      <Modal
+        isOpen={disconnectOpen}
+        onClose={() => !disconnecting && setDisconnectOpen(false)}
+        title="Desconectar WhatsApp?"
+        size="sm"
+        footer={
+          <>
+            <Button variant="ghost" disabled={disconnecting} onClick={() => setDisconnectOpen(false)}>
+              Cancelar
+            </Button>
+            <Button className={styles.dangerBtnSolid} disabled={disconnecting} onClick={handleDisconnect}>
+              {disconnecting ? "Desconectando…" : "Desconectar mesmo assim"}
+            </Button>
+          </>
+        }
+      >
+        <div className={styles.disconnectModal}>
+          <p className={styles.disconnectLead}>
+            Esta ação não pode ser desfeita automaticamente. Ao confirmar:
+          </p>
+          <ul className={styles.disconnectList}>
+            <li>O número será desconectado do MyBoard e da Evolution API</li>
+            <li>Todos os vínculos de WhatsApp em clientes serão removidos</li>
+            <li>Todos os vínculos de números e grupos em projetos serão removidos</li>
+            <li>O Bordie deixa de usar essas conversas como contexto até você reconectar</li>
+          </ul>
+          <p className={styles.disconnectNote}>
+            As mensagens já ingeridas no histórico permanecem no sistema, mas você precisará
+            vincular clientes e projetos novamente após conectar outro número.
+          </p>
+        </div>
+      </Modal>
     </SettingsPanelShell>
   );
 }
