@@ -496,7 +496,7 @@ export default function BoardView() {
 
   if (isFullscreen) {
     return (
-      <div className={styles.fullscreenOverlay} data-tour="board-view">
+      <div className={styles.fullscreenOverlay}>
         <header className={styles.fullscreenBar}>
           <div className={styles.fullscreenBarMain}>
             <div className={styles.fullscreenBoardPicker}>
@@ -520,8 +520,8 @@ export default function BoardView() {
   }
 
   return (
-    <div className={styles.wrap} data-tour="board-view">
-      <div className={styles.toolbar}>
+    <div className={styles.wrap}>
+      <div className={styles.toolbar} data-tour="board-toolbar">
         <div className={styles.toolbarMain}>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="board-select">

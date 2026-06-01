@@ -172,7 +172,7 @@ export default function LucroView() {
   const hasActiveFilter = Boolean(clientFilter || projectFilter || typeFilter);
 
   return (
-    <div className={styles.panel} data-tour="lucro-view">
+    <div className={styles.panel}>
       <div className={styles.filters}>
         <div className={styles.filterField}>
           <label className={styles.filterLabel} htmlFor="lucro-client">
@@ -246,7 +246,7 @@ export default function LucroView() {
         </div>
       )}
 
-      <div className={styles.statsGrid}>
+      <div className={styles.statsGrid} data-tour="lucro-onboarding-anchor">
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Recebido no período</p>
           <p className={styles.statValue}>

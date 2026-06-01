@@ -133,7 +133,7 @@ export default function DemandasView() {
   }
 
   return (
-    <section className={styles.wrap} data-tour="demandas-view">
+    <section className={styles.wrap}>
       <div className={styles.header}>
         <div className={styles.headerMain}>
           <h2 className={styles.title}>Demandas</h2>
@@ -173,6 +173,16 @@ export default function DemandasView() {
             ))}
           </select>
         </div>
+      </div>
+
+      <div className={styles.tipsCard} data-tour="demandas-onboarding-anchor">
+        <p className={styles.tipsTitle}>Dicas</p>
+        <ul className={styles.tipsList}>
+          <li>Clique em um cartão para ver detalhes e anexos.</li>
+          <li>Arraste entre colunas para mudar o status.</li>
+          <li>Use Nova Demanda na barra superior para criar tarefas.</li>
+          <li>Filtre por projeto para focar em uma entrega.</li>
+        </ul>
       </div>
 
       {loading && <p className={styles.loading}>Carregando demandas...</p>}

@@ -47,8 +47,8 @@ export default function ProjetosView() {
   }
 
   return (
-    <section className={styles.card} data-tour="projetos-view">
-      <div className={styles.header}>
+    <section className={styles.card}>
+      <div className={styles.header} data-tour="projetos-onboarding-anchor">
         <h2 className={styles.title}>Todos os projetos</h2>
         <span className={styles.count}>
           {loading ? "—" : `${projects.length} projeto(s)`}

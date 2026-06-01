@@ -55,6 +55,34 @@
   color: var(--text-muted);
 }
 
+.tipsCard {
+  padding: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  background: var(--background-2);
+  max-width: 420px;
+}
+
+.tipsTitle {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.tipsList {
+  margin: var(--space-3) 0 0;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.tipsList li + li {
+  margin-top: var(--space-2);
+}
+
 .filters {
   display: flex;
   flex-direction: column;

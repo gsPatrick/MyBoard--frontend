@@ -10,8 +10,8 @@ export default function SettingsLayout({
   children,
 }) {
   return (
-    <div className={styles.settingsLayout} data-tour="settings-view">
-      <header className={styles.header}>
+    <div className={styles.settingsLayout}>
+      <header className={styles.header} data-tour="settings-onboarding-anchor">
         <div className={styles.headerMain}>
           {onBack && (
             <button type="button" className={styles.backBtn} onClick={onBack}>

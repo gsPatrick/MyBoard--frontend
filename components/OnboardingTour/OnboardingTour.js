@@ -222,7 +222,7 @@ function computeTooltipPosition({
   }
 
   if (best && bestScore >= 10000) {
-    if (["left", "right"].includes(preferredPlacement)) {
+    if (["left", "right"].includes(preferredPlacement) && !dock) {
       return computeSidePosition(preferredPlacement, rect, tooltipSize);
     }
     return { ...computeDockedPosition("bottom", tooltipSize), docked: true };

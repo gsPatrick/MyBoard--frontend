@@ -175,7 +175,7 @@ export default function AgendaView() {
   const todayEvents = useMemo(() => getEventsForDay(events, todayKey), [events, todayKey]);
 
   return (
-    <div className={styles.wrap} data-tour="agenda-view">
+    <div className={styles.wrap}>
       <header className={styles.header}>
         <div className={styles.headerMain}>
           <h1 className={styles.title}>Agenda</h1>
@@ -311,7 +311,7 @@ export default function AgendaView() {
             </div>
           </div>
 
-          <div className={styles.sidebarCard}>
+          <div className={styles.sidebarCard} data-tour="agenda-onboarding-anchor">
             <p className={styles.sidebarTitle}>Dicas</p>
             <ul className={styles.tipsList}>
               <li>Clique em um horário para agendar.</li>

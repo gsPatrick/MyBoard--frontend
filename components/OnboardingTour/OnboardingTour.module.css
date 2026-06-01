@@ -1,16 +1,12 @@
 .root {
   position: fixed;
   inset: 0;
-  z-index: 1200;
-  pointer-events: auto;
+  z-index: 10050;
+  pointer-events: none;
 }
 
 .rootInteractive {
   pointer-events: none;
-}
-
-.rootInteractive .card {
-  pointer-events: auto;
 }
 
 /* Passos centrais (sem alvo) — escurece sem blur */
@@ -49,7 +45,8 @@
 
 .card {
   position: fixed;
-  z-index: 1300;
+  z-index: 10051;
+  pointer-events: auto;
   width: min(400px, calc(100vw - 32px));
   padding: var(--space-5);
   border-radius: 20px;

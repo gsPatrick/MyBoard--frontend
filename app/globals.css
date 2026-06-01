@@ -181,7 +181,7 @@ body.onboarding-active {
 
 .onboarding-highlight-target {
   position: relative;
-  z-index: 1201 !important;
+  z-index: 10040 !important;
 }
 
 .onboarding-tour-interactive .onboarding-highlight-target,

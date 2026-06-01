@@ -37,8 +37,8 @@ export default function ClientesView() {
   }, [load]);
 
   return (
-    <section className={styles.card} data-tour="clientes-view">
-      <div className={styles.header}>
+    <section className={styles.card}>
+      <div className={styles.header} data-tour="clientes-onboarding-anchor">
         <h2 className={styles.title}>Todos os clientes</h2>
         <span className={styles.count}>
           {loading ? "—" : `${clients.length} cliente(s)`}
