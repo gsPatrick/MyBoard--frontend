@@ -46,12 +46,16 @@
   justify-content: center;
   width: 34px;
   height: 34px;
-  color: var(--provider-accent, var(--text-primary));
 }
 
-.iconWrap svg {
+.iconWrap svg,
+.logoImg {
   width: 28px;
   height: 28px;
+}
+
+.customSvg {
+  color: var(--provider-accent, var(--text-primary));
 }
 
 .tabText {

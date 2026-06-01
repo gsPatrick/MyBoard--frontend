@@ -9,6 +9,8 @@ import {
   AI_PROVIDER_IDS,
   AI_PROVIDER_PRESETS,
   buildEmptyProviderForms,
+  buildSavePayload,
+  isCustomizableProvider,
   mapAiSettingsToState,
 } from "@/lib/aiProviders";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
@@ -30,6 +32,7 @@ export default function AiSettingsPanel() {
   const providerList = useMemo(() => AI_PROVIDER_IDS.map((id) => AI_PROVIDER_PRESETS[id]), []);
   const preset = AI_PROVIDER_PRESETS[activeProvider];
   const activeMeta = meta[activeProvider] || {};
+  const isCustom = isCustomizableProvider(activeProvider);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -69,19 +72,7 @@ export default function AiSettingsPanel() {
     setSaving(true);
 
     try {
-      const payload = {
-        active_provider: activeProvider,
-        provider: activeProvider,
-        base_url: current.base_url,
-        chat_model: current.chat_model,
-        embedding_model: current.embedding_model || null,
-      };
-
-      if (current.api_key.trim()) {
-        payload.api_key = current.api_key.trim();
-      }
-
-      const updated = await updateAiSettings(payload);
+      const updated = await updateAiSettings(buildSavePayload(activeProvider, current));
       const mapped = mapAiSettingsToState(updated);
       setActiveProvider(mapped.activeProvider);
       setForms((prev) => ({
@@ -237,26 +228,44 @@ export default function AiSettingsPanel() {
                 }
                 autoComplete="off"
               />
-              <Input
-                label="Base URL"
-                value={currentForm.base_url}
-                onChange={(event) => updateField("base_url", event.target.value)}
-                disabled={!canEdit}
-              />
-              <Input
-                label="Modelo de chat"
-                value={currentForm.chat_model}
-                onChange={(event) => updateField("chat_model", event.target.value)}
-                disabled={!canEdit}
-              />
-              {activeProvider !== "claude" && (
-                <Input
-                  label="Modelo de embedding (RAG)"
-                  value={currentForm.embedding_model}
-                  onChange={(event) => updateField("embedding_model", event.target.value)}
-                  disabled={!canEdit}
-                  hint="Usado para busca semântica. Deixe vazio para usar o padrão do provedor."
-                />
+
+              {!isCustom && (
+                <div className={styles.presetInfo}>
+                  <div className={styles.presetRow}>
+                    <span className={styles.presetLabel}>Modelo de chat</span>
+                    <span className={styles.presetValue}>{preset.chat_model_label}</span>
+                  </div>
+                  {preset.embedding_model && (
+                    <div className={styles.presetRow}>
+                      <span className={styles.presetLabel}>Embedding (RAG)</span>
+                      <span className={styles.presetValue}>{preset.embedding_model}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isCustom && (
+                <>
+                  <Input
+                    label="Base URL"
+                    value={currentForm.base_url}
+                    onChange={(event) => updateField("base_url", event.target.value)}
+                    disabled={!canEdit}
+                  />
+                  <Input
+                    label="Modelo de chat"
+                    value={currentForm.chat_model}
+                    onChange={(event) => updateField("chat_model", event.target.value)}
+                    disabled={!canEdit}
+                  />
+                  <Input
+                    label="Modelo de embedding (RAG)"
+                    value={currentForm.embedding_model}
+                    onChange={(event) => updateField("embedding_model", event.target.value)}
+                    disabled={!canEdit}
+                    hint="Usado para busca semântica."
+                  />
+                </>
               )}
             </div>
           </article>
