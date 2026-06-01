@@ -18,10 +18,10 @@ function stateLabel(state) {
   return map[state] || state || "Desconhecido";
 }
 
-function stateClass(state) {
-  if (state === "open") return styles.stateOpen;
-  if (state === "connecting") return styles.stateConnecting;
-  return styles.stateClosed;
+function qrImageSrc(base64) {
+  if (!base64) return "";
+  const raw = String(base64);
+  return raw.startsWith("data:") ? raw : `data:image/png;base64,${raw}`;
 }
 
 export default function WhatsappSettingsPanel() {
@@ -109,7 +109,7 @@ export default function WhatsappSettingsPanel() {
               ) : qrPayload?.base64 ? (
                 <img
                   className={styles.qrImage}
-                  src={`data:image/png;base64,${qrPayload.base64}`}
+                  src={qrImageSrc(qrPayload.base64)}
                   alt="QR Code WhatsApp"
                 />
               ) : qrPayload?.pairingCode ? (
