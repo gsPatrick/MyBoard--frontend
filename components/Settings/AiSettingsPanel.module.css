@@ -19,24 +19,67 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.providerHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: var(--space-3);
 }
 
+.statusBadge {
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.statusOn {
+  background: color-mix(in srgb, #2f9e44 16%, transparent);
+  color: #2f9e44;
+}
+
+.statusOff {
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  color: var(--text-muted);
+}
+
 .maskedKey {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: 12px;
   font-family: var(--font-mono, monospace);
   color: var(--text-muted);
 }
 
+.hintBanner {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, #fab005 10%, var(--background-1));
+  border: 1px solid color-mix(in srgb, #fab005 22%, var(--border-default));
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
 .statusOk {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: 13px;
   color: var(--status-success, #2f9e44);
 }
 
 .statusError {
-  margin-top: var(--space-2);
+  margin-top: var(--space-3);
   font-size: 13px;
   color: var(--status-danger, #e03131);
+}
+
+.fields a {
+  color: var(--accent, #228be6);
+  text-decoration: underline;
 }

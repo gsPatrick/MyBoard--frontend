@@ -1,0 +1,90 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 10px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--background-1);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.tab:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--provider-accent, #228be6) 40%, var(--border-default));
+  color: var(--text-primary);
+}
+
+.tabActive {
+  border-color: color-mix(in srgb, var(--provider-accent, #228be6) 55%, var(--border-default));
+  background: color-mix(in srgb, var(--provider-accent, #228be6) 10%, var(--background-1));
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--provider-accent, #228be6) 18%, transparent);
+}
+
+.tab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.iconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  color: var(--provider-accent, var(--text-primary));
+}
+
+.iconWrap svg {
+  width: 28px;
+  height: 28px;
+}
+
+.tabText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.tabText strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tabText small {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.activeDot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--provider-accent, #228be6);
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

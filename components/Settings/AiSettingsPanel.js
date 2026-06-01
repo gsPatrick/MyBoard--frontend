@@ -1,47 +1,45 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import { getWorkspaceSettings, testAiConnection, updateAiSettings } from "@/api/settings";
 import { getStoredUser } from "@/api/client";
+import {
+  AI_PROVIDER_IDS,
+  AI_PROVIDER_PRESETS,
+  buildEmptyProviderForms,
+  mapAiSettingsToState,
+} from "@/lib/aiProviders";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import AiProviderTabs from "./AiProviderTabs";
 import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";
 import styles from "./AiSettingsPanel.module.css";
-
-const DEFAULT_FORM = {
-  openrouter_api_key: "",
-  base_url: "https://openrouter.ai/api/v1",
-  chat_model: "openai/gpt-4o-mini",
-  embedding_model: "openai/text-embedding-3-small",
-};
 
 export default function AiSettingsPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [status, setStatus] = useState(null);
-  const [meta, setMeta] = useState({ configured: false, api_key_masked: null, has_api_key: false });
-  const [form, setForm] = useState(DEFAULT_FORM);
+  const [activeProvider, setActiveProvider] = useState("gpt");
+  const [forms, setForms] = useState(buildEmptyProviderForms());
+  const [meta, setMeta] = useState({});
+  const [configured, setConfigured] = useState(false);
 
   const canEdit = ["admin", "developer"].includes(getStoredUser()?.role);
+  const providerList = useMemo(() => AI_PROVIDER_IDS.map((id) => AI_PROVIDER_PRESETS[id]), []);
+  const preset = AI_PROVIDER_PRESETS[activeProvider];
+  const activeMeta = meta[activeProvider] || {};
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const data = await getWorkspaceSettings();
-      const ai = data?.ai || {};
-      setMeta({
-        configured: Boolean(ai.configured),
-        api_key_masked: ai.api_key_masked,
-        has_api_key: Boolean(ai.has_api_key),
-      });
-      setForm({
-        openrouter_api_key: "",
-        base_url: ai.base_url || DEFAULT_FORM.base_url,
-        chat_model: ai.chat_model || DEFAULT_FORM.chat_model,
-        embedding_model: ai.embedding_model || DEFAULT_FORM.embedding_model,
-      });
+      const mapped = mapAiSettingsToState(data?.ai || {});
+      setActiveProvider(mapped.activeProvider);
+      setForms(mapped.forms);
+      setMeta(mapped.meta);
+      setConfigured(mapped.configured);
     } catch (error) {
       showErrorToast(error.message || "Não foi possível carregar configurações de IA.");
     } finally {
@@ -54,35 +52,68 @@ export default function AiSettingsPanel() {
   }, [load]);
 
   function updateField(field, value) {
-    setForm((current) => ({ ...current, [field]: value }));
+    setForms((current) => ({
+      ...current,
+      [activeProvider]: {
+        ...current[activeProvider],
+        [field]: value,
+      },
+    }));
   }
 
   async function handleSave(event) {
     event.preventDefault();
     if (!canEdit) return;
 
+    const current = forms[activeProvider];
     setSaving(true);
+
     try {
       const payload = {
-        base_url: form.base_url,
-        chat_model: form.chat_model,
-        embedding_model: form.embedding_model,
+        active_provider: activeProvider,
+        provider: activeProvider,
+        base_url: current.base_url,
+        chat_model: current.chat_model,
+        embedding_model: current.embedding_model || null,
       };
 
-      if (form.openrouter_api_key.trim()) {
-        payload.openrouter_api_key = form.openrouter_api_key.trim();
+      if (current.api_key.trim()) {
+        payload.api_key = current.api_key.trim();
       }
 
       const updated = await updateAiSettings(payload);
-      setMeta({
-        configured: Boolean(updated?.configured),
-        api_key_masked: updated?.api_key_masked,
-        has_api_key: Boolean(updated?.has_api_key),
-      });
-      setForm((current) => ({ ...current, openrouter_api_key: "" }));
-      showSuccessToast("Configurações de IA salvas.");
+      const mapped = mapAiSettingsToState(updated);
+      setActiveProvider(mapped.activeProvider);
+      setForms((prev) => ({
+        ...mapped.forms,
+        [activeProvider]: {
+          ...mapped.forms[activeProvider],
+          api_key: "",
+        },
+      }));
+      setMeta(mapped.meta);
+      setConfigured(mapped.configured);
+      showSuccessToast(`${preset.label} salvo como provedor ativo.`);
     } catch (error) {
       showErrorToast(error.message || "Falha ao salvar configurações de IA.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleActivateOnly() {
+    if (!canEdit || !activeMeta.has_api_key) return;
+
+    setSaving(true);
+    try {
+      const updated = await updateAiSettings({ active_provider: activeProvider, provider: activeProvider });
+      const mapped = mapAiSettingsToState(updated);
+      setActiveProvider(mapped.activeProvider);
+      setMeta(mapped.meta);
+      setConfigured(mapped.configured);
+      showSuccessToast(`${preset.label} agora é o provedor ativo.`);
+    } catch (error) {
+      showErrorToast(error.message || "Falha ao ativar provedor.");
     } finally {
       setSaving(false);
     }
@@ -94,7 +125,7 @@ export default function AiSettingsPanel() {
     try {
       const result = await testAiConnection();
       setStatus(result);
-      if (result?.ok) showSuccessToast("Conexão com a IA OK.");
+      if (result?.ok) showSuccessToast(result.message || "Conexão OK.");
       else showErrorToast(result?.message || "Falha na conexão.");
     } catch (error) {
       setStatus({ ok: false, message: error.message });
@@ -106,16 +137,18 @@ export default function AiSettingsPanel() {
 
   async function handleClearKey() {
     if (!canEdit) return;
-    if (!window.confirm("Remover a chave de API desta organização?")) return;
+    if (!window.confirm(`Remover a chave de ${preset.label}?`)) return;
 
     setSaving(true);
     try {
-      const updated = await updateAiSettings({ clear_api_key: true });
-      setMeta({
-        configured: Boolean(updated?.configured),
-        api_key_masked: updated?.api_key_masked,
-        has_api_key: Boolean(updated?.has_api_key),
+      const updated = await updateAiSettings({
+        provider: activeProvider,
+        clear_api_key: true,
       });
+      const mapped = mapAiSettingsToState(updated);
+      setForms(mapped.forms);
+      setMeta(mapped.meta);
+      setConfigured(mapped.configured);
       showSuccessToast("Chave removida.");
     } catch (error) {
       showErrorToast(error.message || "Falha ao remover chave.");
@@ -124,10 +157,12 @@ export default function AiSettingsPanel() {
     }
   }
 
+  const currentForm = forms[activeProvider];
+
   return (
     <SettingsPanelShell
       title="IA"
-      hint="Conexão com OpenRouter para Bordie, embeddings e extração de fatos."
+      hint="Escolha o provedor, cole o token e o Bordie usa essa IA na organização."
       action={
         canEdit ? (
           <div className={styles.actions}>
@@ -142,64 +177,104 @@ export default function AiSettingsPanel() {
         <p className={settingsPanelStyles.muted}>Carregando…</p>
       ) : (
         <form className={styles.form} onSubmit={handleSave}>
+          <AiProviderTabs
+            providers={providerList}
+            activeId={activeProvider}
+            meta={meta}
+            disabled={!canEdit || saving}
+            onChange={setActiveProvider}
+          />
+
           <article className={settingsPanelStyles.card}>
-            <h3 className={settingsPanelStyles.cardTitle}>Status da conexão</h3>
-            <p className={settingsPanelStyles.cardText}>
-              {meta.configured
-                ? "IA configurada para esta organização."
-                : "Nenhuma chave salva — usando fallback do servidor, se existir."}
-            </p>
-            {meta.api_key_masked && (
-              <p className={styles.maskedKey}>Chave atual: {meta.api_key_masked}</p>
+            <div className={styles.providerHeader}>
+              <div>
+                <h3 className={settingsPanelStyles.cardTitle}>{preset.label}</h3>
+                <p className={settingsPanelStyles.cardText}>{preset.description}</p>
+              </div>
+              <span
+                className={`${styles.statusBadge} ${activeMeta.has_api_key ? styles.statusOn : styles.statusOff}`}
+              >
+                {activeMeta.has_api_key ? "Conectado" : "Sem chave"}
+              </span>
+            </div>
+
+            {activeMeta.api_key_masked && (
+              <p className={styles.maskedKey}>Chave salva: {activeMeta.api_key_masked}</p>
             )}
+
             {status && (
               <p className={status.ok ? styles.statusOk : styles.statusError}>{status.message}</p>
+            )}
+
+            {!configured && (
+              <p className={styles.hintBanner}>
+                Nenhum provedor ativo com chave — o servidor usa fallback de ambiente, se existir.
+              </p>
             )}
           </article>
 
           <article className={settingsPanelStyles.card}>
-            <h3 className={settingsPanelStyles.cardTitle}>OpenRouter</h3>
+            <h3 className={settingsPanelStyles.cardTitle}>Credenciais</h3>
             <div className={styles.fields}>
               <Input
                 label="Token / API Key"
                 type="password"
-                placeholder={meta.has_api_key ? "••••••••••••••••" : "sk-or-v1-..."}
-                value={form.openrouter_api_key}
-                onChange={(event) => updateField("openrouter_api_key", event.target.value)}
+                placeholder={activeMeta.has_api_key ? "••••••••••••••••" : preset.key_hint}
+                value={currentForm.api_key}
+                onChange={(event) => updateField("api_key", event.target.value)}
                 disabled={!canEdit}
-                hint="Obtenha em openrouter.ai/keys. Fica salvo por organização."
+                hint={
+                  preset.docs_url ? (
+                    <>
+                      Obtenha em{" "}
+                      <a href={preset.docs_url} target="_blank" rel="noreferrer">
+                        {preset.docs_url.replace(/^https?:\/\//, "")}
+                      </a>
+                    </>
+                  ) : (
+                    "Cole o token exportado pelo agente CLI ou gateway OpenAI-compatível."
+                  )
+                }
                 autoComplete="off"
               />
               <Input
                 label="Base URL"
-                value={form.base_url}
+                value={currentForm.base_url}
                 onChange={(event) => updateField("base_url", event.target.value)}
                 disabled={!canEdit}
               />
               <Input
                 label="Modelo de chat"
-                value={form.chat_model}
+                value={currentForm.chat_model}
                 onChange={(event) => updateField("chat_model", event.target.value)}
                 disabled={!canEdit}
               />
-              <Input
-                label="Modelo de embedding"
-                value={form.embedding_model}
-                onChange={(event) => updateField("embedding_model", event.target.value)}
-                disabled={!canEdit}
-              />
+              {activeProvider !== "claude" && (
+                <Input
+                  label="Modelo de embedding (RAG)"
+                  value={currentForm.embedding_model}
+                  onChange={(event) => updateField("embedding_model", event.target.value)}
+                  disabled={!canEdit}
+                  hint="Usado para busca semântica. Deixe vazio para usar o padrão do provedor."
+                />
+              )}
             </div>
           </article>
 
           {canEdit ? (
             <div className={styles.footer}>
-              {meta.has_api_key && (
+              {activeMeta.has_api_key && (
                 <Button type="button" variant="ghost" size="sm" onClick={handleClearKey} disabled={saving}>
                   Remover chave
                 </Button>
               )}
+              {activeMeta.has_api_key && (
+                <Button type="button" variant="secondary" size="sm" onClick={handleActivateOnly} disabled={saving}>
+                  Usar este provedor
+                </Button>
+              )}
               <Button type="submit" size="sm" disabled={saving}>
-                {saving ? "Salvando…" : "Salvar IA"}
+                {saving ? "Salvando…" : "Salvar e ativar"}
               </Button>
             </div>
           ) : (
