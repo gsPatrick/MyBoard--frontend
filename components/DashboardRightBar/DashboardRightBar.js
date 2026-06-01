@@ -14,6 +14,7 @@ import { formatRelativeTime, getDateFromApi } from "@/lib/formatRelativeTime";
 import { getNotificationPresentation } from "@/lib/notificationPresentation";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { useDashboardTab } from "@/context/DashboardTabContext";
+import { useDashboardLayout } from "@/context/DashboardLayoutContext";
 import styles from "./DashboardRightBar.module.css";
 
 function NotificationIcon({ type }) {
@@ -62,8 +63,10 @@ function NotificationIcon({ type }) {
   );
 }
 
-export default function DashboardRightBar() {
+export default function DashboardRightBar({ compact = false }) {
   const { selectClient } = useDashboardNav();
+  const { setActiveTab } = useDashboardTab();
+  const { rightPanelSections } = useDashboardLayout();
   const [notifications, setNotifications] = useState([]);
   const [activities, setActivities] = useState([]);
   const [clients, setClients] = useState([]);
@@ -109,12 +112,70 @@ export default function DashboardRightBar() {
   }
 
   const showActivityLine = activities.length > 1;
+  const latestActivity = activities[0];
+
+  if (compact) {
+    return (
+      <aside
+        className={`${styles.rightBar} ${styles.rightBarCompact}`}
+        data-tour="sidebar-right"
+        aria-label="Painel direito compacto"
+      >
+        {rightPanelSections.notifications && (
+          <button
+            type="button"
+            className={styles.compactFeedBtn}
+            title={`Notificações${notifications.length ? ` (${notifications.length})` : ""}`}
+            onClick={() => setActiveTab("central")}
+          >
+            <span className={styles.compactIconWrap}>
+              <NotificationIcon type="alert" />
+            </span>
+            {!loadingNotifications && notifications.length > 0 && (
+              <span className={styles.compactBadge}>{notifications.length}</span>
+            )}
+          </button>
+        )}
+
+        {rightPanelSections.activities && latestActivity && (
+          <div className={styles.compactActivity} title={latestActivity.title}>
+            <Avatar
+              src={getUserAvatarUrl(latestActivity.user)}
+              name={latestActivity.user?.name || "Você"}
+              size="sm"
+            />
+          </div>
+        )}
+
+        {rightPanelSections.clients && (
+          <div className={styles.compactClients}>
+            {loadingClients ? (
+              <span className={styles.compactClientSkeleton} />
+            ) : (
+              clients.slice(0, 5).map((client) => (
+                <button
+                  key={client.id}
+                  type="button"
+                  className={styles.compactClientBtn}
+                  title={client.name}
+                  onClick={() => handleClientClick(client)}
+                >
+                  <Avatar src={getClientAvatarUrl(client)} name={client.name} size="sm" />
+                </button>
+              ))
+            )}
+          </div>
+        )}
+      </aside>
+    );
+  }
 
   return (
     <aside className={styles.rightBar} data-tour="sidebar-right">
+      {rightPanelSections.notifications && (
       <section className={styles.block}>
         <h2 className={styles.title}>
-          Notifications
+          Notificações
           {!loadingNotifications && notifications.length > 0 && (
             <span className={styles.count}>{notifications.length}</span>
           )}
@@ -144,10 +205,12 @@ export default function DashboardRightBar() {
             );
           })}
       </section>
+      )}
 
+      {rightPanelSections.activities && (
       <section className={`${styles.block} ${styles.activities}`}>
         <h2 className={styles.title}>
-          Activities
+          Atividades
           {!loadingActivities && activities.length > 0 && (
             <span className={styles.count}>{activities.length}</span>
           )}
@@ -182,7 +245,9 @@ export default function DashboardRightBar() {
           </div>
         )}
       </section>
+      )}
 
+      {rightPanelSections.clients && (
       <section className={`${styles.block} ${styles.contactsBlock}`}>
         <h2 className={styles.title}>
           Clientes
@@ -229,6 +294,7 @@ export default function DashboardRightBar() {
           </div>
         )}
       </section>
+      )}
     </aside>
   );
 }

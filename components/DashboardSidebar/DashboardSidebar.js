@@ -172,7 +172,7 @@ function LogoutIcon() {
   );
 }
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ compact = false }) {
   const router = useRouter();
   const { selectedProjectId, selectProject } = useDashboardNav();
   const { isLoggingOut, logoutAnimated } = useAnimatedLogout();
@@ -298,6 +298,101 @@ export default function DashboardSidebar() {
   const profileName = user?.name || "Usuário";
   const rootFolderDrop = dnd.getRootDropProps("folders");
   const rootProjectDrop = dnd.getRootDropProps("projects");
+
+  if (compact) {
+    return (
+      <>
+        <LogoutOverlay visible={isLoggingOut} />
+
+        <aside
+          className={`${styles.sidebar} ${styles.sidebarCompact}`}
+          data-tour="sidebar-left"
+          aria-label="Menu lateral compacto"
+        >
+          <div className={styles.compactProfile}>
+            <Avatar
+              src={getUserAvatarUrl(user)}
+              name={profileName}
+              alt={profileName}
+              size="sm"
+            />
+          </div>
+
+          <div className={styles.compactStack}>
+            {loading ? (
+              <span className={styles.compactSkeleton} />
+            ) : (
+              recentItems.slice(0, 5).map((item) => {
+                const fullProject = projectsById.get(item.id);
+                const client = fullProject?.client || item.client;
+                const avatarName = client?.name || item.name;
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`${styles.compactItem} ${
+                      selectedProjectId === item.id ? styles.compactItemActive : ""
+                    }`}
+                    title={item.name}
+                    onClick={() =>
+                      handleSelectProject(
+                        fullProject || {
+                          id: item.id,
+                          name: item.name,
+                          slug: item.slug,
+                          folder_id: item.folder_id,
+                          client,
+                        }
+                      )
+                    }
+                  >
+                    <Avatar
+                      src={getClientAvatarUrl(client)}
+                      name={avatarName}
+                      size="sm"
+                    />
+                  </button>
+                );
+              })
+            )}
+          </div>
+
+          <div className={styles.compactFooter}>
+            <button
+              type="button"
+              className={styles.compactIconBtn}
+              title="Nova pasta"
+              onClick={() => openNewFolderModal(null)}
+            >
+              <span aria-hidden="true">+</span>
+            </button>
+            <button
+              type="button"
+              className={styles.compactIconBtn}
+              title={isLoggingOut ? "Saindo..." : "Sair da conta"}
+              onClick={logoutAnimated}
+              disabled={isLoggingOut}
+            >
+              <LogoutIcon />
+            </button>
+          </div>
+        </aside>
+
+        <NewFolderModal
+          isOpen={folderModalOpen}
+          onClose={() => setFolderModalOpen(false)}
+          parentId={newFolderParentId}
+        />
+
+        <FolderProjectsModal
+          isOpen={Boolean(manageFolder)}
+          folder={manageFolder}
+          onClose={() => setManageFolder(null)}
+        />
+      </>
+    );
+  }
 
   return (
     <>

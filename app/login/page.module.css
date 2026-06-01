@@ -48,25 +48,6 @@
   box-shadow: var(--shadow-md);
 }
 
-.mobileBrand {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: var(--space-6);
-  color: var(--text-primary);
-  width: fit-content;
-}
-
-.mobileBrand:hover {
-  opacity: 0.85;
-}
-
-.brandLogo {
-  display: block;
-  height: clamp(48px, 5vw, 58px);
-  width: auto;
-}
-
 .stagger1 {
   animation: fadeUp 0.55s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -256,10 +237,6 @@
 @media (max-width: 900px) {
   .page {
     grid-template-columns: 1fr;
-  }
-
-  .mobileBrand {
-    display: flex;
   }
 
   .panel {

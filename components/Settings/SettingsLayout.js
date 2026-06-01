@@ -20,7 +20,7 @@ export default function SettingsLayout({
           )}
           <h1 className={styles.title}>Configurações</h1>
           <p className={styles.subtitle}>
-            Conta, MyWallet, atalhos e preferências do workspace.
+            Conta, layout, MyWallet, atalhos e preferências do workspace.
           </p>
         </div>
       </header>

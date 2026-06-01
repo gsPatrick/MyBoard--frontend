@@ -1,11 +1,20 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  THEME_PREFERENCE,
+  normalizeThemePreference,
+  resolveThemePreference,
+} from "@/lib/interfacePreferences";
+
+const STORAGE_KEY = "snowui-theme";
 
 const ThemeContext = createContext({
   theme: "light",
+  themePreference: THEME_PREFERENCE.LIGHT,
   toggleTheme: () => {},
   setTheme: () => {},
+  setThemePreference: () => {},
 });
 
 export function useTheme() {
@@ -13,37 +22,75 @@ export function useTheme() {
 }
 
 export default function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState("light");
+  const [themePreference, setThemePreferenceState] = useState(THEME_PREFERENCE.LIGHT);
+  const [resolvedTheme, setResolvedTheme] = useState("light");
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem("snowui-theme");
-    const preferred =
-      stored ||
-      (window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light");
-    setThemeState(preferred);
-    setMounted(true);
+  const applyResolvedTheme = useCallback((preference) => {
+    const resolved = resolveThemePreference(preference);
+    setResolvedTheme(resolved);
+    document.documentElement.setAttribute("data-theme", resolved);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("snowui-theme", theme);
-  }, [theme, mounted]);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const preference = stored
+      ? normalizeThemePreference(stored)
+      : window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? THEME_PREFERENCE.DARK
+        : THEME_PREFERENCE.LIGHT;
 
-  const setTheme = (next) => setThemeState(next);
-  const toggleTheme = () =>
-    setThemeState((current) => (current === "light" ? "dark" : "light"));
+    setThemePreferenceState(preference);
+    applyResolvedTheme(preference);
+    setMounted(true);
+  }, [applyResolvedTheme]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    localStorage.setItem(STORAGE_KEY, themePreference);
+    applyResolvedTheme(themePreference);
+  }, [themePreference, mounted, applyResolvedTheme]);
+
+  useEffect(() => {
+    if (!mounted || themePreference !== THEME_PREFERENCE.SYSTEM) return undefined;
+
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function handleChange() {
+      applyResolvedTheme(THEME_PREFERENCE.SYSTEM);
+    }
+
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, [themePreference, mounted, applyResolvedTheme]);
+
+  const setThemePreference = useCallback((next) => {
+    setThemePreferenceState(normalizeThemePreference(next));
+  }, []);
+
+  const setTheme = setThemePreference;
+
+  const toggleTheme = useCallback(() => {
+    setThemePreferenceState((current) => {
+      const resolved = resolveThemePreference(current);
+      return resolved === "light" ? THEME_PREFERENCE.DARK : THEME_PREFERENCE.LIGHT;
+    });
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      theme: resolvedTheme,
+      themePreference,
+      toggleTheme,
+      setTheme,
+      setThemePreference,
+    }),
+    [resolvedTheme, themePreference, toggleTheme, setTheme, setThemePreference]
+  );
 
   if (!mounted) {
     return null;
   }
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

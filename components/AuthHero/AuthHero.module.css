@@ -17,25 +17,18 @@
   gap: clamp(24px, 4vw, 40px);
 }
 
-.brand {
-  display: inline-flex;
+.logoWrap {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 17px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  width: fit-content;
+  justify-content: center;
+  width: 100%;
+  padding: clamp(16px, 3vw, 32px) 0;
 }
 
-.brand:hover {
-  opacity: 0.85;
-}
-
-.brandLogo {
+.heroLogo {
   display: block;
-  height: clamp(52px, 5.5vw, 64px);
-  width: auto;
+  width: min(100%, 320px);
+  height: auto;
 }
 
 .eyebrow {

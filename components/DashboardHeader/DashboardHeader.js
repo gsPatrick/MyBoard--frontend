@@ -5,6 +5,8 @@ import IconButton from "@/components/IconButton/IconButton";
 import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
 import NotificationsDropdown from "@/components/NotificationsDropdown/NotificationsDropdown";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
+import { useBordieChat } from "@/context/BordieChatContext";
+import { SIDEBAR_MODE } from "@/lib/sidebarLayout";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { DASHBOARD_TABS, useDashboardTab } from "@/context/DashboardTabContext";
 import { useKeyboardShortcuts } from "@/context/KeyboardShortcutsContext";
@@ -96,14 +98,17 @@ function SearchIcon() {
 
 export default function DashboardHeader() {
   const {
-    leftSidebarOpen,
-    rightSidebarOpen,
+    leftSidebarMode,
+    rightSidebarMode,
+    leftSidebarExpanded,
+    rightSidebarExpanded,
     toggleLeftSidebar,
     toggleRightSidebar,
     isRefreshing,
     refreshAll,
     openSearch,
   } = useDashboardLayout();
+  const { bordieOpen, toggleBordie } = useBordieChat();
   const { activeTab, setActiveTab } = useDashboardTab();
   const { selectedProject, selectedClient } = useDashboardNav();
   const { bindings } = useKeyboardShortcuts();
@@ -135,15 +140,29 @@ export default function DashboardHeader() {
       <div className={styles.left}>
         <div className={styles.iconGroup}>
           <IconButton
-            label={leftSidebarOpen ? "Ocultar menu lateral" : "Mostrar menu lateral"}
+            label={
+              leftSidebarExpanded
+                ? "Recolher menu lateral"
+                : leftSidebarMode === SIDEBAR_MODE.COMPACT
+                  ? "Expandir menu lateral"
+                  : "Mostrar menu lateral"
+            }
             size="sm"
             variant="ghost"
             onClick={toggleLeftSidebar}
-            aria-pressed={leftSidebarOpen}
+            aria-pressed={leftSidebarExpanded}
           >
             <SidebarIcon />
           </IconButton>
-          <IconButton label="Favoritar" size="sm" variant="ghost">
+          <IconButton
+            label={bordieOpen ? "Fechar Bordie.ia" : "Abrir Bordie.ia"}
+            size="sm"
+            variant="ghost"
+            className={bordieOpen ? styles.bordieActive : ""}
+            onClick={toggleBordie}
+            aria-pressed={bordieOpen}
+            data-tour="header-bordie"
+          >
             <StarIcon />
           </IconButton>
         </div>
@@ -212,11 +231,17 @@ export default function DashboardHeader() {
         <NotificationsDropdown />
 
         <IconButton
-          label={rightSidebarOpen ? "Ocultar painel direito" : "Mostrar painel direito"}
+          label={
+            rightSidebarExpanded
+              ? "Recolher painel direito"
+              : rightSidebarMode === SIDEBAR_MODE.COMPACT
+                ? "Expandir painel direito"
+                : "Mostrar painel direito"
+          }
           size="md"
           variant="ghost"
           onClick={toggleRightSidebar}
-          aria-pressed={rightSidebarOpen}
+          aria-pressed={rightSidebarExpanded}
         >
           <PanelIcon />
         </IconButton>

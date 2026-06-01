@@ -177,6 +177,101 @@
   white-space: nowrap;
 }
 
+.rightBarCompact {
+  align-items: center;
+  padding: var(--space-3) var(--space-2);
+  gap: var(--space-3);
+  overflow-y: auto;
+}
+
+.compactFeedBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.compactFeedBtn:hover {
+  background: var(--surface-muted);
+  color: var(--text-primary);
+}
+
+.compactIconWrap {
+  display: inline-flex;
+}
+
+.compactIconWrap svg {
+  width: 18px;
+  height: 18px;
+}
+
+.compactBadge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: var(--radius-full);
+  background: var(--secondary-indigo);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+}
+
+.compactActivity {
+  display: flex;
+  justify-content: center;
+}
+
+.compactClients {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 0;
+  overflow-y: auto;
+  width: 100%;
+  padding-top: var(--space-1);
+  border-top: 0.5px solid var(--border-default);
+}
+
+.compactClientBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.compactClientBtn:hover {
+  background: var(--surface-muted);
+}
+
+.compactClientSkeleton {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--surface-muted);
+}
+
 @media (max-width: 1200px) {
   .rightBar {
     display: none;

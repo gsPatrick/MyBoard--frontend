@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AccountSettingsPanel from "@/components/Settings/AccountSettingsPanel";
+import InterfaceSettingsPanel from "@/components/Settings/InterfaceSettingsPanel";
 import MyWalletSettingsPanel from "@/components/Settings/MyWalletSettingsPanel";
 import PrivacySettingsPanel from "@/components/Settings/PrivacySettingsPanel";
 import SettingsLayout from "@/components/Settings/SettingsLayout";
@@ -25,6 +26,7 @@ export default function ConfiguracoesView() {
         onBack={handleBack}
       >
         {activeSettingsTab === "account" && <AccountSettingsPanel />}
+        {activeSettingsTab === "interface" && <InterfaceSettingsPanel />}
         {activeSettingsTab === "mywallet" && <MyWalletSettingsPanel />}
         {activeSettingsTab === "shortcuts" && <ShortcutsSettingsPanel />}
         {activeSettingsTab === "privacy" && <PrivacySettingsPanel />}

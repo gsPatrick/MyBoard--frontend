@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
+import { useBordieChat } from "@/context/BordieChatContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { useDashboardTab } from "@/context/DashboardTabContext";
 import {
@@ -43,6 +44,7 @@ export function KeyboardShortcutsProvider({ children }) {
     toggleRightSidebar,
     refreshAll,
   } = useDashboardLayout();
+  const { openBordie } = useBordieChat();
 
   const [bindings, setBindingsState] = useState(() => getDefaultBindingsMap());
   const [hydrated, setHydrated] = useState(false);
@@ -157,6 +159,9 @@ export function KeyboardShortcutsProvider({ children }) {
         case "search.open":
           openSearch();
           break;
+        case "bordie.open":
+          openBordie();
+          break;
         case "nav.central":
           navigateToTab("central");
           break;
@@ -205,7 +210,7 @@ export function KeyboardShortcutsProvider({ children }) {
           break;
       }
     },
-    [navigateToTab, openSearch, toggleLeftSidebar, toggleRightSidebar, refreshAll]
+    [navigateToTab, openSearch, openBordie, toggleLeftSidebar, toggleRightSidebar, refreshAll]
   );
 
   useEffect(() => {

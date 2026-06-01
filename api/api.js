@@ -33,6 +33,10 @@ export const ENDPOINTS = {
   finance: `/${API_VERSION}/finance`,
   demands: `/${API_VERSION}/demands`,
   boards: `/${API_VERSION}/boards`,
+  bordie: {
+    chat: `/${API_VERSION}/bordie/chat`,
+    command: `/${API_VERSION}/bordie/command`,
+  },
   users: `/${API_VERSION}/users`,
   admin: {
     tenants: `/${API_VERSION}/admin/tenants`,

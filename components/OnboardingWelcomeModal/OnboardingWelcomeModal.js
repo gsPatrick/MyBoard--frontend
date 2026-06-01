@@ -66,6 +66,7 @@ export default function OnboardingWelcomeModal() {
     <div className={styles.overlay} role="presentation" onClick={dismiss}>
       <div
         className={styles.modal}
+        data-theme="light"
         role="dialog"
         aria-modal="true"
         aria-labelledby="welcome-title"

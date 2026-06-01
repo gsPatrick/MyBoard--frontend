@@ -131,10 +131,6 @@ export default function LoginPage() {
 
       <section className={`${styles.panel} ${mounted ? styles.panelMounted : ""}`}>
         <div className={styles.panelInner}>
-          <Link href="/" className={styles.mobileBrand}>
-            <img src="/myboardlogo.png" alt="MyBoard" className={styles.brandLogo} />
-          </Link>
-
           <LoginWelcomeBanner
             visible={showLogoutBanner}
             onDismiss={() => setShowLogoutBanner(false)}

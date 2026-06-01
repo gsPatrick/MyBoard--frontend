@@ -21,6 +21,11 @@
   gap: var(--space-2);
 }
 
+.bordieActive {
+  color: var(--secondary-indigo);
+  background: rgba(173, 173, 251, 0.14);
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;

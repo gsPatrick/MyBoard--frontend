@@ -1,6 +1,9 @@
 .dashboard {
   --sidebar-left-width: 212px;
+  --sidebar-left-compact-width: 52px;
   --sidebar-right-width: 280px;
+  --sidebar-right-compact-width: 52px;
+  --content-max-width: 1440px;
   --sidebar-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --sidebar-duration: 0.38s;
 
@@ -18,8 +21,31 @@
   --sidebar-left-width: 0px;
 }
 
+.leftCompact {
+  --sidebar-left-width: var(--sidebar-left-compact-width);
+}
+
 .rightClosed {
   --sidebar-right-width: 0px;
+}
+
+.rightCompact {
+  --sidebar-right-width: var(--sidebar-right-compact-width);
+}
+
+.contentFull {
+  --content-max-width: none;
+}
+
+.bordieDocked {
+  --sidebar-right-width: max(280px, 20vw);
+}
+
+.bordieDockRoot {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  overflow: hidden;
 }
 
 .leftClosed .leftSlot {
@@ -56,11 +82,22 @@
   height: 100%;
   width: 212px;
   opacity: 1;
-  transition: opacity calc(var(--sidebar-duration) * 0.85) var(--sidebar-ease);
+  overflow: hidden;
+  transition:
+    opacity calc(var(--sidebar-duration) * 0.85) var(--sidebar-ease),
+    width var(--sidebar-duration) var(--sidebar-ease);
 }
 
 .rightInner {
   width: 280px;
+}
+
+.leftCompact .leftInner {
+  width: var(--sidebar-left-compact-width);
+}
+
+.rightCompact .rightInner {
+  width: var(--sidebar-right-compact-width);
 }
 
 .leftClosed .leftInner {
@@ -91,7 +128,7 @@
   flex-direction: column;
   gap: 0;
   width: 100%;
-  max-width: 1440px;
+  max-width: var(--content-max-width);
   margin-inline: auto;
 }
 

@@ -11,23 +11,38 @@ import { useTheme } from "@/components/ThemeProvider/ThemeProvider";
 import { DashboardNavProvider } from "@/context/DashboardNavContext";
 import { DashboardTabProvider } from "@/context/DashboardTabContext";
 import { DashboardLayoutProvider, useDashboardLayout } from "@/context/DashboardLayoutContext";
+import { SIDEBAR_MODE } from "@/lib/sidebarLayout";
+import { CONTENT_WIDTH } from "@/lib/interfacePreferences";
 import { KeyboardShortcutsProvider } from "@/context/KeyboardShortcutsContext";
 import WorkspaceSearch from "@/components/WorkspaceSearch/WorkspaceSearch";
 import DailyFocusModal from "@/components/DailyFocusModal/DailyFocusModal";
 import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
 import OnboardingWelcomeModal from "@/components/OnboardingWelcomeModal/OnboardingWelcomeModal";
+import BordieChat from "@/components/BordieChat/BordieChat";
 import Toaster from "@/components/Toast/Toaster";
 import { OnboardingProvider } from "@/context/OnboardingContext";
+import { BordieChatProvider, useBordieChat } from "@/context/BordieChatContext";
 import { getToken } from "@/api/client";
 import styles from "./page.module.css";
 
 function DashboardShell() {
-  const { leftSidebarOpen, rightSidebarOpen } = useDashboardLayout();
+  const {
+    leftSidebarMode,
+    rightSidebarMode,
+    leftSidebarOpen,
+    rightSidebarOpen,
+    contentWidth,
+  } = useDashboardLayout();
+  const { bordieDocked } = useBordieChat();
 
   const layoutClass = [
     styles.dashboard,
-    !leftSidebarOpen && styles.leftClosed,
-    !rightSidebarOpen && styles.rightClosed,
+    leftSidebarMode === SIDEBAR_MODE.HIDDEN && styles.leftClosed,
+    leftSidebarMode === SIDEBAR_MODE.COMPACT && styles.leftCompact,
+    !bordieDocked && rightSidebarMode === SIDEBAR_MODE.HIDDEN && styles.rightClosed,
+    !bordieDocked && rightSidebarMode === SIDEBAR_MODE.COMPACT && styles.rightCompact,
+    bordieDocked && styles.bordieDocked,
+    contentWidth === CONTENT_WIDTH.FULL && styles.contentFull,
   ]
     .filter(Boolean)
     .join(" ");
@@ -41,7 +56,7 @@ function DashboardShell() {
           inert={!leftSidebarOpen ? true : undefined}
         >
           <div className={styles.leftInner}>
-            <DashboardSidebar />
+            <DashboardSidebar compact={leftSidebarMode === SIDEBAR_MODE.COMPACT} />
           </div>
         </aside>
 
@@ -55,15 +70,20 @@ function DashboardShell() {
 
         <aside
           className={styles.rightSlot}
-          aria-hidden={!rightSidebarOpen}
-          inert={!rightSidebarOpen ? true : undefined}
+          aria-hidden={!bordieDocked && !rightSidebarOpen}
+          inert={!bordieDocked && !rightSidebarOpen ? true : undefined}
         >
-          <div className={styles.rightInner}>
-            <DashboardRightBar />
-          </div>
+          {bordieDocked ? (
+            <div id="bordie-dock-root" className={styles.bordieDockRoot} />
+          ) : (
+            <div className={styles.rightInner}>
+              <DashboardRightBar compact={rightSidebarMode === SIDEBAR_MODE.COMPACT} />
+            </div>
+          )}
         </aside>
       </div>
       <WorkspaceSearch />
+      <BordieChat />
       <OnboardingTour />
       <OnboardingWelcomeModal />
       <DailyFocusModal />
@@ -92,11 +112,13 @@ export default function DashboardPage() {
     <DashboardTabProvider>
       <DashboardNavProvider>
         <DashboardLayoutProvider>
-          <KeyboardShortcutsProvider>
-            <OnboardingProvider>
-              <DashboardShell />
-            </OnboardingProvider>
-          </KeyboardShortcutsProvider>
+          <BordieChatProvider>
+            <KeyboardShortcutsProvider>
+              <OnboardingProvider>
+                <DashboardShell />
+              </OnboardingProvider>
+            </KeyboardShortcutsProvider>
+          </BordieChatProvider>
         </DashboardLayoutProvider>
       </DashboardNavProvider>
     </DashboardTabProvider>
