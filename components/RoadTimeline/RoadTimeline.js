@@ -9,6 +9,7 @@ import { normalizeListResponse } from "@/lib/apiList";
 import { buildIsoRangeQuery, getWeekRange } from "@/lib/agendaDates";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { isPastDateKey } from "@/lib/agendaDates";
 import { getWeekDays, isProjectOverdue, toDateKey } from "@/lib/roadTimelineDates";
 import { buildTimelineItems, TIMELINE_ITEM_TYPES } from "@/lib/timelineFeed";
 import { useDashboardNav } from "@/context/DashboardNavContext";
@@ -199,11 +200,13 @@ export default function RoadTimeline() {
       </div>
 
       <div className={styles.calendar}>
-        {weekDays.map((day) => (
+        {weekDays.map((day) => {
+          const isPastDay = isPastDateKey(day.dateKey);
+          return (
           <button
             key={day.dateKey}
             type="button"
-            className={`${styles.day} ${selectedDateKey === day.dateKey ? styles.dayActive : ""}`}
+            className={`${styles.day} ${selectedDateKey === day.dateKey ? styles.dayActive : ""} ${isPastDay && selectedDateKey !== day.dateKey ? styles.dayPast : ""}`}
             onClick={() => setSelectedDateKey(day.dateKey)}
             aria-pressed={selectedDateKey === day.dateKey}
             aria-label={`${day.label} ${day.day}`}
@@ -211,7 +214,8 @@ export default function RoadTimeline() {
             <span className={styles.dayLabel}>{day.label}</span>
             <span className={styles.dayNumber}>{day.day}</span>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       <div

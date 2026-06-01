@@ -54,8 +54,16 @@
   color: #ffffff;
 }
 
+[data-theme="light"] .statusText {
+  color: var(--text-primary);
+}
+
 .separator {
   color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="light"] .separator {
+  color: var(--text-muted);
 }
 
 .percent {

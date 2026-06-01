@@ -1,0 +1,10 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.cardMuted {
+  background: color-mix(in srgb, var(--surface-muted) 80%, var(--background-1));
+  border-style: dashed;
+}

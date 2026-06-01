@@ -5,12 +5,6 @@
   pointer-events: auto;
 }
 
-:global(html.onboarding-active),
-:global(body.onboarding-active) {
-  overflow: hidden !important;
-  overscroll-behavior: none;
-}
-
 .rootInteractive {
   pointer-events: none;
 }
@@ -254,16 +248,6 @@
   .spotlightInteractive {
     animation: none;
   }
-}
-
-:global(.onboarding-highlight-target) {
-  position: relative;
-  z-index: 1201 !important;
-}
-
-.rootInteractive :global(.onboarding-highlight-target),
-.rootInteractive :global(.onboarding-highlight-target) * {
-  pointer-events: auto;
 }
 
 @keyframes spotlightPulse {

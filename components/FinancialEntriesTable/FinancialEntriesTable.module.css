@@ -1,6 +1,6 @@
 .table {
   display: grid;
-  grid-template-columns: minmax(200px, 1.4fr) minmax(100px, 1fr) 1fr 1fr minmax(120px, 1fr);
+  grid-template-columns: minmax(180px, 1.3fr) 1.1fr minmax(120px, 0.9fr) minmax(100px, 0.8fr) minmax(110px, 0.9fr);
   width: 100%;
   overflow-x: auto;
 }
@@ -23,8 +23,9 @@
 }
 
 .cell,
-.cellManager,
-.cellStatus {
+.cellTitleCol,
+.cellChip,
+.cellAmount {
   display: flex;
   align-items: center;
   min-height: 44px;
@@ -32,13 +33,13 @@
   font-size: 12px;
   line-height: 16px;
   color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.cellManager {
-  gap: var(--space-2);
+.cellTitleCol {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
 }
 
 .rowButton {
@@ -51,18 +52,15 @@
   transition: background var(--transition-fast);
 }
 
-.rowButton:hover {
+.rowButton:hover:not(:disabled) {
   background: var(--surface-muted);
 }
 
-.nameBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+.rowButton:disabled {
+  cursor: default;
 }
 
-.projectName {
+.entryTitle {
   font-size: 13px;
   line-height: 18px;
   font-weight: 500;
@@ -70,57 +68,36 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 100%;
 }
 
-.clientName {
+.entrySub {
   font-size: 11px;
   line-height: 14px;
   color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 100%;
 }
 
-.cellValue {
-  font-variant-numeric: tabular-nums;
-}
-
-.valueInline {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  min-width: 0;
-  font-size: 12px;
-  line-height: 16px;
-  color: var(--text-primary);
-}
-
-.valueTotal {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.valueReceived {
-  font-weight: 600;
-  color: var(--secondary-green);
-}
-
-.valueSep {
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.valueEmpty {
-  color: var(--text-muted);
-}
-
-.cellStatus {
+.cellChip {
   padding-left: var(--space-2);
-  overflow: visible;
 }
 
-.statusCol {
-  overflow: visible;
+.cellAmount {
+  gap: var(--space-2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.amountDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
 }
 
 .empty {
@@ -130,7 +107,7 @@
   color: var(--text-muted);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .table {
     grid-template-columns: 1fr;
   }

@@ -37,7 +37,7 @@ export default function ClientesView() {
   }, [load]);
 
   return (
-    <section className={styles.card}>
+    <section className={styles.card} data-tour="clientes-view">
       <div className={styles.header}>
         <h2 className={styles.title}>Todos os clientes</h2>
         <span className={styles.count}>

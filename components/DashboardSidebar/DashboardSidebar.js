@@ -8,7 +8,7 @@ import { useAnimatedLogout } from "@/hooks/useAnimatedLogout";
 import { LogoutOverlay } from "@/components/AuthTransition/AuthTransition";
 import { groupProjectsByFolder, isHighPriority } from "@/lib/workspaceSidebar";
 import { normalizeListResponse } from "@/lib/apiList";
-import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { getClientAvatarUrl, getUserAvatarUrl } from "@/lib/mediaUrl";
 import { getStoredUser, getToken } from "@/api/client";
 import { getWorkspaceTree } from "@/api/folders";
 import { listProjects } from "@/api/projects";
@@ -176,7 +176,7 @@ export default function DashboardSidebar() {
   const router = useRouter();
   const { selectedProjectId, selectProject } = useDashboardNav();
   const { isLoggingOut, logoutAnimated } = useAnimatedLogout();
-  const user = getStoredUser();
+  const [user, setUser] = useState(() => getStoredUser());
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -253,14 +253,20 @@ export default function DashboardSidebar() {
       setRecentItems(enrichRecentProjects(getRecentProjects(), allProjects));
     }
 
+    function onUserUpdated() {
+      setUser(getStoredUser());
+    }
+
     window.addEventListener("myboard:workspace-refresh", onRefresh);
     window.addEventListener("myboard:recent-updated", onRecentUpdated);
     window.addEventListener("myboard:tenant-changed", onRefresh);
+    window.addEventListener("myboard:user-updated", onUserUpdated);
 
     return () => {
       window.removeEventListener("myboard:workspace-refresh", onRefresh);
       window.removeEventListener("myboard:recent-updated", onRecentUpdated);
       window.removeEventListener("myboard:tenant-changed", onRefresh);
+      window.removeEventListener("myboard:user-updated", onUserUpdated);
     };
   }, [loadSidebarData, allProjects]);
 
@@ -299,6 +305,12 @@ export default function DashboardSidebar() {
 
       <aside className={`${styles.sidebar} ${dnd.saving ? styles.sidebarSaving : ""}`} data-tour="sidebar-left">
         <div className={styles.profile}>
+          <Avatar
+            src={getUserAvatarUrl(user)}
+            name={profileName}
+            alt={profileName}
+            size="sm"
+          />
           <span className={styles.profileName} title={profileName}>
             {profileName}
           </span>

@@ -9,6 +9,7 @@ import {
   formatBinding,
   getDefaultBinding,
 } from "@/lib/keyboardShortcuts";
+import SettingsPanelShell from "./SettingsPanelShell";
 import styles from "./ShortcutsSettingsPanel.module.css";
 
 export default function ShortcutsSettingsPanel() {
@@ -36,19 +37,15 @@ export default function ShortcutsSettingsPanel() {
   const recordingAction = SHORTCUT_ACTIONS.find((action) => action.id === recordingActionId);
 
   return (
-    <section className={styles.panel}>
-      <div className={styles.panelHeader}>
-        <div>
-          <h2 className={styles.panelTitle}>Atalhos de teclado</h2>
-          <p className={styles.panelHint}>
-            Use combinações com Ctrl/Cmd, Shift ou Alt. Pressione Esc para cancelar a gravação.
-          </p>
-        </div>
+    <SettingsPanelShell
+      title="Atalhos de teclado"
+      hint="Use combinações com Ctrl/Cmd, Shift ou Alt. Pressione Esc para cancelar a gravação."
+      action={
         <Button variant="secondary" size="sm" onClick={resetAllBindings}>
           Restaurar padrões
         </Button>
-      </div>
-
+      }
+    >
       {recordingAction && (
         <div className={styles.recordingBanner}>
           Gravando atalho para <strong>{recordingAction.label}</strong> — pressione a combinação
@@ -106,6 +103,6 @@ export default function ShortcutsSettingsPanel() {
           })}
         </div>
       ))}
-    </section>
+    </SettingsPanelShell>
   );
 }

@@ -1,25 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import AccountSettingsPanel from "@/components/Settings/AccountSettingsPanel";
+import MyWalletSettingsPanel from "@/components/Settings/MyWalletSettingsPanel";
+import PrivacySettingsPanel from "@/components/Settings/PrivacySettingsPanel";
 import SettingsLayout from "@/components/Settings/SettingsLayout";
 import ShortcutsSettingsPanel from "@/components/Settings/ShortcutsSettingsPanel";
 import { useDashboardTab } from "@/context/DashboardTabContext";
+import styles from "./ConfiguracoesView.module.css";
 
 export default function ConfiguracoesView() {
   const { setActiveTab } = useDashboardTab();
-  const [activeSettingsTab, setActiveSettingsTab] = useState("shortcuts");
+  const [activeSettingsTab, setActiveSettingsTab] = useState("account");
 
   function handleBack() {
     setActiveTab("central");
   }
 
   return (
-    <SettingsLayout
-      activeTab={activeSettingsTab}
-      onTabChange={setActiveSettingsTab}
-      onBack={handleBack}
-    >
-      {activeSettingsTab === "shortcuts" && <ShortcutsSettingsPanel />}
-    </SettingsLayout>
+    <div className={styles.wrap}>
+      <SettingsLayout
+        activeTab={activeSettingsTab}
+        onTabChange={setActiveSettingsTab}
+        onBack={handleBack}
+      >
+        {activeSettingsTab === "account" && <AccountSettingsPanel />}
+        {activeSettingsTab === "mywallet" && <MyWalletSettingsPanel />}
+        {activeSettingsTab === "shortcuts" && <ShortcutsSettingsPanel />}
+        {activeSettingsTab === "privacy" && <PrivacySettingsPanel />}
+      </SettingsLayout>
+    </div>
   );
 }

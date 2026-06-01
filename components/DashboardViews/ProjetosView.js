@@ -47,7 +47,7 @@ export default function ProjetosView() {
   }
 
   return (
-    <section className={styles.card}>
+    <section className={styles.card} data-tour="projetos-view">
       <div className={styles.header}>
         <h2 className={styles.title}>Todos os projetos</h2>
         <span className={styles.count}>

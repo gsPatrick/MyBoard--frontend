@@ -18,6 +18,7 @@ import {
   getEventsForDay,
   getScheduleTimeLabel,
   isAllDaySlotEvent,
+  getTodayDateKey,
   isPastDateKey,
   isPastHourSlot,
 } from "@/lib/agendaDates";
@@ -269,53 +270,77 @@ export default function AgendaCalendar({
 
   return (
     <div className={styles.weekView}>
-      <div className={styles.weekHeader}>
-        <div className={styles.timeGutter} />
-        {weekDays.map((day) => (
-          <div
-            key={day.dateKey}
-            className={`${styles.weekDayHeader} ${day.isToday ? styles.weekDayHeaderToday : ""}`}
-          >
-            <span className={styles.weekDayLabel}>{day.label}</span>
-            <span className={styles.weekDayNumber}>{day.day}</span>
+      <div className={styles.weekScroll}>
+        <div className={styles.weekStickyHead}>
+          <div className={styles.weekHeader}>
+            <div className={styles.timeGutter} />
+            {weekDays.map((day) => {
+              const isPastDay = isPastDateKey(day.dateKey);
+              return (
+                <div
+                  key={day.dateKey}
+                  className={`${styles.weekDayHeader} ${day.isToday ? styles.weekDayHeaderToday : ""} ${isPastDay ? styles.weekDayHeaderPast : ""}`}
+                >
+                  <span className={styles.weekDayLabel}>{day.label}</span>
+                  <span className={styles.weekDayNumber}>{day.day}</span>
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
 
-      <div className={styles.allDayRow}>
-        <div className={styles.allDayLabel}>Dia inteiro</div>
-        {weekDays.map((day) => (
-          <div
-            key={`all-${day.dateKey}`}
-            data-day-key={day.dateKey}
-            className={`${styles.allDayCell} ${day.isToday ? styles.allDayCellToday : ""}`}
-          >
-            {eventsByDay.get(day.dateKey)?.allDay.map((event) => (
-              <button
-                key={event.id}
-                type="button"
-                className={styles.allDayEventBtn}
-                onClick={() => onEventSelect?.(event)}
-              >
-                <EventChip event={event} compact />
-              </button>
-            ))}
+          <div className={styles.allDayRow}>
+            <div className={styles.allDayLabel}>Dia inteiro</div>
+            {weekDays.map((day) => {
+              const isPastDay = isPastDateKey(day.dateKey);
+              return (
+                <div
+                  key={`all-${day.dateKey}`}
+                  data-day-key={day.dateKey}
+                  className={`${styles.allDayCell} ${day.isToday ? styles.allDayCellToday : ""} ${isPastDay ? styles.allDayCellPast : ""}`}
+                >
+                  {eventsByDay.get(day.dateKey)?.allDay.map((event) => (
+                    <button
+                      key={event.id}
+                      type="button"
+                      className={styles.allDayEventBtn}
+                      onClick={() => onEventSelect?.(event)}
+                    >
+                      <EventChip event={event} compact />
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
+        </div>
 
-      <div className={styles.weekBody}>
+        <div className={styles.weekBody}>
         <div className={styles.timeColumn}>
-          {HOURS.map((hour) => (
-            <div key={hour} className={styles.timeLabel} style={{ height: AGENDA_HOUR_HEIGHT }}>
+          {HOURS.map((hour) => {
+            const todayInWeek = weekDays.some((day) => day.isToday);
+            const isPastTime = todayInWeek && isPastHourSlot(getTodayDateKey(), hour);
+
+            return (
+            <div
+              key={hour}
+              className={`${styles.timeLabel} ${isPastTime ? styles.timeLabelPast : ""}`}
+              style={{ height: AGENDA_HOUR_HEIGHT }}
+            >
               {String(hour).padStart(2, "0")}:00
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className={styles.weekGrid}>
-          {weekDays.map((day) => (
-            <div key={day.dateKey} data-day-key={day.dateKey} className={styles.dayColumn}>
+          {weekDays.map((day) => {
+            const isPastDay = isPastDateKey(day.dateKey);
+            return (
+            <div
+              key={day.dateKey}
+              data-day-key={day.dateKey}
+              className={`${styles.dayColumn} ${isPastDay ? styles.dayColumnPast : ""}`}
+            >
               {HOURS.map((hour) => {
                 const isPastSlot = isPastHourSlot(day.dateKey, hour);
 
@@ -349,7 +374,9 @@ export default function AgendaCalendar({
                 />
               ))}
             </div>
-          ))}
+            );
+          })}
+        </div>
         </div>
       </div>
     </div>

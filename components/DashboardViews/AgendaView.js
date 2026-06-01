@@ -285,7 +285,7 @@ export default function AgendaView() {
 
       <div className={styles.layout}>
         <aside className={styles.sidebar}>
-          <div className={styles.sidebarCard}>
+          <div className={`${styles.sidebarCard} ${styles.sidebarCardToday}`}>
             <p className={styles.sidebarTitle}>Hoje</p>
             <p className={styles.sidebarDate}>{formatDayLabel(todayKey)}</p>
             <div className={styles.sidebarList}>

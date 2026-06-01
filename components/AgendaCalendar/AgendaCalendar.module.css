@@ -1,16 +1,34 @@
 .weekView {
+  --agenda-time-col: 64px;
+  --agenda-day-cols: repeat(7, minmax(0, 1fr));
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
+  max-width: 1280px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   overflow: hidden;
   background: var(--background-2);
 }
 
+.weekScroll {
+  overflow: auto;
+  max-height: calc(100vh - 320px);
+  min-height: 640px;
+  scrollbar-gutter: stable;
+}
+
+.weekStickyHead {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  background: var(--background-1);
+}
+
 .weekHeader {
   display: grid;
-  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  grid-template-columns: var(--agenda-time-col) var(--agenda-day-cols);
   border-bottom: 1px solid var(--border-default);
   background: var(--background-1);
 }
@@ -36,6 +54,20 @@
   background: color-mix(in srgb, var(--primary) 10%, transparent);
 }
 
+.weekDayHeaderPast {
+  background: var(--surface-muted);
+}
+
+.weekDayHeaderPast .weekDayLabel,
+.weekDayHeaderPast .weekDayNumber {
+  color: var(--text-muted);
+}
+
+.weekDayHeaderPast .weekDayNumber {
+  text-decoration: line-through;
+  text-decoration-color: var(--text-muted);
+}
+
 .weekDayLabel {
   font-size: 11px;
   font-weight: 600;
@@ -57,13 +89,12 @@
 
 .weekBody {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  max-height: calc(100vh - 320px);
-  min-height: 640px;
-  overflow: auto;
+  grid-template-columns: var(--agenda-time-col) var(--agenda-day-cols);
+  min-height: 0;
 }
 
 .timeColumn {
+  grid-column: 1;
   border-right: 1px solid var(--border-default);
   background: var(--background-1);
 }
@@ -73,15 +104,25 @@
   align-items: flex-start;
   justify-content: center;
   padding-top: 4px;
-  font-size: 11px;
-  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
   border-bottom: 1px solid var(--border-default);
 }
 
+.timeLabelPast {
+  color: var(--text-secondary);
+  font-weight: 500;
+  opacity: 0.72;
+}
+
 .weekGrid {
+  grid-column: 2 / -1;
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: var(--agenda-day-cols);
   position: relative;
+  min-width: 0;
 }
 
 .dayColumn {
@@ -109,17 +150,32 @@
 
 .hourSlotPast {
   cursor: not-allowed;
-  opacity: 0.35;
-  background: var(--surface-muted);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--surface-muted),
+    var(--surface-muted) 4px,
+    color-mix(in srgb, var(--text-muted) 12%, var(--background-2)) 4px,
+    color-mix(in srgb, var(--text-muted) 12%, var(--background-2)) 8px
+  );
 }
 
 .hourSlotPast:hover {
-  background: var(--surface-muted);
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--surface-muted),
+    var(--surface-muted) 4px,
+    color-mix(in srgb, var(--text-muted) 12%, var(--background-2)) 4px,
+    color-mix(in srgb, var(--text-muted) 12%, var(--background-2)) 8px
+  );
+}
+
+.dayColumnPast {
+  background: color-mix(in srgb, var(--text-muted) 6%, var(--background-2));
 }
 
 .allDayRow {
   display: grid;
-  grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  grid-template-columns: var(--agenda-time-col) var(--agenda-day-cols);
   border-bottom: 1px solid var(--border-default);
   background: var(--background-1);
 }
@@ -152,6 +208,11 @@
 
 .allDayCellToday {
   background: color-mix(in srgb, var(--primary) 6%, transparent);
+}
+
+.allDayCellPast {
+  background: var(--surface-muted);
+  opacity: 0.85;
 }
 
 .allDayWrap {
@@ -248,6 +309,8 @@
 }
 
 .monthView {
+  width: 100%;
+  max-width: 1280px;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-xl);
   overflow: hidden;
@@ -306,11 +369,16 @@
 
 .monthCellPast {
   cursor: not-allowed;
-  opacity: 0.45;
+  background: var(--surface-muted);
+}
+
+.monthCellPast .monthDayNumber {
+  color: var(--text-muted);
+  text-decoration: line-through;
 }
 
 .monthCellPast:hover {
-  background: var(--background-2);
+  background: var(--surface-muted);
 }
 
 .monthDayNumber {
@@ -343,7 +411,7 @@
 }
 
 @media (max-width: 900px) {
-  .weekBody {
+  .weekScroll {
     min-height: 520px;
   }
 

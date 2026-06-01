@@ -3,8 +3,35 @@
 import Avatar from "@/components/Avatar/Avatar";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { parseAmount } from "@/lib/financialStats";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import styles from "./ProjectsTable.module.css";
+
+function ProjectValueCell({ project, received = 0 }) {
+  const budget = parseAmount(project.budget);
+  const hasBudget = budget > 0;
+  const hasReceived = received > 0;
+
+  if (!hasBudget && !hasReceived) {
+    return <span className={styles.valueEmpty}>—</span>;
+  }
+
+  if (hasBudget && hasReceived) {
+    return (
+      <span className={styles.valueInline} title={`${formatCurrencyBRL(received)} recebidos de ${formatCurrencyBRL(budget)}`}>
+        <span className={styles.valueReceived}>{formatCurrencyBRL(received)}</span>
+        <span className={styles.valueSep}>/</span>
+        <span>{formatCurrencyBRL(budget)}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className={hasReceived ? styles.valueReceived : styles.valueTotal}>
+      {formatCurrencyBRL(hasBudget ? budget : received)}
+    </span>
+  );
+}
 
 function formatDueDate(project) {
   if (!project.has_deadline || !project.due_date) {
@@ -25,10 +52,13 @@ function formatFolderName(project) {
 
 export default function ProjectsTable({
   projects,
+  receivedByProjectId,
   onProjectClick,
   onProjectUpdated,
   emptyMessage = "Nenhum projeto encontrado",
 }) {
+  const showFinancialBreakdown = receivedByProjectId != null;
+
   if (!projects.length) {
     return <p className={styles.empty}>{emptyMessage}</p>;
   }
@@ -80,10 +110,17 @@ export default function ProjectsTable({
       <div className={styles.col}>
         <div className={styles.th}>Valor</div>
         {projects.map((project) => (
-          <div key={project.id} className={styles.cell}>
-            {project.budget != null && project.budget !== ""
-              ? formatCurrencyBRL(parseFloat(project.budget))
-              : "—"}
+          <div key={project.id} className={`${styles.cell} ${styles.cellValue}`}>
+            {showFinancialBreakdown ? (
+              <ProjectValueCell
+                project={project}
+                received={receivedByProjectId[project.id] || 0}
+              />
+            ) : project.budget != null && project.budget !== "" ? (
+              formatCurrencyBRL(parseFloat(project.budget))
+            ) : (
+              "—"
+            )}
           </div>
         ))}
       </div>

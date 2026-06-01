@@ -134,11 +134,21 @@ export default function DashboardTabs() {
               active={highlightedTab === tab.id}
               onClick={() => handleTabClick(tab.id)}
               data-tour={
-                tab.id === "projetos"
-                  ? "tab-projetos"
-                  : tab.id === "lucro"
-                    ? "tab-lucro"
-                    : undefined
+                tab.id === "central"
+                  ? "tab-central"
+                  : tab.id === "agenda"
+                    ? "tab-agenda"
+                    : tab.id === "demandas"
+                      ? "tab-demandas"
+                      : tab.id === "board"
+                        ? "tab-board"
+                        : tab.id === "projetos"
+                          ? "tab-projetos"
+                          : tab.id === "clientes"
+                            ? "tab-clientes"
+                            : tab.id === "lucro"
+                              ? "tab-lucro"
+                              : undefined
               }
             />
           ))}

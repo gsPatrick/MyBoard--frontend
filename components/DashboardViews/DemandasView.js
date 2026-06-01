@@ -133,7 +133,7 @@ export default function DemandasView() {
   }
 
   return (
-    <section className={styles.wrap}>
+    <section className={styles.wrap} data-tour="demandas-view">
       <div className={styles.header}>
         <div className={styles.headerMain}>
           <h2 className={styles.title}>Demandas</h2>

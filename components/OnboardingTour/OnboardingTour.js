@@ -471,7 +471,7 @@ export default function OnboardingTour() {
 
   return createPortal(
     <div
-      className={`${styles.root} ${isInteractive ? styles.rootInteractive : ""}`}
+      className={`${styles.root} ${isInteractive ? `${styles.rootInteractive} onboarding-tour-interactive` : ""}`}
       role="presentation"
     >
       {!targetRect && step?.target == null && (

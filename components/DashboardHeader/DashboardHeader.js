@@ -183,15 +183,17 @@ export default function DashboardHeader() {
           <Kbd>{searchShortcutLabel}</Kbd>
         </button>
 
-        <IconButton
-          label="Configurações"
-          size="md"
-          variant="ghost"
-          onClick={openSettings}
-          aria-pressed={activeTab === "configuracoes"}
-        >
-          <SettingsIcon />
-        </IconButton>
+        <span data-tour="header-settings">
+          <IconButton
+            label="Configurações"
+            size="md"
+            variant="ghost"
+            onClick={openSettings}
+            aria-pressed={activeTab === "configuracoes"}
+          >
+            <SettingsIcon />
+          </IconButton>
+        </span>
 
         <span data-tour="theme-toggle">
           <ThemeToggle />

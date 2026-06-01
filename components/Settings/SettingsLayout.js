@@ -1,6 +1,6 @@
 "use client";
 
-import { SETTINGS_TABS } from "@/lib/keyboardShortcuts";
+import { SETTINGS_TABS } from "@/lib/settingsTabs";
 import styles from "./SettingsLayout.module.css";
 
 export default function SettingsLayout({
@@ -20,25 +20,28 @@ export default function SettingsLayout({
           )}
           <h1 className={styles.title}>Configurações</h1>
           <p className={styles.subtitle}>
-            Personalize atalhos e preferências do workspace.
+            Conta, MyWallet, atalhos e preferências do workspace.
           </p>
         </div>
       </header>
 
       <div className={styles.body}>
-        <nav className={styles.sideNav} aria-label="Seções de configurações">
-          {SETTINGS_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`${styles.sideNavItem} ${
-                activeTab === tab.id ? styles.sideNavItemActive : ""
-              }`}
-              aria-current={activeTab === tab.id ? "page" : undefined}
-              onClick={() => onTabChange?.(tab.id)}
-            >
-              {tab.label}
-            </button>
+        <nav className={styles.sideNav} aria-label="Seções de configurações" data-tour="settings-nav">
+          <p className={styles.sideNavLabel}>Seções</p>
+          {SETTINGS_TABS.map((tab, index) => (
+            <div key={tab.id} className={styles.sideNavGroup}>
+              {index > 0 && <div className={styles.sideNavDivider} role="separator" />}
+              <button
+                type="button"
+                className={`${styles.sideNavItem} ${
+                  activeTab === tab.id ? styles.sideNavItemActive : ""
+                }`}
+                aria-current={activeTab === tab.id ? "page" : undefined}
+                onClick={() => onTabChange?.(tab.id)}
+              >
+                {tab.label}
+              </button>
+            </div>
           ))}
         </nav>
 

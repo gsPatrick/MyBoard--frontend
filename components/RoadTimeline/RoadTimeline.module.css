@@ -95,6 +95,16 @@
   color: #ffffff;
 }
 
+.dayPast .dayLabel,
+.dayPast .dayNumber {
+  color: var(--text-muted);
+  opacity: 0.75;
+}
+
+.dayPast:not(.dayActive):hover {
+  background: var(--surface-muted);
+}
+
 .list {
   position: relative;
   display: flex;
@@ -276,7 +286,8 @@
 .itemTitleRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: var(--space-2);
   min-width: 0;
 }

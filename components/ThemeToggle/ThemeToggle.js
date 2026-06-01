@@ -21,9 +21,10 @@ function MoonIcon() {
   return (
     <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
-        d="M12.5 9.5C11.2 11.5 8.8 12.5 6.5 11.5C4.2 10.5 3 8 3.5 5.5C6 6 8.5 4.5 9.5 2C11 4 12 6.5 12.5 9.5Z"
+        d="M8 2a4 4 0 0 0 6 6 6 6 0 1 1-6-6Z"
         stroke="currentColor"
         strokeWidth="1.2"
+        strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>

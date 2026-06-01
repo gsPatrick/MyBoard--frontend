@@ -1,0 +1,23 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.comingSoon {
+  background: color-mix(in srgb, var(--surface-muted) 80%, var(--background-1));
+  border-style: dashed;
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background: var(--surface-muted);
+}
