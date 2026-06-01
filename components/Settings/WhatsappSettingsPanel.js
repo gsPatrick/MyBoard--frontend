@@ -24,6 +24,12 @@ function qrImageSrc(base64) {
   return raw.startsWith("data:") ? raw : `data:image/png;base64,${raw}`;
 }
 
+function stateClass(state) {
+  if (state === "open") return styles.stateOpen;
+  if (state === "connecting") return styles.stateConnecting;
+  return styles.stateClosed;
+}
+
 export default function WhatsappSettingsPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
