@@ -67,12 +67,95 @@
   align-items: flex-start;
 }
 
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 720px;
+}
+
+.setupCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.qrSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-5);
+  align-items: center;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+.qrHelp {
+  min-width: 0;
+}
+
+.qrHelpTitle {
+  margin: 0 0 var(--space-3);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.qrSteps {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.qrSteps li + li {
+  margin-top: 6px;
+}
+
+.qrSteps strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.qrError {
+  margin: var(--space-3) 0 0;
+  font-size: 13px;
+  color: #e5484d;
+}
+
+.qrFrame {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 248px;
+  height: 248px;
+  padding: 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background: #fff;
+}
+
 .qrImage {
   display: block;
-  width: min(100%, 280px);
-  margin: var(--space-3) 0;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-default);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+.qrPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--background-1) 88%, #fff);
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-3);
 }
 
 .qrRaw {
@@ -96,6 +179,41 @@
   margin-bottom: var(--space-4);
 }
 
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.qrTimer {
+  margin: var(--space-3) 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e67700;
+}
+
 .cardSuccess {
   border-color: color-mix(in srgb, #2f9e44 24%, var(--border-default));
+}
+
+@media (max-width: 640px) {
+  .wrap {
+    max-width: none;
+  }
+
+  .qrSection {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .qrHelp {
+    width: 100%;
+    text-align: left;
+  }
+
+  .qrFrame {
+    width: min(100%, 248px);
+    height: min(100vw - 96px, 248px);
+  }
 }

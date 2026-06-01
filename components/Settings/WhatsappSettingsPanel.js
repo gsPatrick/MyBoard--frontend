@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import { getWhatsappSetup } from "@/api/whatsapp";
 import { getStoredUser } from "@/api/client";
 import { showErrorToast } from "@/lib/toast";
 import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";
 import styles from "./WhatsappSettingsPanel.module.css";
+
+const STATUS_POLL_MS = 4000;
 
 function stateLabel(state) {
   const map = {
@@ -30,41 +32,100 @@ function stateClass(state) {
   return styles.stateClosed;
 }
 
+function formatCountdown(expiresAt) {
+  if (!expiresAt) return null;
+  const seconds = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
+  return seconds;
+}
+
 export default function WhatsappSettingsPanel() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [refreshingQr, setRefreshingQr] = useState(false);
   const [setup, setSetup] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+  const qrRefreshLock = useRef(false);
 
   const canEdit = ["admin", "developer"].includes(getStoredUser()?.role);
 
-  const load = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    else setRefreshing(true);
+  const applySetup = useCallback((data, { preserveQr = false } = {}) => {
+    setSetup((current) => {
+      if (data?.connected || !preserveQr) return data;
 
-    try {
-      const data = await getWhatsappSetup();
-      setSetup(data);
-    } catch (error) {
-      showErrorToast(error.message || "Não foi possível carregar o WhatsApp.");
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      const nextQr = data?.qr?.base64 ? data.qr : current?.qr;
+      return {
+        ...data,
+        qr: nextQr,
+        qr_expires_at: data?.qr_expires_at || nextQr?.expires_at || current?.qr_expires_at || null,
+      };
+    });
   }, []);
 
+  const loadSetup = useCallback(
+    async ({ silent = false, statusOnly = false, refreshQr = false, preserveQr = false } = {}) => {
+      if (!silent) setLoading(true);
+      else if (refreshQr) setRefreshingQr(true);
+      else setRefreshing(true);
+
+      try {
+        const data = await getWhatsappSetup({ statusOnly, refreshQr });
+        applySetup(data, { preserveQr: preserveQr || statusOnly });
+      } catch (error) {
+        showErrorToast(error.message || "Não foi possível carregar o WhatsApp.");
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+        setRefreshingQr(false);
+      }
+    },
+    [applySetup]
+  );
+
+  const refreshQrCode = useCallback(async () => {
+    if (qrRefreshLock.current) return;
+    qrRefreshLock.current = true;
+    try {
+      await loadSetup({ silent: true, refreshQr: true });
+    } finally {
+      qrRefreshLock.current = false;
+    }
+  }, [loadSetup]);
+
   useEffect(() => {
-    load();
-  }, [load]);
+    loadSetup();
+  }, [loadSetup]);
 
   useEffect(() => {
     if (setup?.connected) return undefined;
 
     const timer = window.setInterval(() => {
-      load(true);
-    }, 8000);
+      loadSetup({ silent: true, statusOnly: true, preserveQr: true });
+    }, STATUS_POLL_MS);
 
     return () => window.clearInterval(timer);
-  }, [setup?.connected, load]);
+  }, [setup?.connected, loadSetup]);
+
+  useEffect(() => {
+    const expiresAt = setup?.qr_expires_at || setup?.qr?.expires_at;
+    if (setup?.connected || !expiresAt) {
+      setCountdown(null);
+      return undefined;
+    }
+
+    const tick = () => setCountdown(formatCountdown(expiresAt));
+    tick();
+
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [setup?.connected, setup?.qr_expires_at, setup?.qr?.expires_at]);
+
+  useEffect(() => {
+    if (setup?.connected) return;
+    if (countdown !== 0) return;
+    if (!setup?.qr_expired && setup?.qr?.base64) {
+      refreshQrCode();
+    }
+  }, [countdown, setup?.connected, setup?.qr_expired, setup?.qr?.base64, refreshQrCode]);
 
   const instance = setup?.instance;
   const qrPayload = setup?.qr;
@@ -78,14 +139,14 @@ export default function WhatsappSettingsPanel() {
         <p className={settingsPanelStyles.muted}>Carregando…</p>
       ) : (
         <div className={styles.wrap}>
-          <article className={settingsPanelStyles.card}>
+          <article className={`${settingsPanelStyles.card} ${setup?.connected ? "" : styles.setupCard}`}>
             <div className={styles.statusRow}>
               <div>
                 <h3 className={settingsPanelStyles.cardTitle}>Conexão</h3>
                 <p className={settingsPanelStyles.cardText}>
                   {setup?.connected
                     ? "WhatsApp conectado. Você já pode vincular números nos clientes e projetos."
-                    : "Abra o WhatsApp no celular → Dispositivos conectados → Conectar dispositivo e escaneie o QR abaixo."}
+                    : "Abra o WhatsApp no celular → Dispositivos conectados → Conectar dispositivo e escaneie o QR ao lado."}
                 </p>
               </div>
               {instance && (
@@ -96,39 +157,75 @@ export default function WhatsappSettingsPanel() {
             </div>
 
             {canEdit && (
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={refreshing}
-                onClick={() => load(true)}
-              >
-                {refreshing ? "Atualizando…" : "Atualizar status"}
-              </Button>
+              <div className={styles.actionsRow}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={refreshing}
+                  onClick={() => loadSetup({ silent: true, statusOnly: true, preserveQr: true })}
+                >
+                  {refreshing ? "Verificando…" : "Verificar conexão"}
+                </Button>
+                {!setup?.connected && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={refreshingQr}
+                    onClick={refreshQrCode}
+                  >
+                    {refreshingQr ? "Gerando QR…" : "Gerar novo QR"}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {!setup?.connected && (
+              <div className={styles.qrSection}>
+                <div className={styles.qrHelp}>
+                  <h4 className={styles.qrHelpTitle}>Como conectar</h4>
+                  <ol className={styles.qrSteps}>
+                    <li>Abra o WhatsApp no celular</li>
+                    <li>Toque em <strong>Dispositivos conectados</strong></li>
+                    <li>Escolha <strong>Conectar dispositivo</strong></li>
+                    <li>Aponte a câmera para o QR Code</li>
+                  </ol>
+                  {countdown != null && countdown > 0 && (
+                    <p className={styles.qrTimer}>QR válido por mais {countdown}s</p>
+                  )}
+                  {countdown === 0 && (
+                    <p className={styles.qrTimer}>QR expirado — gerando um novo…</p>
+                  )}
+                  {qrPayload?.error && (
+                    <p className={styles.qrError}>{qrPayload.error}</p>
+                  )}
+                  {qrPayload?.pairingCode && (
+                    <p className={settingsPanelStyles.cardText}>
+                      Código: <strong>{qrPayload.pairingCode}</strong>
+                    </p>
+                  )}
+                  {!qrPayload?.base64 && !qrPayload?.error && !qrPayload?.pairingCode && (
+                    <p className={settingsPanelStyles.cardText}>
+                      Aguardando QR Code… use &quot;Gerar novo QR&quot; se não aparecer.
+                    </p>
+                  )}
+                </div>
+
+                <div className={styles.qrFrame} aria-label="QR Code WhatsApp">
+                  {qrPayload?.base64 ? (
+                    <img
+                      className={styles.qrImage}
+                      src={qrImageSrc(qrPayload.base64)}
+                      alt="QR Code WhatsApp"
+                    />
+                  ) : (
+                    <div className={styles.qrPlaceholder}>
+                      <span>{refreshingQr ? "Gerando QR…" : "Sem QR no momento"}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </article>
-
-          {!setup?.connected && (
-            <article className={settingsPanelStyles.card}>
-              <h3 className={settingsPanelStyles.cardTitle}>QR Code</h3>
-              {qrPayload?.error ? (
-                <p className={settingsPanelStyles.cardText}>{qrPayload.error}</p>
-              ) : qrPayload?.base64 ? (
-                <img
-                  className={styles.qrImage}
-                  src={qrImageSrc(qrPayload.base64)}
-                  alt="QR Code WhatsApp"
-                />
-              ) : qrPayload?.pairingCode ? (
-                <p className={settingsPanelStyles.cardText}>
-                  Código de pareamento: <strong>{qrPayload.pairingCode}</strong>
-                </p>
-              ) : (
-                <p className={settingsPanelStyles.cardText}>
-                  Aguardando QR Code… clique em &quot;Atualizar status&quot; se não aparecer.
-                </p>
-              )}
-            </article>
-          )}
 
           {setup?.connected && (
             <article className={`${settingsPanelStyles.card} ${styles.cardSuccess}`}>
