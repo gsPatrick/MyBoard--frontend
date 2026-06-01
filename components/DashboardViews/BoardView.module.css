@@ -100,6 +100,69 @@
   background: var(--background-1);
 }
 
+.fullscreenOverlayBordieDocked {
+  right: var(--bordie-dock-width, max(280px, 20vw));
+  border-right: 1px solid var(--border-default);
+}
+
+.fullscreenBarReveal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--background-2);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  opacity: 0.82;
+  transition:
+    opacity var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.fullscreenFloatingControls {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  transform: translateX(-50%);
+}
+
+.fullscreenExitChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  background: var(--background-2);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  opacity: 0.82;
+  transition:
+    opacity var(--transition-fast),
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.fullscreenBarReveal:hover,
+.fullscreenExitChip:hover {
+  opacity: 1;
+  color: var(--text-primary);
+  background: var(--background-1);
+}
+
 .fullscreenBar {
   display: flex;
   align-items: center;

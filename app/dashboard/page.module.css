@@ -38,7 +38,12 @@
 }
 
 .bordieDocked {
-  --sidebar-right-width: max(280px, 20vw);
+  --bordie-dock-width: max(280px, 20vw);
+  --sidebar-right-width: var(--bordie-dock-width);
+}
+
+.boardFullscreenBordie .rightSlot {
+  z-index: 2100;
 }
 
 .bordieDockRoot {

@@ -32,6 +32,7 @@ function DashboardShell() {
     leftSidebarOpen,
     rightSidebarOpen,
     contentWidth,
+    boardFullscreen,
   } = useDashboardLayout();
   const { bordieDocked } = useBordieChat();
 
@@ -42,6 +43,7 @@ function DashboardShell() {
     !bordieDocked && rightSidebarMode === SIDEBAR_MODE.HIDDEN && styles.rightClosed,
     !bordieDocked && rightSidebarMode === SIDEBAR_MODE.COMPACT && styles.rightCompact,
     bordieDocked && styles.bordieDocked,
+    bordieDocked && boardFullscreen && styles.boardFullscreenBordie,
     contentWidth === CONTENT_WIDTH.FULL && styles.contentFull,
   ]
     .filter(Boolean)
