@@ -12,6 +12,7 @@ import {
 import { getStoredUser } from "@/api/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import WhatsappChatSearch from "@/components/Whatsapp/WhatsappChatSearch";
+import WhatsappConversationViewer from "@/components/Whatsapp/WhatsappConversationViewer";
 import sectionStyles from "../ProjectDetailSection.module.css";
 import linkStyles from "@/components/Whatsapp/WhatsappLinks.module.css";
 
@@ -187,6 +188,8 @@ export default function ProjectWhatsappSection({ projectId }) {
           />
         </div>
       )}
+
+      <WhatsappConversationViewer projectId={projectId} />
     </section>
   );
 }

@@ -77,6 +77,29 @@ export async function removeClientWhatsappLink(clientId, linkId) {
   });
 }
 
+export async function listClientWhatsappThreads(clientId) {
+  return apiClient(`/v1/whatsapp/clients/${clientId}/threads`);
+}
+
+export async function listProjectWhatsappThreads(projectId) {
+  return apiClient(`/v1/whatsapp/projects/${projectId}/threads`);
+}
+
+export async function listWhatsappConversationMessages(
+  conversationId,
+  { clientId, projectId, before, limit = 50 } = {}
+) {
+  const params = new URLSearchParams();
+  if (clientId) params.set("client_id", clientId);
+  if (projectId) params.set("project_id", projectId);
+  if (before) params.set("before", before);
+  if (limit) params.set("limit", String(limit));
+  const query = params.toString();
+  return apiClient(
+    `/v1/whatsapp/conversations/${conversationId}/messages${query ? `?${query}` : ""}`
+  );
+}
+
 export function formatWhatsappPhone(digits) {
   if (!digits) return "";
   const raw = String(digits).replace(/^55/, "");

@@ -11,6 +11,7 @@ import {
 import { getStoredUser } from "@/api/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import WhatsappChatSearch from "./WhatsappChatSearch";
+import WhatsappConversationViewer from "./WhatsappConversationViewer";
 import sectionStyles from "@/components/ProjectDetail/ProjectDetailSection.module.css";
 import styles from "./WhatsappLinks.module.css";
 
@@ -125,6 +126,8 @@ export default function ClientWhatsappLinks({ clientId }) {
           />
         </div>
       )}
+
+      <WhatsappConversationViewer clientId={clientId} />
     </section>
   );
 }

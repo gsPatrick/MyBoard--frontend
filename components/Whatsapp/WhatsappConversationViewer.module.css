@@ -1,0 +1,180 @@
+.viewer {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hint {
+  margin: 0 0 var(--space-3);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.threadList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.threadButton {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-1);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.threadButton:hover {
+  border-color: color-mix(in srgb, #228be6 35%, var(--border-default));
+}
+
+.threadButtonActive {
+  border-color: #228be6;
+  background: color-mix(in srgb, #228be6 8%, var(--background-1));
+}
+
+.threadTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.threadName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.threadMeta {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.threadPreview {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badgeCount {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  background: color-mix(in srgb, #228be6 14%, transparent);
+  color: #228be6;
+}
+
+.messagesPanel {
+  margin-top: var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-0);
+  overflow: hidden;
+}
+
+.messagesHeader {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-default);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--background-1);
+}
+
+.messagesList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.messageRow {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 85%;
+}
+
+.messageInbound {
+  align-self: flex-start;
+}
+
+.messageOutbound {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.messageBubble {
+  padding: 8px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.messageInbound .messageBubble {
+  background: var(--background-1);
+  border: 1px solid var(--border-default);
+  color: var(--text-primary);
+}
+
+.messageOutbound .messageBubble {
+  background: color-mix(in srgb, #228be6 18%, var(--background-1));
+  color: var(--text-primary);
+}
+
+.messageSender {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.messageTime {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.loadMore {
+  display: flex;
+  justify-content: center;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--border-default);
+}
+
+.emptyThread {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
