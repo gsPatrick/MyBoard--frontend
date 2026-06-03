@@ -13,6 +13,7 @@ import {
   sendBordieCommand,
   sendBordieMessage,
 } from "@/api/bordie";
+import { getWorkspaceSettings } from "@/api/settings";
 import { setBordieActionOverlay, withBordieActionOverlay } from "@/lib/bordieActionOverlay";
 import { getStoredUser } from "@/api/client";
 import { useBordieChat } from "@/context/BordieChatContext";
@@ -192,6 +193,7 @@ export default function BordieChat() {
   const [chatLoading, setChatLoading] = useState(false);
   const [chatError, setChatError] = useState("");
   const [policyMode, setPolicyMode] = useState(null);
+  const [aiConfigured, setAiConfigured] = useState(true);
 
   const commandInputRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -210,14 +212,28 @@ export default function BordieChat() {
       .then((data) => setPolicyMode(data?.mode || null))
       .catch(() => {});
 
+    getWorkspaceSettings()
+      .then((data) => setAiConfigured(Boolean(data?.ai?.configured)))
+      .catch(() => {});
+
     function handlePolicyUpdated() {
       getBordiePolicy()
         .then((data) => setPolicyMode(data?.mode || null))
         .catch(() => {});
     }
 
+    function handleAiUpdated() {
+      getWorkspaceSettings()
+        .then((data) => setAiConfigured(Boolean(data?.ai?.configured)))
+        .catch(() => {});
+    }
+
     window.addEventListener("myboard:bordie-policy-updated", handlePolicyUpdated);
-    return () => window.removeEventListener("myboard:bordie-policy-updated", handlePolicyUpdated);
+    window.addEventListener("myboard:ai-settings-updated", handleAiUpdated);
+    return () => {
+      window.removeEventListener("myboard:bordie-policy-updated", handlePolicyUpdated);
+      window.removeEventListener("myboard:ai-settings-updated", handleAiUpdated);
+    };
   }, []);
 
   const handleBordieAction = useCallback(
@@ -343,7 +359,10 @@ export default function BordieChat() {
       try {
         const { message, offline, action, actions } = await sendBordieCommand({ prompt: trimmed, context });
         const resultText = message || "Comando recebido.";
-        setStatusMessage({ type: offline ? "info" : "success", text: resultText });
+        setStatusMessage({
+          type: offline || !aiConfigured ? "info" : "success",
+          text: resultText,
+        });
         appendChatAssistant(resultText);
 
         const primary = action || actions?.[0];
@@ -655,13 +674,16 @@ export default function BordieChat() {
 
     try {
       const history = nextMessages.map(({ role, content }) => ({ role, content }));
-      const { reply, action, actions } = await sendBordieMessage({
+      const { reply, action, actions, offline } = await sendBordieMessage({
         message: trimmed,
         context,
         history: history.slice(0, -1),
       });
 
-      setChatMessages((current) => [...current, createChatMessage("assistant", reply || "…")]);
+      setChatMessages((current) => [
+        ...current,
+        createChatMessage("assistant", reply || "…"),
+      ]);
 
       const primary = action || actions?.[0];
       if (primary) {
@@ -883,8 +905,16 @@ export default function BordieChat() {
           {!isDocked && (
           <div className={styles.chatHeader}>
             <p className={styles.chatTitle}>Conversa</p>
-            <p className={styles.chatHint}>Perguntas e orientações</p>
+            <p className={styles.chatHint}>
+              {aiConfigured ? "Perguntas e orientações" : "Configure a IA em Configurações → IA"}
+            </p>
           </div>
+          )}
+
+          {!aiConfigured && (
+            <p className={styles.chatError}>
+              IA não configurada — vá em Configurações → IA e salve um provedor ativo.
+            </p>
           )}
 
           <div ref={chatListRef} className={styles.chatMessages}>

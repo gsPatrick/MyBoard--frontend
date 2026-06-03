@@ -85,6 +85,7 @@ export default function AiSettingsPanel() {
       setMeta(mapped.meta);
       setConfigured(mapped.configured);
       showSuccessToast(`${preset.label} salvo como provedor ativo.`);
+      window.dispatchEvent(new CustomEvent("myboard:ai-settings-updated"));
     } catch (error) {
       showErrorToast(error.message || "Falha ao salvar configurações de IA.");
     } finally {
@@ -103,6 +104,7 @@ export default function AiSettingsPanel() {
       setMeta(mapped.meta);
       setConfigured(mapped.configured);
       showSuccessToast(`${preset.label} agora é o provedor ativo.`);
+      window.dispatchEvent(new CustomEvent("myboard:ai-settings-updated"));
     } catch (error) {
       showErrorToast(error.message || "Falha ao ativar provedor.");
     } finally {
@@ -141,6 +143,7 @@ export default function AiSettingsPanel() {
       setMeta(mapped.meta);
       setConfigured(mapped.configured);
       showSuccessToast("Chave removida.");
+      window.dispatchEvent(new CustomEvent("myboard:ai-settings-updated"));
     } catch (error) {
       showErrorToast(error.message || "Falha ao remover chave.");
     } finally {
