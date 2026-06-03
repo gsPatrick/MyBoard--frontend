@@ -199,7 +199,7 @@ export default function AiSettingsPanel() {
 
             {!configured && (
               <p className={styles.hintBanner}>
-                Nenhum provedor ativo com chave — o servidor usa fallback de ambiente, se existir.
+                Nenhum provedor ativo com chave — configure um token em Configurações → IA.
               </p>
             )}
           </article>
@@ -222,6 +222,8 @@ export default function AiSettingsPanel() {
                         {preset.docs_url.replace(/^https?:\/\//, "")}
                       </a>
                     </>
+                  ) : isCustom ? (
+                    "Bearer token configurado em api-keys do CLIProxyAPI (Authorization: Bearer …)."
                   ) : (
                     "Cole o token exportado pelo agente CLI ou gateway OpenAI-compatível."
                   )
@@ -247,23 +249,28 @@ export default function AiSettingsPanel() {
               {isCustom && (
                 <>
                   <Input
-                    label="Base URL"
+                    label="Endpoint (host:porta)"
                     value={currentForm.base_url}
                     onChange={(event) => updateField("base_url", event.target.value)}
                     disabled={!canEdit}
+                    placeholder="http://localhost:8317"
+                    hint="Superfície OpenAI: o MyBoard usa POST /v1/chat/completions e /v1/embeddings (adiciona /v1 se omitir)."
                   />
                   <Input
                     label="Modelo de chat"
                     value={currentForm.chat_model}
                     onChange={(event) => updateField("chat_model", event.target.value)}
                     disabled={!canEdit}
+                    placeholder="gemini-2.5-pro"
+                    hint="Id retornado por GET /v1/models no proxy (ex.: gemini-2.5-pro, claude-sonnet-4-5-20250929)."
                   />
                   <Input
                     label="Modelo de embedding (RAG)"
                     value={currentForm.embedding_model}
                     onChange={(event) => updateField("embedding_model", event.target.value)}
                     disabled={!canEdit}
-                    hint="Usado para busca semântica."
+                    placeholder="text-embedding-3-small"
+                    hint="Opcional. POST /v1/embeddings com o mesmo Bearer token."
                   />
                 </>
               )}
