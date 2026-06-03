@@ -26,7 +26,6 @@ import {
 } from "@/lib/excalidraw";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { BORDIE_DOCK_WIDTH_CSS } from "@/lib/bordieLayout";
-import { setBordieActionOverlay } from "@/lib/bordieActionOverlay";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import styles from "./BoardView.module.css";
 
@@ -296,29 +295,51 @@ export default function BoardView() {
   }
 
   const applyBordieScene = useCallback(
-    async (sceneData) => {
-      if (!sceneData || !activeBoardRef.current?.id) return;
+    async (sceneData, meta = {}) => {
+      if (!sceneData || !activeBoardRef.current?.id) {
+        window.dispatchEvent(
+          new CustomEvent("myboard:bordie-scene-failed", {
+            detail: {
+              boardId: meta.boardId || activeBoardRef.current?.id || null,
+              message: "Nenhum board ativo para aplicar a cena.",
+            },
+          })
+        );
+        return;
+      }
 
+      const boardId = activeBoardRef.current.id;
       const normalized = normalizeScene(sceneData, excalidrawTheme);
       beginSceneHydration();
       setScene(normalized);
-      setCanvasKey(`${activeBoardRef.current.id}:${Date.now()}`);
+      setCanvasKey(`${boardId}:${Date.now()}`);
       pendingScene.current = normalized;
       setSaveState("pending");
 
       try {
-        const updated = await updateBoard(activeBoardRef.current.id, {
+        const updated = await updateBoard(boardId, {
           scene_data: normalized,
         });
         setActiveBoard(updated);
         activeBoardRef.current = updated;
         setSaveState("saved");
         showSuccessToast("Board atualizado pelo Bordie");
-      } catch {
+        window.dispatchEvent(
+          new CustomEvent("myboard:bordie-scene-applied", {
+            detail: { boardId, ok: true },
+          })
+        );
+      } catch (error) {
         setSaveState("error");
         showErrorToast("Não foi possível salvar alterações do Bordie");
-      } finally {
-        setBordieActionOverlay(false);
+        window.dispatchEvent(
+          new CustomEvent("myboard:bordie-scene-failed", {
+            detail: {
+              boardId,
+              message: error?.message || "Falha ao salvar board.",
+            },
+          })
+        );
       }
     },
     [beginSceneHydration, excalidrawTheme]
@@ -351,9 +372,17 @@ export default function BoardView() {
     function handleApplyScene(event) {
       const { boardId, sceneData } = event.detail || {};
       if (boardId && activeBoardRef.current?.id && boardId !== activeBoardRef.current.id) {
+        window.dispatchEvent(
+          new CustomEvent("myboard:bordie-scene-failed", {
+            detail: {
+              boardId,
+              message: "Board ativo diferente do solicitado pelo Bordie.",
+            },
+          })
+        );
         return;
       }
-      applyBordieScene(sceneData);
+      applyBordieScene(sceneData, { boardId });
     }
 
     function handleBordieAction(event) {

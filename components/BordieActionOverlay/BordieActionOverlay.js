@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./BordieActionOverlay.module.css";
 
-const SAFETY_MS = 14000;
+const SAFETY_MS = 20000;
 
 export default function BordieActionOverlay() {
+  const [mounted, setMounted] = useState(false);
   const [active, setActive] = useState(false);
   const [label, setLabel] = useState("");
   const timerRef = useRef(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function handleOverlay(event) {
@@ -38,7 +44,9 @@ export default function BordieActionOverlay() {
     };
   }, []);
 
-  return (
+  if (!mounted) return null;
+
+  const overlay = (
     <div
       className={`${styles.overlay} ${active ? styles.overlayActive : ""}`}
       aria-hidden={!active}
@@ -51,4 +59,6 @@ export default function BordieActionOverlay() {
       {label ? <p className={styles.label}>{label}</p> : null}
     </div>
   );
+
+  return createPortal(overlay, document.body);
 }

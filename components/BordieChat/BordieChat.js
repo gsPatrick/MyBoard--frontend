@@ -6,7 +6,6 @@ import Kbd from "@/components/Kbd/Kbd";
 import IconButton from "@/components/IconButton/IconButton";
 import {
   canAutoApplyBoardAction,
-  dispatchBordieSceneApply,
   executeBordieAction,
   getBordiePolicy,
   isBoardAction,
@@ -14,7 +13,7 @@ import {
   sendBordieMessage,
 } from "@/api/bordie";
 import { getWorkspaceSettings } from "@/api/settings";
-import { setBordieActionOverlay, withBordieActionOverlay } from "@/lib/bordieActionOverlay";
+import { setBordieActionOverlay, withBordieActionOverlay, runBoardActionWithOverlay } from "@/lib/bordieActionOverlay";
 import { getStoredUser } from "@/api/client";
 import { useBordieChat } from "@/context/BordieChatContext";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
@@ -243,13 +242,7 @@ export default function BordieChat() {
       const actionLabel = action.payload?.explanation || action.type;
 
       if (isBoardAction(action) && canAutoApplyBoardAction(action)) {
-        setBordieActionOverlay(true, actionLabel);
-        dispatchBordieSceneApply({
-          boardId: action.payload?.board_id,
-          sceneData: action.payload?.proposed_scene,
-          explanation: action.payload?.explanation,
-        });
-        return { ok: true, local: true };
+        return runBoardActionWithOverlay(action);
       }
 
       const needsConfirm =
@@ -265,13 +258,7 @@ export default function BordieChat() {
       }
 
       if (isBoardAction(action) && action.payload?.proposed_scene) {
-        setBordieActionOverlay(true, actionLabel);
-        dispatchBordieSceneApply({
-          boardId: action.payload?.board_id,
-          sceneData: action.payload.proposed_scene,
-          explanation: action.payload?.explanation,
-        });
-        return { ok: true, local: true };
+        return runBoardActionWithOverlay(action);
       }
 
       return withBordieActionOverlay(
