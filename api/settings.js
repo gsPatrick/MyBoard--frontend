@@ -17,6 +17,16 @@ export async function testAiConnection() {
   });
 }
 
+export async function fetchAiProxyModels({ base_url, api_key } = {}) {
+  return apiClient("/v1/settings/ai/models", {
+    method: "POST",
+    body: {
+      ...(base_url ? { base_url } : {}),
+      ...(api_key ? { api_key } : {}),
+    },
+  });
+}
+
 export async function updatePrivacySettings(payload) {
   return apiClient("/v1/settings/privacy", {
     method: "PATCH",

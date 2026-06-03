@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
-import { getWorkspaceSettings, testAiConnection, updateAiSettings } from "@/api/settings";
+import Select from "@/components/Select/Select";
+import { fetchAiProxyModels, getWorkspaceSettings, testAiConnection, updateAiSettings } from "@/api/settings";
 import { getStoredUser } from "@/api/client";
 import {
   AI_PROVIDER_IDS,
@@ -13,6 +14,7 @@ import {
   isCustomizableProvider,
   mapAiSettingsToState,
 } from "@/lib/aiProviders";
+import { groupProxyModels, pickDefaultProxyModel } from "@/lib/proxyModels";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import AiProviderTabs from "./AiProviderTabs";
 import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";
@@ -27,6 +29,9 @@ export default function AiSettingsPanel() {
   const [forms, setForms] = useState(buildEmptyProviderForms());
   const [meta, setMeta] = useState({});
   const [configured, setConfigured] = useState(false);
+  const [proxyModels, setProxyModels] = useState([]);
+  const [modelsLoading, setModelsLoading] = useState(false);
+  const [modelsError, setModelsError] = useState("");
 
   const canEdit = ["admin", "developer"].includes(getStoredUser()?.role);
   const providerList = useMemo(() => AI_PROVIDER_IDS.map((id) => AI_PROVIDER_PRESETS[id]), []);
@@ -53,6 +58,64 @@ export default function AiSettingsPanel() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const customForm = forms.custom;
+  const customMeta = meta.custom || {};
+  const groupedProxyModels = useMemo(() => groupProxyModels(proxyModels), [proxyModels]);
+
+  const canFetchProxyModels = Boolean(
+    isCustom &&
+      customForm.base_url?.trim() &&
+      (customForm.api_key?.trim() || customMeta.has_api_key)
+  );
+
+  const loadProxyModels = useCallback(async () => {
+    if (!canFetchProxyModels) {
+      setProxyModels([]);
+      setModelsError("");
+      return;
+    }
+
+    setModelsLoading(true);
+    setModelsError("");
+
+    try {
+      const data = await fetchAiProxyModels({
+        base_url: customForm.base_url.trim(),
+        api_key: customForm.api_key?.trim() || undefined,
+      });
+      const models = data?.models || [];
+      setProxyModels(models);
+
+      const ids = new Set(models.map((item) => item.id));
+      setForms((currentForms) => {
+        const current = currentForms.custom.chat_model;
+        if (!models.length || (current && ids.has(current))) {
+          return currentForms;
+        }
+        return {
+          ...currentForms,
+          custom: {
+            ...currentForms.custom,
+            chat_model: pickDefaultProxyModel(models),
+          },
+        };
+      });
+    } catch (error) {
+      setProxyModels([]);
+      setModelsError(error.message || "Não foi possível carregar modelos do proxy.");
+    } finally {
+      setModelsLoading(false);
+    }
+  }, [canFetchProxyModels, customForm.api_key, customForm.base_url]);
+
+  useEffect(() => {
+    if (!isCustom) return undefined;
+    const timer = window.setTimeout(() => {
+      loadProxyModels();
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [isCustom, loadProxyModels]);
 
   function updateField(field, value) {
     setForms((current) => ({
@@ -256,17 +319,50 @@ export default function AiSettingsPanel() {
                     value={currentForm.base_url}
                     onChange={(event) => updateField("base_url", event.target.value)}
                     disabled={!canEdit}
-                    placeholder="http://localhost:8317"
-                    hint="Host:porta do CLIProxyAPI. O backend usa POST /v1/chat/completions."
+                    placeholder="https://geral-cli-antigravity-patrick.r954jc.easypanel.host"
+                    hint="Raiz do CLIProxyAPI — o backend usa POST /v1/chat/completions."
                   />
-                  <Input
-                    label="Modelo"
-                    value={currentForm.chat_model}
-                    onChange={(event) => updateField("chat_model", event.target.value)}
-                    disabled={!canEdit}
-                    placeholder="gemini-2.5-pro"
-                    hint="Id retornado por GET /v1/models — GPT, Claude, Gemini, etc."
-                  />
+                  <div className={styles.modelRow}>
+                    <Select
+                      label="Modelo"
+                      value={currentForm.chat_model}
+                      onChange={(event) => updateField("chat_model", event.target.value)}
+                      disabled={!canEdit || modelsLoading || proxyModels.length === 0}
+                      hint={
+                        modelsLoading
+                          ? "Carregando modelos do proxy…"
+                          : canFetchProxyModels
+                            ? "Lista viva de GET /v1/models no seu proxy."
+                            : "Informe URL e Bearer token para carregar os modelos."
+                      }
+                      error={modelsError || undefined}
+                    >
+                      {proxyModels.length === 0 ? (
+                        <option value={currentForm.chat_model || ""}>
+                          {modelsLoading ? "Carregando…" : "Aguardando credenciais…"}
+                        </option>
+                      ) : (
+                        groupedProxyModels.map((group) => (
+                          <optgroup key={group.id} label={group.label}>
+                            {group.models.map((model) => (
+                              <option key={model.id} value={model.id}>
+                                {model.id}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))
+                      )}
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={loadProxyModels}
+                      disabled={!canEdit || !canFetchProxyModels || modelsLoading}
+                    >
+                      {modelsLoading ? "…" : "Atualizar"}
+                    </Button>
+                  </div>
                 </>
               )}
             </div>
