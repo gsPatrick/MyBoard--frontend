@@ -242,6 +242,10 @@ export default function BordieChat() {
     };
   }, []);
 
+  const appendChatAssistant = useCallback((content) => {
+    setChatMessages((current) => [...current, createChatMessage("assistant", content)]);
+  }, []);
+
   const processAssistantResponse = useCallback(
     async (response, { wasPreparing = false } = {}) => {
       const { reply, action, actions } = response;
@@ -340,10 +344,6 @@ export default function BordieChat() {
     },
     [clearProject, clearClient, clearLucroFilter, setActiveTab]
   );
-
-  const appendChatAssistant = useCallback((content) => {
-    setChatMessages((current) => [...current, createChatMessage("assistant", content)]);
-  }, []);
 
   const runPrompt = useCallback(
     async (prompt) => {
