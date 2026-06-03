@@ -5,15 +5,22 @@ import { createPortal } from "react-dom";
 import Kbd from "@/components/Kbd/Kbd";
 import IconButton from "@/components/IconButton/IconButton";
 import {
-  canAutoApplyBoardAction,
   executeBordieAction,
   getBordiePolicy,
-  isBoardAction,
   sendBordieCommand,
   sendBordieMessage,
 } from "@/api/bordie";
 import { getWorkspaceSettings } from "@/api/settings";
-import { setBordieActionOverlay, withBordieActionOverlay, runBoardActionWithOverlay } from "@/lib/bordieActionOverlay";
+import {
+  beginBordieActionPreparing,
+  beginBordieActionOverlay,
+  endBordieActionOverlay,
+  executeBordieActionCore,
+  forceHideBordieActionOverlay,
+  getBordieActionOverlayLabel,
+  paintOverlayFrame,
+  updateBordieActionOverlayLabel,
+} from "@/lib/bordieActionOverlay";
 import { getStoredUser } from "@/api/client";
 import { useBordieChat } from "@/context/BordieChatContext";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
@@ -235,38 +242,41 @@ export default function BordieChat() {
     };
   }, []);
 
-  const handleBordieAction = useCallback(
-    async (action) => {
-      if (!action?.type) return;
+  const processAssistantResponse = useCallback(
+    async (response, { wasPreparing = false } = {}) => {
+      const { reply, action, actions } = response;
+      const primary = action || actions?.[0];
 
-      const actionLabel = action.payload?.explanation || action.type;
-
-      if (isBoardAction(action) && canAutoApplyBoardAction(action)) {
-        return runBoardActionWithOverlay(action);
-      }
-
-      const needsConfirm =
-        action.requires_confirmation === true ||
-        policyMode === "always_confirm";
-
-      if (needsConfirm) {
-        const label = action.payload?.explanation || action.type;
-        const confirmed = window.confirm(`Bordie quer executar: ${label}\n\nConfirmar?`);
-        if (!confirmed) {
-          return { ok: false, cancelled: true };
+      if (primary) {
+        if (wasPreparing) {
+          updateBordieActionOverlayLabel(getBordieActionOverlayLabel(primary));
+        } else {
+          beginBordieActionOverlay(primary);
         }
+        await paintOverlayFrame();
+      } else if (wasPreparing) {
+        forceHideBordieActionOverlay();
       }
 
-      if (isBoardAction(action) && action.payload?.proposed_scene) {
-        return runBoardActionWithOverlay(action);
+      if (reply) {
+        appendChatAssistant(reply);
       }
 
-      return withBordieActionOverlay(
-        () => executeBordieAction({ action, confirmed: true }),
-        actionLabel
-      );
+      if (!primary) return;
+
+      try {
+        await executeBordieActionCore(primary, {
+          executeRemote: executeBordieAction,
+          policyMode,
+        });
+      } catch (error) {
+        forceHideBordieActionOverlay();
+        throw error;
+      } finally {
+        endBordieActionOverlay();
+      }
     },
-    [policyMode]
+    [appendChatAssistant, policyMode]
   );
 
   const userName = getStoredUser()?.name?.trim().split(" ")[0] || "Você";
@@ -342,21 +352,22 @@ export default function BordieChat() {
 
       setIsRunning(true);
       setStatusMessage({ type: "loading", text: "Bordie está processando…" });
+      const wasPreparing = beginBordieActionPreparing(trimmed, context);
 
       try {
-        const { message, offline, action, actions } = await sendBordieCommand({ prompt: trimmed, context });
-        const resultText = message || "Comando recebido.";
+        const response = await sendBordieCommand({ prompt: trimmed, context });
+        const resultText = response.message || "Comando recebido.";
         setStatusMessage({
-          type: offline || !aiConfigured ? "info" : "success",
+          type: response.offline || !aiConfigured ? "info" : "success",
           text: resultText,
         });
-        appendChatAssistant(resultText);
 
-        const primary = action || actions?.[0];
-        if (primary) {
-          await handleBordieAction(primary);
-        }
+        await processAssistantResponse(
+          { reply: resultText, action: response.action, actions: response.actions },
+          { wasPreparing }
+        );
       } catch (error) {
+        forceHideBordieActionOverlay();
         setStatusMessage({
           type: "error",
           text: error.message || "Não foi possível executar o comando.",
@@ -365,7 +376,7 @@ export default function BordieChat() {
         setIsRunning(false);
       }
     },
-    [context, isRunning, appendChatAssistant, handleBordieAction]
+    [context, isRunning, processAssistantResponse, aiConfigured]
   );
 
   const handlers = useMemo(
@@ -658,25 +669,19 @@ export default function BordieChat() {
     setChatInput("");
     setChatError("");
     setChatLoading(true);
+    const wasPreparing = beginBordieActionPreparing(trimmed, context);
 
     try {
       const history = nextMessages.map(({ role, content }) => ({ role, content }));
-      const { reply, action, actions, offline } = await sendBordieMessage({
+      const response = await sendBordieMessage({
         message: trimmed,
         context,
         history: history.slice(0, -1),
       });
 
-      setChatMessages((current) => [
-        ...current,
-        createChatMessage("assistant", reply || "…"),
-      ]);
-
-      const primary = action || actions?.[0];
-      if (primary) {
-        await handleBordieAction(primary);
-      }
+      await processAssistantResponse(response, { wasPreparing });
     } catch (error) {
+      forceHideBordieActionOverlay();
       setChatError(error.message || "Não foi possível enviar a mensagem.");
       setChatMessages((current) => current.slice(0, -1));
       setChatInput(trimmed);
