@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
+import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
 import { updateProject } from "@/api/projects";
 import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
@@ -132,6 +133,17 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
           </div>
         </dl>
       </section>
+
+      {project?.id && (
+        <section className={asideStyles.card}>
+          <h2 className={asideStyles.title}>Importar com IA</h2>
+          <IngestionUpload
+            variant="compact"
+            target={{ projectId: project.id }}
+            label="Enviar arquivo para atualizar este projeto"
+          />
+        </section>
+      )}
     </aside>
   );
 }

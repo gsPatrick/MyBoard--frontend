@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Button from "@/components/Button/Button";
+import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
 import { listProjects } from "@/api/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
@@ -110,14 +110,7 @@ export default function LatestFiles() {
       </div>
 
       <div className={styles.uploadZone}>
-        <p className={styles.uploadText}>
-          <span>Arraste arquivos aqui para enviar</span>
-          <span className={styles.uploadSep}> ou </span>
-          <span>selecione arquivos</span>
-        </p>
-        <Button variant="secondary" size="sm">
-          Enviar
-        </Button>
+        <IngestionUpload variant="panel" onApplied={loadProjects} />
       </div>
     </section>
   );

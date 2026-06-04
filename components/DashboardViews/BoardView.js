@@ -26,10 +26,12 @@ import {
 } from "@/lib/excalidraw";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { BORDIE_DOCK_WIDTH_CSS } from "@/lib/bordieLayout";
+import { buildBoardSnapshotFromScene } from "@/lib/bordieBoardSnapshot";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import styles from "./BoardView.module.css";
 
 const SAVE_DEBOUNCE_MS = 900;
+const BOARD_CONTEXT_SYNC_MS = 400;
 const FULLSCREEN_HEADER_HIDDEN_KEY = "myboard_board_fs_header_hidden";
 
 function readFullscreenHeaderHidden() {
@@ -132,6 +134,7 @@ export default function BoardView() {
 
   const pendingScene = useRef(serializeScene([], EMPTY_SCENE.appState, {}));
   const saveTimer = useRef(null);
+  const boardContextSyncTimer = useRef(null);
   const isHydratingRef = useRef(true);
   const persistSceneRef = useRef(null);
   const activeBoardRef = useRef(null);
@@ -292,7 +295,26 @@ export default function BoardView() {
     }
 
     scheduleAutoSave();
+    scheduleBoardContextSync();
   }
+
+  const syncBoardContextToBordie = useCallback(() => {
+    const board = activeBoardRef.current;
+    if (!board?.id) return;
+
+    const snapshot = buildBoardSnapshotFromScene(board, pendingScene.current);
+    if (snapshot) setBoardContext(snapshot);
+  }, [setBoardContext]);
+
+  const scheduleBoardContextSync = useCallback(() => {
+    if (boardContextSyncTimer.current) {
+      window.clearTimeout(boardContextSyncTimer.current);
+    }
+    boardContextSyncTimer.current = window.setTimeout(() => {
+      boardContextSyncTimer.current = null;
+      syncBoardContextToBordie();
+    }, BOARD_CONTEXT_SYNC_MS);
+  }, [syncBoardContextToBordie]);
 
   const applyBordieScene = useCallback(
     async (sceneData, meta = {}) => {
@@ -351,22 +373,32 @@ export default function BoardView() {
       return;
     }
 
-    const currentScene = pendingScene.current || scene;
-    const visible = (currentScene.elements || []).filter((el) => !el.isDeleted);
+    syncBoardContextToBordie();
+  }, [activeBoard, scene, syncBoardContextToBordie, setBoardContext]);
 
-    setBoardContext({
-      id: activeBoard.id,
-      name: activeBoard.name,
-      scene_data: currentScene,
-      summary: {
-        element_count: visible.length,
-        labels: visible
-          .map((el) => el.text || el.originalText || el.type)
-          .filter(Boolean)
-          .slice(0, 30),
-      },
-    });
-  }, [activeBoard, scene, setBoardContext]);
+  useEffect(() => {
+    function handleRequestBoardContext() {
+      const board = activeBoardRef.current;
+      if (!board?.id) return;
+
+      const snapshot = buildBoardSnapshotFromScene(board, pendingScene.current);
+      if (!snapshot) return;
+
+      window.dispatchEvent(
+        new CustomEvent("myboard:board-context-snapshot", {
+          detail: snapshot,
+        })
+      );
+    }
+
+    window.addEventListener("myboard:request-board-context", handleRequestBoardContext);
+    return () => {
+      window.removeEventListener("myboard:request-board-context", handleRequestBoardContext);
+      if (boardContextSyncTimer.current) {
+        window.clearTimeout(boardContextSyncTimer.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     function handleApplyScene(event) {

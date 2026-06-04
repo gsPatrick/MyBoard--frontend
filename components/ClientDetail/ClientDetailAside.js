@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Chip from "@/components/Chip/Chip";
+import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
 import { updateClient } from "@/api/clients";
 import { showSuccessToast } from "@/lib/toast";
 import {
@@ -117,6 +118,17 @@ export default function ClientDetailAside({ client, onClientChange }) {
               </span>
             ))}
           </div>
+        </section>
+      )}
+
+      {client?.id && (
+        <section className={asideStyles.card}>
+          <h2 className={asideStyles.title}>Importar com IA</h2>
+          <IngestionUpload
+            variant="compact"
+            target={{ clientId: client.id }}
+            label="Enviar arquivo para atualizar este cliente"
+          />
         </section>
       )}
     </aside>

@@ -27,6 +27,7 @@ import { useDashboardLayout } from "@/context/DashboardLayoutContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { useDashboardTab } from "@/context/DashboardTabContext";
 import { useKeyboardShortcuts } from "@/context/KeyboardShortcutsContext";
+import { buildBordieContextWithFreshBoard } from "@/lib/bordieBoardSnapshot";
 import {
   buildBordieContext,
   filterBordieActions,
@@ -353,9 +354,16 @@ export default function BordieChat() {
       setIsRunning(true);
       setStatusMessage({ type: "loading", text: "Bordie está processando…" });
       const wasPreparing = beginBordieActionPreparing(trimmed, context);
+      const requestContext = await buildBordieContextWithFreshBoard({
+        activeTab,
+        selectedProject,
+        selectedClient,
+        boardContext,
+        policyMode,
+      });
 
       try {
-        const response = await sendBordieCommand({ prompt: trimmed, context });
+        const response = await sendBordieCommand({ prompt: trimmed, context: requestContext });
         const resultText = response.message || "Comando recebido.";
         setStatusMessage({
           type: response.offline || !aiConfigured ? "info" : "success",
@@ -376,7 +384,7 @@ export default function BordieChat() {
         setIsRunning(false);
       }
     },
-    [context, isRunning, processAssistantResponse, aiConfigured]
+    [activeTab, selectedProject, selectedClient, boardContext, policyMode, isRunning, processAssistantResponse, aiConfigured]
   );
 
   const handlers = useMemo(
@@ -672,10 +680,17 @@ export default function BordieChat() {
     const wasPreparing = beginBordieActionPreparing(trimmed, context);
 
     try {
+      const requestContext = await buildBordieContextWithFreshBoard({
+        activeTab,
+        selectedProject,
+        selectedClient,
+        boardContext,
+        policyMode,
+      });
       const history = nextMessages.map(({ role, content }) => ({ role, content }));
       const response = await sendBordieMessage({
         message: trimmed,
-        context,
+        context: requestContext,
         history: history.slice(0, -1),
       });
 

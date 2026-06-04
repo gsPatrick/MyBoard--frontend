@@ -33,6 +33,10 @@ export const ENDPOINTS = {
   finance: `/${API_VERSION}/finance`,
   demands: `/${API_VERSION}/demands`,
   boards: `/${API_VERSION}/boards`,
+  ingestion: {
+    analyze: `/${API_VERSION}/ingestion/analyze`,
+    apply: `/${API_VERSION}/ingestion/apply`,
+  },
   bordie: {
     chat: `/${API_VERSION}/bordie/chat`,
     command: `/${API_VERSION}/bordie/command`,
