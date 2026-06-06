@@ -9,8 +9,15 @@ import {
   setBordieActionOverlay,
   forceHideBordieActionOverlay,
 } from "@/lib/bordieActionOverlay";
+import { getIngestionAuto } from "@/lib/ingestionPrefs";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import styles from "./IngestionUpload.module.css";
+
+const STEPS = [
+  { key: "client", label: "Cliente" },
+  { key: "project", label: "Projeto" },
+  { key: "details", label: "Informações" },
+];
 
 const ACCEPT =
   ".zip,.txt,.pdf,.md,.csv,.json,application/pdf,text/plain,application/zip";
@@ -51,6 +58,7 @@ export default function IngestionUpload({
   const [proposal, setProposal] = useState(null);
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
+  const [step, setStep] = useState(0);
 
   const isUpdate = Boolean(target.projectId || target.clientId);
 
@@ -59,7 +67,49 @@ export default function IngestionUpload({
     setStats(null);
     setFiles([]);
     setError("");
+    setStep(0);
   }, []);
+
+  // Aplica a proposta (usado tanto pelo modo manual quanto pelo automático).
+  const runApply = useCallback(
+    async (proposalData, filesData) => {
+      if (!proposalData) return false;
+      setApplying(true);
+      setError("");
+      setBordieActionOverlay(true, "Bordie criando registros…");
+
+      const payload = {
+        ...proposalData,
+        details: (proposalData.details || []).filter((d) => !d._excluded),
+      };
+
+      try {
+        const result = await applyIngestion({ proposal: payload, files: filesData, target });
+        const a = result.actions || {};
+        const summary = [
+          a.client ? `cliente ${a.client === "created" ? "criado" : "atualizado"}` : null,
+          a.project ? `projeto ${a.project === "created" ? "criado" : "atualizado"}` : null,
+          a.details ? `${a.details} detalhe(s)` : null,
+          a.files ? `${a.files} arquivo(s)` : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        showSuccessToast(`Importação concluída — ${summary || "nada a aplicar"}`);
+        window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
+        onApplied?.(result);
+        reset();
+        return true;
+      } catch (e) {
+        setError(e.message || "Falha ao aplicar a importação.");
+        showErrorToast(e.message || "Falha ao aplicar a importação.");
+        return false;
+      } finally {
+        setApplying(false);
+        forceHideBordieActionOverlay();
+      }
+    },
+    [target, onApplied, reset]
+  );
 
   const handleFiles = useCallback(
     async (fileList) => {
@@ -71,20 +121,36 @@ export default function IngestionUpload({
       setAnalyzing(true);
       setBordieActionOverlay(true, "Bordie analisando arquivos…");
 
+      let prop = null;
+      let sts = null;
+      let ok = true;
       try {
         const result = await analyzeUpload(picked, target);
-        setProposal(result.proposal || null);
-        setStats(result.stats || null);
+        prop = result.proposal || null;
+        sts = result.stats || null;
       } catch (e) {
+        ok = false;
         setError(e.message || "Falha ao analisar os arquivos.");
         showErrorToast(e.message || "Falha ao analisar os arquivos.");
         setFiles([]);
-      } finally {
-        setAnalyzing(false);
-        forceHideBordieActionOverlay();
       }
+
+      setAnalyzing(false);
+      forceHideBordieActionOverlay();
+      if (!ok) return;
+
+      setStats(sts);
+
+      // Modo automático: aplica direto, sem abrir o modal de confirmação.
+      if (prop && getIngestionAuto()) {
+        await runApply(prop, picked);
+        return;
+      }
+
+      setProposal(prop);
+      setStep(0);
     },
-    [target]
+    [target, runApply]
   );
 
   const onDrop = (e) => {
@@ -98,40 +164,7 @@ export default function IngestionUpload({
     e.target.value = "";
   };
 
-  const handleApply = async () => {
-    if (!proposal) return;
-    setApplying(true);
-    setError("");
-    setBordieActionOverlay(true, "Bordie criando registros…");
-
-    const payload = {
-      ...proposal,
-      details: (proposal.details || []).filter((d) => !d._excluded),
-    };
-
-    try {
-      const result = await applyIngestion({ proposal: payload, files, target });
-      const a = result.actions || {};
-      const summary = [
-        a.client ? `cliente ${a.client === "created" ? "criado" : "atualizado"}` : null,
-        a.project ? `projeto ${a.project === "created" ? "criado" : "atualizado"}` : null,
-        a.details ? `${a.details} detalhe(s)` : null,
-        a.files ? `${a.files} arquivo(s)` : null,
-      ]
-        .filter(Boolean)
-        .join(" · ");
-      showSuccessToast(`Importação concluída — ${summary || "nada a aplicar"}`);
-      window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
-      onApplied?.(result);
-      reset();
-    } catch (e) {
-      setError(e.message || "Falha ao aplicar a importação.");
-      showErrorToast(e.message || "Falha ao aplicar a importação.");
-    } finally {
-      setApplying(false);
-      forceHideBordieActionOverlay();
-    }
-  };
+  const handleApply = () => runApply(proposal, files);
 
   const setClientField = (field, value) =>
     setProposal((p) => ({ ...p, client: { ...(p.client || {}), [field]: value } }));
@@ -222,99 +255,134 @@ export default function IngestionUpload({
             <Button variant="ghost" onClick={reset} disabled={applying}>
               Cancelar
             </Button>
-            <Button variant="primary" onClick={handleApply} disabled={applying}>
-              {applying ? "Aplicando…" : isUpdate ? "Aplicar atualização" : "Criar registros"}
-            </Button>
+            {step > 0 && (
+              <Button variant="ghost" onClick={() => setStep((s) => s - 1)} disabled={applying}>
+                Voltar
+              </Button>
+            )}
+            {step < STEPS.length - 1 ? (
+              <Button variant="primary" onClick={() => setStep((s) => s + 1)} disabled={applying}>
+                Próximo
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={handleApply} disabled={applying}>
+                {applying ? "Aplicando…" : isUpdate ? "Aplicar atualização" : "Criar registros"}
+              </Button>
+            )}
           </>
         }
       >
         {error && <p className={styles.error}>{error}</p>}
-        {stats && (
+
+        <div className={styles.stepper} role="list" aria-label="Etapas">
+          {STEPS.map((s, i) => (
+            <button
+              type="button"
+              key={s.key}
+              className={`${styles.stepItem} ${i === step ? styles.stepActive : ""} ${
+                i < step ? styles.stepDone : ""
+              }`}
+              onClick={() => setStep(i)}
+              disabled={applying}
+            >
+              <span className={styles.stepNum}>{i < step ? "✓" : i + 1}</span>
+              <span className={styles.stepLabel}>{s.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {stats && step === 0 && (
           <p className={styles.statsLine}>
             {stats.files} arquivo(s) lidos · {details.length} detalhe(s) ·{" "}
-            {proposal?.summary ? proposal.summary : "revise e confirme abaixo"}
+            {proposal?.summary ? proposal.summary : "revise e confirme em cada etapa"}
           </p>
         )}
 
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Cliente</h3>
-          <div className={styles.grid2}>
-            <Input label="Nome" value={client.name || ""} onChange={(e) => setClientField("name", e.target.value)} />
-            <Input label="E-mail" value={client.email || ""} onChange={(e) => setClientField("email", e.target.value)} />
-            <Input label="Empresa" value={client.company || ""} onChange={(e) => setClientField("company", e.target.value)} />
-            <Input label="Telefone" value={client.phone || ""} onChange={(e) => setClientField("phone", e.target.value)} />
-            <Input label="Documento" value={client.document || ""} onChange={(e) => setClientField("document", e.target.value)} />
-          </div>
-        </section>
+        {step === 0 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Cliente</h3>
+            <div className={styles.grid2}>
+              <Input label="Nome" value={client.name || ""} onChange={(e) => setClientField("name", e.target.value)} />
+              <Input label="E-mail" value={client.email || ""} onChange={(e) => setClientField("email", e.target.value)} />
+              <Input label="Empresa" value={client.company || ""} onChange={(e) => setClientField("company", e.target.value)} />
+              <Input label="Telefone" value={client.phone || ""} onChange={(e) => setClientField("phone", e.target.value)} />
+              <Input label="Documento" value={client.document || ""} onChange={(e) => setClientField("document", e.target.value)} />
+            </div>
+          </section>
+        )}
 
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>Projeto</h3>
-          <div className={styles.grid2}>
-            <Input label="Nome" value={project.name || ""} onChange={(e) => setProjectField("name", e.target.value)} />
-            <Input label="Orçamento (R$)" value={project.budget ?? ""} onChange={(e) => setProjectField("budget", e.target.value)} />
+        {step === 1 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>Projeto</h3>
+            <div className={styles.grid2}>
+              <Input label="Nome" value={project.name || ""} onChange={(e) => setProjectField("name", e.target.value)} />
+              <Input label="Orçamento (R$)" value={project.budget ?? ""} onChange={(e) => setProjectField("budget", e.target.value)} />
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>Status</span>
+                <select
+                  className={styles.select}
+                  value={project.status || ""}
+                  onChange={(e) => setProjectField("status", e.target.value || null)}
+                >
+                  {STATUS_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <label className={styles.field}>
-              <span className={styles.fieldLabel}>Status</span>
-              <select
-                className={styles.select}
-                value={project.status || ""}
-                onChange={(e) => setProjectField("status", e.target.value || null)}
-              >
-                {STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
+              <span className={styles.fieldLabel}>Descrição</span>
+              <textarea
+                className={styles.textarea}
+                rows={3}
+                value={project.description || ""}
+                onChange={(e) => setProjectField("description", e.target.value)}
+              />
             </label>
-          </div>
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Descrição</span>
-            <textarea
-              className={styles.textarea}
-              rows={2}
-              value={project.description || ""}
-              onChange={(e) => setProjectField("description", e.target.value)}
-            />
-          </label>
-        </section>
+          </section>
+        )}
 
-        <section className={styles.section}>
-          <h3 className={styles.sectionTitle}>
-            Detalhes e credenciais{" "}
-            <span className={styles.muted}>(serão salvos no projeto)</span>
-          </h3>
-          {details.length === 0 && <p className={styles.muted}>Nenhum detalhe extraído.</p>}
-          <div className={styles.details}>
-            {details.map((detail, index) => (
-              <div
-                key={index}
-                className={`${styles.detailRow} ${detail._excluded ? styles.detailExcluded : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={!detail._excluded}
-                  onChange={() => toggleDetail(index)}
-                  aria-label="Incluir detalhe"
-                />
-                <span className={`${styles.badge} ${detail.is_secret ? styles.badgeSecret : ""}`}>
-                  {detail.is_secret ? "🔒 " : ""}
-                  {CATEGORY_LABELS[detail.category] || detail.category}
-                </span>
-                <input
-                  className={styles.detailLabel}
-                  value={detail.label || ""}
-                  onChange={(e) => setDetailField(index, "label", e.target.value)}
-                />
-                <input
-                  className={styles.detailValue}
-                  type={detail.is_secret ? "password" : "text"}
-                  value={detail.value || ""}
-                  onChange={(e) => setDetailField(index, "value", e.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
+        {step === 2 && (
+          <section className={styles.section}>
+            <h3 className={styles.sectionTitle}>
+              Informações e credenciais{" "}
+              <span className={styles.muted}>(serão salvas no projeto)</span>
+            </h3>
+            {details.length === 0 && <p className={styles.muted}>Nenhuma informação extraída.</p>}
+            <div className={styles.details}>
+              {details.map((detail, index) => (
+                <div
+                  key={index}
+                  className={`${styles.detailRow} ${detail._excluded ? styles.detailExcluded : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!detail._excluded}
+                    onChange={() => toggleDetail(index)}
+                    aria-label="Incluir detalhe"
+                  />
+                  <span className={`${styles.badge} ${detail.is_secret ? styles.badgeSecret : ""}`}>
+                    {detail.is_secret ? "🔒 " : ""}
+                    {CATEGORY_LABELS[detail.category] || detail.category}
+                  </span>
+                  <input
+                    className={styles.detailLabel}
+                    value={detail.label || ""}
+                    onChange={(e) => setDetailField(index, "label", e.target.value)}
+                  />
+                  <input
+                    className={styles.detailValue}
+                    type={detail.is_secret ? "password" : "text"}
+                    value={detail.value || ""}
+                    onChange={(e) => setDetailField(index, "value", e.target.value)}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </Modal>
     </>
   );

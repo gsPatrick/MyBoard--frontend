@@ -19,7 +19,25 @@ export default function DemandasView() {
   const [projectFilter, setProjectFilter] = useState("");
   const [selectedDemand, setSelectedDemand] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [tipsHidden, setTipsHidden] = useState(true);
   const initialLoadDone = useRef(false);
+
+  useEffect(() => {
+    try {
+      setTipsHidden(window.localStorage.getItem("myboard_demandas_tips_hidden") === "1");
+    } catch {
+      setTipsHidden(false);
+    }
+  }, []);
+
+  function dismissTips() {
+    setTipsHidden(true);
+    try {
+      window.localStorage.setItem("myboard_demandas_tips_hidden", "1");
+    } catch {
+      /* ignore */
+    }
+  }
 
   const load = useCallback(
     async ({ silent = false } = {}) => {
@@ -175,15 +193,26 @@ export default function DemandasView() {
         </div>
       </div>
 
-      <div className={styles.tipsCard} data-tour="demandas-onboarding-anchor">
-        <p className={styles.tipsTitle}>Dicas</p>
-        <ul className={styles.tipsList}>
-          <li>Clique em um cartão para ver detalhes e anexos.</li>
-          <li>Arraste entre colunas para mudar o status.</li>
-          <li>Use Nova Demanda na barra superior para criar tarefas.</li>
-          <li>Filtre por projeto para focar em uma entrega.</li>
-        </ul>
-      </div>
+      {!tipsHidden && (
+        <div className={styles.tipsBar} data-tour="demandas-onboarding-anchor">
+          <span className={styles.tipsLabel}>Dicas</span>
+          <ul className={styles.tipsInline}>
+            <li>Clique no cartão para ver detalhes</li>
+            <li>Arraste entre colunas para mudar o status</li>
+            <li>Nova Demanda na barra superior</li>
+            <li>Filtre por projeto</li>
+          </ul>
+          <button
+            type="button"
+            className={styles.tipsClose}
+            onClick={dismissTips}
+            aria-label="Ocultar dicas"
+            title="Ocultar dicas"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       {loading && <p className={styles.loading}>Carregando demandas...</p>}
 

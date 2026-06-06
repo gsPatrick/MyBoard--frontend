@@ -181,3 +181,56 @@
     grid-column: 1 / -1;
   }
 }
+
+/* ---------- wizard / stepper ---------- */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.stepItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border: 1px solid var(--border-color, rgba(120, 120, 140, 0.35));
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted, rgba(180, 180, 200, 0.7));
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.stepItem:disabled {
+  cursor: default;
+}
+.stepNum {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--background-2, rgba(40, 40, 52, 0.8));
+  color: var(--text-muted, rgba(180, 180, 200, 0.7));
+  font-size: 12px;
+  font-weight: 700;
+}
+.stepActive {
+  border-color: var(--secondary-indigo, #6366f1);
+  color: var(--text-primary, #fff);
+  background: rgba(99, 102, 241, 0.1);
+}
+.stepActive .stepNum {
+  background: var(--secondary-indigo, #6366f1);
+  color: #fff;
+}
+.stepDone {
+  color: var(--text-secondary, rgba(210, 210, 225, 0.85));
+}
+.stepDone .stepNum {
+  background: rgba(34, 197, 94, 0.18);
+  color: #16a34a;
+}

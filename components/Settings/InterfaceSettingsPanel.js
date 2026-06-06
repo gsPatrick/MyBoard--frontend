@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTheme } from "@/components/ThemeProvider/ThemeProvider";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
+import { getIngestionAuto, setIngestionAuto } from "@/lib/ingestionPrefs";
 import {
   CONTENT_WIDTH,
   CONTENT_WIDTH_OPTIONS,
@@ -135,6 +137,15 @@ export default function InterfaceSettingsPanel() {
   const bothMatch = leftCollapseStyle === rightCollapseStyle;
   const enabledSectionCount = Object.values(rightPanelSections).filter(Boolean).length;
 
+  const [ingestAuto, setIngestAuto] = useState(false);
+  useEffect(() => {
+    setIngestAuto(getIngestionAuto());
+  }, []);
+  function chooseIngest(auto) {
+    setIngestAuto(auto);
+    setIngestionAuto(auto);
+  }
+
   function applyBoth(style) {
     setBothCollapseStyles(style);
   }
@@ -257,6 +268,31 @@ export default function InterfaceSettingsPanel() {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className={styles.section}>
+        <div className={styles.pickerHeader}>
+          <h3 className={styles.pickerTitle}>Importação por IA</h3>
+          <p className={styles.pickerHint}>
+            Ao enviar arquivos para a IA importar, escolha se quer revisar antes ou aplicar direto.
+          </p>
+        </div>
+        <div className={styles.optionGrid} role="radiogroup" aria-label="Importação por IA">
+          <OptionCard
+            selected={!ingestAuto}
+            onClick={() => chooseIngest(false)}
+            preview={null}
+            label="Confirmar no modal"
+            description="Revisar cliente, projeto e dados passo a passo antes de criar."
+          />
+          <OptionCard
+            selected={ingestAuto}
+            onClick={() => chooseIngest(true)}
+            preview={null}
+            label="Automático"
+            description="A IA cria tudo direto, sem abrir o modal de confirmação."
+          />
         </div>
       </div>
     </SettingsPanelShell>
