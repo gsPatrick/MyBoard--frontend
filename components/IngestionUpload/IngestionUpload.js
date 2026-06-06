@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
@@ -51,13 +51,10 @@ const CATEGORY_LABELS = {
   custom: "Outro",
 };
 
-export default function IngestionUpload({
-  target = {},
-  variant = "panel",
-  label,
-  onApplied,
-  fill = false,
-}) {
+const IngestionUpload = forwardRef(function IngestionUpload(
+  { target = {}, variant = "panel", label, onApplied, fill = false },
+  ref
+) {
   const inputRef = useRef(null);
   const wrapRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -197,6 +194,9 @@ export default function IngestionUpload({
     setTextValue("");
     await handleFiles([file]);
   }, [textValue, handleFiles]);
+
+  // Permite acionar a importação de fora (ex.: arrastar arquivo no chat do Bordie).
+  useImperativeHandle(ref, () => ({ importFiles: handleFiles }), [handleFiles]);
 
   const setClientField = (field, value) =>
     setProposal((p) => ({ ...p, client: { ...(p.client || {}), [field]: value } }));
@@ -509,7 +509,9 @@ export default function IngestionUpload({
       </Modal>
     </>
   );
-}
+});
+
+export default IngestionUpload;
 
 function TextIcon() {
   return (

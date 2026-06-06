@@ -218,6 +218,7 @@ export default function BordieChat() {
   const [chatError, setChatError] = useState("");
   const [policyMode, setPolicyMode] = useState(null);
   const [aiConfigured, setAiConfigured] = useState(true);
+  const [chatDragOver, setChatDragOver] = useState(false);
 
   const commandInputRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -225,6 +226,7 @@ export default function BordieChat() {
   const panelRef = useRef(null);
   const interactionRef = useRef(null);
   const sizeRef = useRef(BORDIE_DEFAULT_SIZE);
+  const ingestionRef = useRef(null);
 
   const context = useMemo(
     () => buildBordieContext({ activeTab, selectedProject, selectedClient, boardContext, policyMode }),
@@ -1080,7 +1082,42 @@ export default function BordieChat() {
           className={styles.chatPane}
           aria-label="Conversa com Bordie"
           role={isDocked ? "tabpanel" : undefined}
+          onDragOver={(event) => {
+            if (event.dataTransfer?.types?.includes("Files")) {
+              event.preventDefault();
+              if (!chatDragOver) setChatDragOver(true);
+            }
+          }}
+          onDragLeave={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setChatDragOver(false);
+          }}
+          onDrop={(event) => {
+            const files = event.dataTransfer?.files;
+            if (files?.length) {
+              event.preventDefault();
+              setChatDragOver(false);
+              ingestionRef.current?.importFiles(files);
+            }
+          }}
         >
+          <div style={{ display: "none" }}>
+            <IngestionUpload
+              ref={ingestionRef}
+              onApplied={() =>
+                appendChatAssistant("Pronto — importei o arquivo e atualizei o workspace.")
+              }
+            />
+          </div>
+
+          {chatDragOver && (
+            <div className={styles.chatDropOverlay} aria-hidden="true">
+              <div className={styles.chatDropInner}>
+                <span className={styles.chatDropIcon}>⬆</span>
+                Solte o arquivo para o Bordie importar
+              </div>
+            </div>
+          )}
+
           {!isDocked && (
           <div className={styles.chatHeader}>
             <p className={styles.chatTitle}>Conversa</p>
@@ -1167,15 +1204,6 @@ export default function BordieChat() {
           <form className={styles.chatComposer} onSubmit={handleChatSubmit}>
             {chatError && <p className={styles.chatError}>{chatError}</p>}
             <div className={styles.chatComposerRow}>
-              <span className={styles.chatAttach}>
-                <IngestionUpload
-                  variant="compact"
-                  label="Anexar"
-                  onApplied={() =>
-                    appendChatAssistant("Pronto — importei o arquivo e atualizei o workspace.")
-                  }
-                />
-              </span>
               <textarea
                 ref={chatInputRef}
                 className={styles.chatInput}

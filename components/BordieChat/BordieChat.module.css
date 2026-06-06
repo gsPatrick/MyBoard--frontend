@@ -821,3 +821,35 @@
   align-self: flex-end;
   display: inline-flex;
 }
+
+/* arrastar arquivo para o chat do Bordie */
+.chatPane {
+  position: relative;
+}
+.chatDropOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--background-1, #111) 78%, transparent);
+  backdrop-filter: blur(2px);
+  border: 2px dashed var(--secondary-indigo, #6366f1);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+.chatDropInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary, #fff);
+  text-align: center;
+}
+.chatDropIcon {
+  font-size: 24px;
+  color: var(--secondary-indigo, #6366f1);
+}
