@@ -49,6 +49,7 @@ export default function IngestionUpload({
   variant = "panel",
   label,
   onApplied,
+  fill = false,
 }) {
   const inputRef = useRef(null);
   const wrapRef = useRef(null);
@@ -230,7 +231,7 @@ export default function IngestionUpload({
       </button>
     ) : (
       <div
-        className={`${styles.zone} ${dragOver ? styles.zoneOver : ""}`}
+        className={`${styles.zone} ${dragOver ? styles.zoneOver : ""} ${fill ? styles.zoneFill : ""}`}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -262,7 +263,7 @@ export default function IngestionUpload({
       <div className={styles.chooserWrap} ref={wrapRef}>
         {dropzone}
         {menuOpen && (
-          <div className={styles.chooser} role="menu">
+          <div className={`${styles.chooser} ${fill ? styles.chooserUp : ""}`} role="menu">
             <button
               type="button"
               className={styles.chooserItem}

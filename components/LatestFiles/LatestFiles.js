@@ -110,7 +110,7 @@ export default function LatestFiles() {
       </div>
 
       <div className={styles.uploadZone}>
-        <IngestionUpload variant="panel" onApplied={loadProjects} />
+        <IngestionUpload variant="panel" onApplied={loadProjects} fill />
       </div>
     </section>
   );

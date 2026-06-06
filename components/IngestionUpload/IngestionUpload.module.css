@@ -314,3 +314,23 @@
 .notepad:focus {
   border-color: var(--secondary-indigo, #6366f1);
 }
+
+/* ---------- modo "fill": dropzone como footer de ponta a ponta ---------- */
+.zoneFill {
+  width: 100%;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding: 16px 24px;
+  box-sizing: border-box;
+}
+.zoneFill:hover,
+.zoneFill.zoneOver {
+  border-color: transparent;
+  background: rgba(173, 173, 251, 0.08);
+}
+/* menu abre para cima quando o dropzone é o footer */
+.chooserUp {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
