@@ -7,9 +7,15 @@ import IconButton from "@/components/IconButton/IconButton";
 import {
   executeBordieAction,
   getBordiePolicy,
+  isBoardAction,
   sendBordieCommand,
   sendBordieMessage,
 } from "@/api/bordie";
+import {
+  BordieActionConfirm,
+  BordieEntityList,
+  renderRichText,
+} from "./BordieRich";
 import { getWorkspaceSettings } from "@/api/settings";
 import {
   beginBordieActionPreparing,
@@ -139,11 +145,13 @@ function ChevronLeftIcon() {
   );
 }
 
-function createChatMessage(role, content) {
+function createChatMessage(role, content, extra = {}) {
   return {
     id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     role,
     content,
+    entities: extra.entities || null,
+    pendingAction: extra.pendingAction || null,
   };
 }
 
@@ -169,8 +177,15 @@ export default function BordieChat() {
   const { bordieOpen, bordieDocked, displayMode, closeBordie, dockBordie, floatBordie, boardContext } =
     useBordieChat();
   const { activeTab, setActiveTab } = useDashboardTab();
-  const { selectedProject, selectedClient, clearProject, clearClient, clearLucroFilter } =
-    useDashboardNav();
+  const {
+    selectedProject,
+    selectedClient,
+    selectProject,
+    selectClient,
+    clearProject,
+    clearClient,
+    clearLucroFilter,
+  } = useDashboardNav();
   const {
     openSearch,
     refreshAll,
@@ -243,45 +258,122 @@ export default function BordieChat() {
     };
   }, []);
 
-  const appendChatAssistant = useCallback((content) => {
-    setChatMessages((current) => [...current, createChatMessage("assistant", content)]);
+  const appendChatAssistant = useCallback((content, extra = {}) => {
+    setChatMessages((current) => [...current, createChatMessage("assistant", content, extra)]);
   }, []);
+
+  const updatePending = useCallback((id, patch) => {
+    setChatMessages((current) =>
+      current.map((m) =>
+        m.id === id && m.pendingAction
+          ? { ...m, pendingAction: { ...m.pendingAction, ...patch } }
+          : m
+      )
+    );
+  }, []);
+
+  const handleOpenEntity = useCallback(
+    (entity) => {
+      if (!entity?.open) return;
+      const { kind, id, name } = entity.open;
+      if (kind === "project") {
+        selectProject({ id, name, ...(entity.meta || {}) });
+      } else if (kind === "client") {
+        selectClient({ id, name });
+      } else if (kind === "agenda") {
+        setActiveTab("agenda");
+      }
+      if (displayMode !== BORDIE_DISPLAY.DOCKED) closeBordie();
+    },
+    [selectProject, selectClient, setActiveTab, displayMode, closeBordie]
+  );
+
+  // Executa uma ação de workspace e atualiza o card de confirmação correspondente.
+  const runWorkspaceActionNow = useCallback(
+    async (messageId, action) => {
+      updatePending(messageId, { state: "running" });
+      try {
+        const res = await executeBordieAction({ action, confirmed: true });
+        if (res?.ok) {
+          updatePending(messageId, {
+            state: "done",
+            resultMessage: res.result?.message || "Feito.",
+            resultEntity: res.result?.entity || null,
+          });
+        } else {
+          updatePending(messageId, {
+            state: "error",
+            resultMessage: res?.reason || "Não foi possível executar a ação.",
+          });
+        }
+      } catch (error) {
+        updatePending(messageId, {
+          state: "error",
+          resultMessage: error.message || "Falha ao executar a ação.",
+        });
+      }
+    },
+    [updatePending]
+  );
+
+  const cancelPending = useCallback(
+    (messageId) => updatePending(messageId, { state: "cancelled" }),
+    [updatePending]
+  );
 
   const processAssistantResponse = useCallback(
     async (response, { wasPreparing = false } = {}) => {
-      const { reply, action, actions } = response;
-      const primary = action || actions?.[0];
+      const { reply, action, actions, entities } = response;
+      const allActions = (actions?.length ? actions : action ? [action] : []).filter(Boolean);
+      const boardAction = allActions.find((item) => isBoardAction(item));
+      const workspaceActions = allActions.filter((item) => !isBoardAction(item));
 
-      if (primary) {
+      // Overlay apenas para ação de board (fluxo do canvas — mantido separado).
+      if (boardAction) {
         if (wasPreparing) {
-          updateBordieActionOverlayLabel(getBordieActionOverlayLabel(primary));
+          updateBordieActionOverlayLabel(getBordieActionOverlayLabel(boardAction));
         } else {
-          beginBordieActionOverlay(primary);
+          beginBordieActionOverlay(boardAction);
         }
         await paintOverlayFrame();
       } else if (wasPreparing) {
         forceHideBordieActionOverlay();
       }
 
-      if (reply) {
-        appendChatAssistant(reply);
+      // Mensagem do assistente: texto + cards de entidades.
+      if (reply || entities?.length) {
+        appendChatAssistant(reply || "", { entities: entities || null });
       }
 
-      if (!primary) return;
+      // Ação de board: fluxo existente (aplica cena / overlay).
+      if (boardAction) {
+        try {
+          await executeBordieActionCore(boardAction, {
+            executeRemote: executeBordieAction,
+            policyMode,
+          });
+        } catch (error) {
+          forceHideBordieActionOverlay();
+          throw error;
+        } finally {
+          endBordieActionOverlay();
+        }
+      }
 
-      try {
-        await executeBordieActionCore(primary, {
-          executeRemote: executeBordieAction,
-          policyMode,
+      // Ações de workspace: card de confirmação inline OU execução automática.
+      for (const wsAction of workspaceActions) {
+        const needsConfirm =
+          wsAction.requires_confirmation === true || policyMode === "always_confirm";
+        const msg = createChatMessage("assistant", "", {
+          pendingAction: { action: wsAction, state: needsConfirm ? "pending" : "running" },
         });
-      } catch (error) {
-        forceHideBordieActionOverlay();
-        throw error;
-      } finally {
-        endBordieActionOverlay();
+        setChatMessages((current) => [...current, msg]);
+        if (!needsConfirm) {
+          await runWorkspaceActionNow(msg.id, wsAction);
+        }
       }
     },
-    [appendChatAssistant, policyMode]
+    [appendChatAssistant, policyMode, runWorkspaceActionNow]
   );
 
   const userName = getStoredUser()?.name?.trim().split(" ")[0] || "Você";
@@ -371,7 +463,12 @@ export default function BordieChat() {
         });
 
         await processAssistantResponse(
-          { reply: resultText, action: response.action, actions: response.actions },
+          {
+            reply: resultText,
+            entities: response.entities,
+            action: response.action,
+            actions: response.actions,
+          },
           { wasPreparing }
         );
       } catch (error) {
@@ -942,7 +1039,28 @@ export default function BordieChat() {
                   )}
                   <div className={styles.chatBubbleWrap}>
                     <p className={styles.chatLabel}>{isUser ? userName : "Bordie"}</p>
-                    <p className={styles.chatBubble}>{message.content}</p>
+                    {isUser ? (
+                      <p className={styles.chatBubble}>{message.content}</p>
+                    ) : (
+                      <>
+                        {message.content ? (
+                          <div className={styles.chatBubble}>{renderRichText(message.content)}</div>
+                        ) : null}
+                        {message.entities?.length ? (
+                          <BordieEntityList entities={message.entities} onOpen={handleOpenEntity} />
+                        ) : null}
+                        {message.pendingAction ? (
+                          <BordieActionConfirm
+                            pending={message.pendingAction}
+                            onConfirm={() =>
+                              runWorkspaceActionNow(message.id, message.pendingAction.action)
+                            }
+                            onCancel={() => cancelPending(message.id)}
+                            onOpen={handleOpenEntity}
+                          />
+                        ) : null}
+                      </>
+                    )}
                   </div>
                 </article>
               );

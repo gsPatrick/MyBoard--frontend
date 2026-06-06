@@ -9,6 +9,7 @@ function normalizeResponse(data) {
   return {
     message: data.message || data.reply || data.result || "",
     reply: data.reply || data.message || data.result || "",
+    entities: Array.isArray(data.entities) ? data.entities : [],
     action: data.action || null,
     actions: data.actions || (data.action ? [data.action] : []),
     policy_mode: data.policy_mode || null,
