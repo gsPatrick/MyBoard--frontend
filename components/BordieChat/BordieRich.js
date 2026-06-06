@@ -49,9 +49,76 @@ function ArrowGlyph() {
   );
 }
 
+function FinanceGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M8 5v6M6.5 6.4c0-.8.7-1.2 1.5-1.2s1.5.4 1.5 1.1c0 1.6-3 1-3 2.6 0 .8.7 1.2 1.5 1.2s1.5-.4 1.5-1.1" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function DemandGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M3 4.5l1.4 1.4L6.8 3.5M3 9.5l1.4 1.4 2.4-2.4M9.5 5h3.5M9.5 10h3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function FolderGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2.5 5A1.5 1.5 0 0 1 4 3.5h2l1.2 1.4H12A1.5 1.5 0 0 1 13.5 6.5v4A1.5 1.5 0 0 1 12 12H4a1.5 1.5 0 0 1-1.5-1.5V5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TagGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M7.5 2.5H3.5A1 1 0 0 0 2.5 3.5v4l6 6 5-5-6-6Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <circle cx="5.3" cy="5.3" r=".9" fill="currentColor" />
+    </svg>
+  );
+}
+
+function DetailGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="3" y="2.5" width="10" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CopyGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <rect x="5.5" y="5.5" width="7" height="7" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M3.5 10.5V4A1.5 1.5 0 0 1 5 2.5h5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function EyeGlyph({ off }) {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <circle cx="8" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.2" />
+      {off && <path d="M3 13L13 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />}
+    </svg>
+  );
+}
+
 function GLYPH({ type }) {
   if (type === "client") return <ClientGlyph />;
   if (type === "agenda") return <AgendaGlyph />;
+  if (type === "finance") return <FinanceGlyph />;
+  if (type === "demand") return <DemandGlyph />;
+  if (type === "folder") return <FolderGlyph />;
+  if (type === "tag") return <TagGlyph />;
+  if (type === "detail") return <DetailGlyph />;
   return <ProjectGlyph />;
 }
 
@@ -215,8 +282,94 @@ function CompactEntityCard({ entity, onOpen }) {
   );
 }
 
+/* ---------- card de detalhes/credenciais (campos copiáveis) ---------- */
+
+const KIND_LABELS = {
+  vps: "VPS / Servidor",
+  ftp: "FTP / SFTP",
+  email: "E-mail / Conta",
+  database: "Banco de dados",
+  api: "API / Token",
+  hosting: "Hospedagem / Painel",
+  other: "Outro",
+};
+
+function DetailField({ field }) {
+  const [copied, setCopied] = useState(false);
+  const [revealed, setRevealed] = useState(!field.secret);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(field.value);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard indisponível */
+    }
+  };
+
+  return (
+    <div className={styles.detailField}>
+      <span className={styles.detailFieldLabel}>{field.label}</span>
+      <span className={styles.detailFieldValue} title={revealed ? field.value : undefined}>
+        {revealed ? field.value : "••••••••"}
+      </span>
+      {field.secret && (
+        <button
+          type="button"
+          className={styles.detailIconBtn}
+          onClick={() => setRevealed((r) => !r)}
+          title={revealed ? "Ocultar" : "Revelar"}
+          aria-label={revealed ? "Ocultar" : "Revelar"}
+        >
+          <EyeGlyph off={revealed} />
+        </button>
+      )}
+      <button
+        type="button"
+        className={`${styles.detailIconBtn} ${copied ? styles.detailCopied : ""}`}
+        onClick={copy}
+        title="Copiar"
+        aria-label="Copiar"
+      >
+        {copied ? "✓" : <CopyGlyph />}
+      </button>
+    </div>
+  );
+}
+
+function BordieDetailCard({ entity }) {
+  const fields = Array.isArray(entity.fields) ? entity.fields : [];
+  const kindLabel = entity.kind ? KIND_LABELS[entity.kind] || entity.kind : null;
+  return (
+    <div className={styles.detailCard}>
+      <div className={styles.detailHead}>
+        <span className={styles.detailIcon} aria-hidden="true">
+          <DetailGlyph />
+        </span>
+        <div className={styles.detailHeadText}>
+          <p className={styles.detailTitle}>{entity.title}</p>
+          {kindLabel && <p className={styles.detailKind}>{kindLabel}</p>}
+        </div>
+      </div>
+      {fields.length > 0 ? (
+        <div className={styles.detailFields}>
+          {fields.map((field, i) => (
+            <DetailField key={i} field={field} />
+          ))}
+        </div>
+      ) : (
+        <p className={styles.detailEmpty}>Sem valores guardados.</p>
+      )}
+    </div>
+  );
+}
+
 export function BordieEntityCard({ entity, onOpen, compact = false }) {
   if (!entity) return null;
+  if (entity.type === "detail") {
+    return <BordieDetailCard entity={entity} />;
+  }
   if (entity.type === "project" && !compact) {
     return <ProjectEntityCard entity={entity} onOpen={onOpen} />;
   }

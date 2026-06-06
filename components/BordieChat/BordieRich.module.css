@@ -487,3 +487,121 @@
   opacity: 0.45;
   cursor: default;
 }
+
+/* ---------- card de detalhes/credenciais ---------- */
+.detailCard {
+  margin-top: var(--space-2);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-1);
+  overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.detailHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-default);
+  background: var(--background-2);
+}
+.detailIcon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: rgba(99, 102, 241, 0.14);
+  color: var(--secondary-indigo);
+}
+.detailIcon svg {
+  width: 16px;
+  height: 16px;
+}
+.detailHeadText {
+  min-width: 0;
+}
+.detailTitle {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.84rem;
+  color: var(--text-primary, var(--text-secondary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detailKind {
+  margin: 1px 0 0;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+.detailFields {
+  display: flex;
+  flex-direction: column;
+}
+.detailField {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 7px var(--space-3);
+  border-top: 1px solid var(--border-default);
+}
+.detailField:first-child {
+  border-top: none;
+}
+.detailFieldLabel {
+  flex: 0 0 33%;
+  max-width: 120px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detailFieldValue {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--text-primary, var(--text-secondary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.detailIconBtn {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-2);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+.detailIconBtn svg {
+  width: 14px;
+  height: 14px;
+}
+.detailIconBtn:hover {
+  border-color: var(--secondary-indigo);
+  color: var(--secondary-indigo);
+}
+.detailCopied {
+  border-color: #16a34a;
+  color: #16a34a;
+}
+.detailEmpty {
+  margin: 0;
+  padding: var(--space-3);
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
