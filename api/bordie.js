@@ -54,12 +54,12 @@ export async function sendBordieCommand({ prompt, context, history = [] }) {
   }
 }
 
-export async function sendBordieMessage({ message, context, history = [] }) {
+export async function sendBordieMessage({ message, context, history = [], attachments = [] }) {
   const signal = startAbortable();
   try {
     const data = await apiClient(BORDIE_CHAT_PATH, {
       method: "POST",
-      body: { message, context, history },
+      body: { message, context, history, attachments },
       signal,
     });
     return normalizeResponse(data);

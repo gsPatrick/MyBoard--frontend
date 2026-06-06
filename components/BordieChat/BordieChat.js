@@ -18,7 +18,6 @@ import {
   renderRichText,
 } from "./BordieRich";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
-import { extractUpload } from "@/api/ingestion";
 import { getWorkspaceSettings } from "@/api/settings";
 import {
   beginBordieActionPreparing,
@@ -148,6 +147,25 @@ function ChevronLeftIcon() {
   );
 }
 
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function fileIcon(nameOrType = "") {
+  const v = String(nameOrType).toLowerCase();
+  if (/pdf/.test(v)) return "📄";
+  if (/(png|jpe?g|gif|webp|svg|image)/.test(v)) return "🖼️";
+  if (/(zip|rar|7z)/.test(v)) return "🗜️";
+  if (/(doc|word)/.test(v)) return "📝";
+  if (/(xls|sheet|csv)/.test(v)) return "📊";
+  return "📎";
+}
+
 function createChatMessage(role, content, extra = {}) {
   return {
     id: `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -220,9 +238,7 @@ export default function BordieChat() {
   const [policyMode, setPolicyMode] = useState(null);
   const [aiConfigured, setAiConfigured] = useState(true);
   const [chatDragOver, setChatDragOver] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState(null);
   const [attachedFile, setAttachedFile] = useState(null);
-  const [attaching, setAttaching] = useState(false);
 
   const commandInputRef = useRef(null);
   const chatInputRef = useRef(null);
@@ -839,25 +855,19 @@ export default function BordieChat() {
     }
   }
 
-  // Anexar à conversa: extrai o texto do arquivo (sem criar nada) para a IA ler.
-  async function attachFiles(files) {
-    if (!files?.length) return;
-    setAttaching(true);
+  // Anexar à conversa: guarda o ARQUIVO (a IA recebe o arquivo, não o texto).
+  function attachFiles(files) {
+    const file = files?.[0];
+    if (!file) return;
     setChatError("");
-    try {
-      const data = await extractUpload(Array.from(files));
-      const text = (data?.text || "").trim();
-      if (!text) {
-        setChatError("Não consegui ler o conteúdo do arquivo.");
-        return;
-      }
-      const name = (data?.files || []).join(", ") || "arquivo";
-      setAttachedFile({ name, text });
-    } catch (error) {
-      setChatError(error.message || "Falha ao anexar o arquivo.");
-    } finally {
-      setAttaching(false);
-    }
+    setAttachedFile({ file, name: file.name, type: file.type || "" });
+  }
+
+  function openAttached() {
+    if (!attachedFile?.file) return;
+    const url = URL.createObjectURL(attachedFile.file);
+    window.open(url, "_blank", "noopener");
+    window.setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   async function handleChatSubmit(event) {
@@ -865,15 +875,13 @@ export default function BordieChat() {
     const trimmed = chatInput.trim();
     if ((!trimmed && !attachedFile) || chatLoading) return;
 
-    // Texto exibido no balão (curto) vs. mensagem enviada (inclui o anexo).
-    const displayText = attachedFile
-      ? `${trimmed ? `${trimmed}\n` : ""}📎 ${attachedFile.name}`
+    const hadAttachment = attachedFile;
+    // Balão mostra o texto + o anexo (ícone/nome); o arquivo vai pra IA de verdade.
+    const displayText = hadAttachment
+      ? `${trimmed ? `${trimmed}\n` : ""}📎 ${hadAttachment.name}`
       : trimmed;
-    const messageToSend = attachedFile
-      ? `Conteúdo do arquivo anexado "${attachedFile.name}":\n\n${attachedFile.text}\n\n---\n\n${
-          trimmed || "Leia o arquivo acima e me diga o que você pode fazer com ele."
-        }`
-      : trimmed;
+    const messageToSend =
+      trimmed || (hadAttachment ? "Veja o arquivo anexado e me diga o que dá pra fazer com ele." : "");
 
     const userMessage = createChatMessage("user", displayText);
     const nextMessages = [...chatMessages, userMessage];
@@ -882,11 +890,18 @@ export default function BordieChat() {
     setChatInput("");
     setChatError("");
     setChatLoading(true);
-    const hadAttachment = attachedFile;
     setAttachedFile(null);
     const wasPreparing = beginBordieActionPreparing(trimmed, context);
 
     try {
+      let attachments = [];
+      if (hadAttachment?.file) {
+        const dataUrl = await fileToDataUrl(hadAttachment.file);
+        attachments = [
+          { name: hadAttachment.name, mime: hadAttachment.type, data: dataUrl },
+        ];
+      }
+
       const requestContext = await buildBordieContextWithFreshBoard({
         activeTab,
         selectedProject,
@@ -899,6 +914,7 @@ export default function BordieChat() {
         message: messageToSend,
         context: requestContext,
         history: history.slice(0, -1),
+        attachments,
       });
 
       await processAssistantResponse(response, { wasPreparing });
@@ -1130,12 +1146,8 @@ export default function BordieChat() {
             if (!event.currentTarget.contains(event.relatedTarget)) setChatDragOver(false);
           }}
           onDrop={(event) => {
-            const files = event.dataTransfer?.files;
-            if (files?.length) {
-              event.preventDefault();
-              setChatDragOver(false);
-              setPendingFiles(Array.from(files));
-            }
+            // As metades do overlay tratam o drop; aqui só evitamos o navegador abrir o arquivo.
+            if (event.dataTransfer?.files?.length) event.preventDefault();
           }}
         >
           <div style={{ display: "none" }}>
@@ -1147,53 +1159,35 @@ export default function BordieChat() {
             />
           </div>
 
-          {chatDragOver && !pendingFiles && (
-            <div className={styles.chatDropOverlay} aria-hidden="true">
-              <div className={styles.chatDropInner}>
-                <span className={styles.chatDropIcon}>⬆</span>
-                Solte o arquivo aqui
+          {chatDragOver && (
+            <div className={styles.chatDropSplit}>
+              <div
+                className={`${styles.chatDropHalf} ${styles.chatDropTop}`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const files = e.dataTransfer?.files;
+                  setChatDragOver(false);
+                  if (files?.length) ingestionRef.current?.importFiles(Array.from(files));
+                }}
+              >
+                <span className={styles.chatDropIcon}>＋</span>
+                <strong>Criar projeto</strong>
+                <small>Importar cliente/projeto do arquivo</small>
               </div>
-            </div>
-          )}
-
-          {pendingFiles && (
-            <div className={styles.chatChooserOverlay}>
-              <div className={styles.chatChooser}>
-                <p className={styles.chatChooserTitle}>
-                  {pendingFiles.length === 1
-                    ? pendingFiles[0].name
-                    : `${pendingFiles.length} arquivos`}
-                </p>
-                <p className={styles.chatChooserHint}>O que fazer com o arquivo?</p>
-                <button
-                  type="button"
-                  className={styles.chatChooserPrimary}
-                  onClick={() => {
-                    const f = pendingFiles;
-                    setPendingFiles(null);
-                    ingestionRef.current?.importFiles(f);
-                  }}
-                >
-                  Importar — criar projeto/cliente
-                </button>
-                <button
-                  type="button"
-                  className={styles.chatChooserSecondary}
-                  onClick={() => {
-                    const f = pendingFiles;
-                    setPendingFiles(null);
-                    attachFiles(f);
-                  }}
-                >
-                  Anexar à conversa — a IA lê o conteúdo
-                </button>
-                <button
-                  type="button"
-                  className={styles.chatChooserCancel}
-                  onClick={() => setPendingFiles(null)}
-                >
-                  Cancelar
-                </button>
+              <div
+                className={`${styles.chatDropHalf} ${styles.chatDropBottom}`}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const files = e.dataTransfer?.files;
+                  setChatDragOver(false);
+                  if (files?.length) attachFiles(files);
+                }}
+              >
+                <span className={styles.chatDropIcon}>📎</span>
+                <strong>Anexar à conversa</strong>
+                <small>A IA recebe o arquivo</small>
               </div>
             </div>
           )}
@@ -1283,21 +1277,27 @@ export default function BordieChat() {
 
           <form className={styles.chatComposer} onSubmit={handleChatSubmit}>
             {chatError && <p className={styles.chatError}>{chatError}</p>}
-            {(attachedFile || attaching) && (
+            {attachedFile && (
               <div className={styles.chatAttachChip}>
-                <span className={styles.chatAttachChipText}>
-                  📎 {attaching ? "Lendo arquivo…" : attachedFile.name}
-                </span>
-                {attachedFile && !attaching && (
-                  <button
-                    type="button"
-                    className={styles.chatAttachChipRemove}
-                    onClick={() => setAttachedFile(null)}
-                    aria-label="Remover anexo"
-                  >
-                    ×
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className={styles.chatAttachChipOpen}
+                  onClick={openAttached}
+                  title="Abrir arquivo"
+                >
+                  <span className={styles.chatAttachChipIcon} aria-hidden="true">
+                    {fileIcon(attachedFile.type || attachedFile.name)}
+                  </span>
+                  <span className={styles.chatAttachChipText}>{attachedFile.name}</span>
+                </button>
+                <button
+                  type="button"
+                  className={styles.chatAttachChipRemove}
+                  onClick={() => setAttachedFile(null)}
+                  aria-label="Remover anexo"
+                >
+                  ×
+                </button>
               </div>
             )}
             <div className={styles.chatComposerRow}>
