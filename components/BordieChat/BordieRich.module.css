@@ -13,16 +13,20 @@
   flex-direction: column;
   gap: var(--space-2);
   margin-top: var(--space-2);
+  width: 100%;
 }
 
 .entityCard {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2) var(--space-3);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   background: var(--background-1);
+  box-sizing: border-box;
+  max-width: 100%;
   transition: border-color var(--transition-fast), transform var(--transition-fast);
 }
 .entityCard:hover {
@@ -49,8 +53,10 @@
 }
 
 .entityBody {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 120px;
+  /* não deixa o corpo colapsar a 0 — assim o status+botão quebram para a 2ª linha
+     em vez de esconder o nome do projeto/cliente no modo sidebar (estreito). */
+  min-width: 96px;
 }
 .entityTitle {
   margin: 0;
@@ -62,12 +68,35 @@
   text-overflow: ellipsis;
 }
 .entitySub {
-  margin: 2px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 3px 0 0;
   font-size: 0.74rem;
   color: var(--text-muted);
+  min-width: 0;
+}
+.subAvatar {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.subText {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* status + botão agrupados: quebram para a 2ª linha quando o card fica estreito */
+.entityMeta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
 }
 
 .entityStatus {

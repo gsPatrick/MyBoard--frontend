@@ -83,7 +83,8 @@ function renderInline(line) {
 export function BordieEntityCard({ entity, onOpen }) {
   if (!entity) return null;
   const color = entity.color || "#3b82f6";
-  const avatarUrl = entity.type === "client" ? resolveMediaUrl(entity.avatar) : null;
+  const ownAvatar = entity.type === "client" ? resolveMediaUrl(entity.avatar) : null;
+  const clientAvatar = entity.type === "project" ? resolveMediaUrl(entity.client_avatar) : null;
 
   return (
     <div className={styles.entityCard}>
@@ -92,9 +93,9 @@ export function BordieEntityCard({ entity, onOpen }) {
         style={{ background: `${color}1f`, color }}
         aria-hidden="true"
       >
-        {avatarUrl ? (
+        {ownAvatar ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className={styles.entityAvatar} />
+          <img src={ownAvatar} alt="" className={styles.entityAvatar} />
         ) : (
           <GLYPH type={entity.type} />
         )}
@@ -104,25 +105,35 @@ export function BordieEntityCard({ entity, onOpen }) {
         <p className={styles.entityTitle} title={entity.title}>
           {entity.title}
         </p>
-        {entity.subtitle && <p className={styles.entitySub}>{entity.subtitle}</p>}
+        {entity.subtitle && (
+          <p className={styles.entitySub} title={entity.subtitle}>
+            {clientAvatar && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={clientAvatar} alt="" className={styles.subAvatar} />
+            )}
+            <span className={styles.subText}>{entity.subtitle}</span>
+          </p>
+        )}
       </div>
 
-      {entity.status_label && (
-        <span className={styles.entityStatus} style={{ "--dot": color }}>
-          {entity.status_label}
-        </span>
-      )}
+      <div className={styles.entityMeta}>
+        {entity.status_label && (
+          <span className={styles.entityStatus} style={{ "--dot": color }}>
+            {entity.status_label}
+          </span>
+        )}
 
-      {entity.open && onOpen && (
-        <button
-          type="button"
-          className={styles.entityOpen}
-          onClick={() => onOpen(entity)}
-          title={`Abrir ${entity.title}`}
-        >
-          Abrir <ArrowGlyph />
-        </button>
-      )}
+        {entity.open && onOpen && (
+          <button
+            type="button"
+            className={styles.entityOpen}
+            onClick={() => onOpen(entity)}
+            title={`Abrir ${entity.title}`}
+          >
+            Abrir <ArrowGlyph />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
