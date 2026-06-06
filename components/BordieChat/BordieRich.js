@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Avatar from "@/components/Avatar/Avatar";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
@@ -246,9 +247,96 @@ const STATE_LABEL = {
   error: "Falhou",
 };
 
-export function BordieActionConfirm({ pending, onConfirm, onCancel, onOpen }) {
+/* ---------- seletor visual de cliente (criar projeto sem cliente único) ---------- */
+
+function BordieClientPicker({ action, onPick, onCreate, onCancel }) {
+  const [name, setName] = useState(action.suggested_new_name || "");
+  const candidates = Array.isArray(action.candidates) ? action.candidates : [];
+
+  return (
+    <div className={styles.confirmCard}>
+      <div className={styles.confirmHead}>
+        <span className={styles.confirmBadge} aria-hidden="true">
+          ?
+        </span>
+        <p className={styles.confirmLabel}>{action.label || "Criar projeto"}</p>
+      </div>
+
+      {action.summary && <p className={styles.confirmSummary}>{action.summary}</p>}
+
+      {candidates.length > 0 && (
+        <div className={styles.pickerList}>
+          {candidates.map((client) => (
+            <button
+              key={client.id}
+              type="button"
+              className={styles.pickerClient}
+              onClick={() => onPick(client)}
+              title={`Vincular a ${client.title}`}
+            >
+              <Avatar src={resolveMediaUrl(client.avatar)} name={client.title} size="sm" />
+              <span className={styles.pickerClientBody}>
+                <span className={styles.pickerClientName}>{client.title}</span>
+                {client.subtitle && (
+                  <span className={styles.pickerClientSub}>{client.subtitle}</span>
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className={styles.pickerNewRow}>
+        <input
+          className={styles.pickerInput}
+          placeholder="Nome do novo cliente"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && name.trim()) onCreate(name.trim());
+          }}
+        />
+        <button
+          type="button"
+          className={styles.pickerCreate}
+          disabled={!name.trim()}
+          onClick={() => onCreate(name.trim())}
+        >
+          Criar e vincular
+        </button>
+      </div>
+
+      <div className={styles.confirmActions}>
+        <button type="button" className={styles.confirmCancel} onClick={onCancel}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function BordieActionConfirm({
+  pending,
+  onConfirm,
+  onCancel,
+  onOpen,
+  onPickClient,
+  onCreateClient,
+}) {
   const { action, state = "pending", resultMessage, resultEntity } = pending || {};
   if (!action) return null;
+
+  if (state === "choosing_client") {
+    return (
+      <BordieClientPicker
+        action={action}
+        onPick={onPickClient}
+        onCreate={onCreateClient}
+        onCancel={onCancel}
+      />
+    );
+  }
+
   const destructive = Boolean(action.destructive) || /_delete$/.test(action.type || "");
 
   return (

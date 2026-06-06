@@ -322,6 +322,65 @@ export default function BordieChat() {
     [updatePending]
   );
 
+  // Seletor de cliente ao criar projeto: vincular a um cliente existente.
+  const pickClientForProject = useCallback(
+    (messageId, action, client) => {
+      const finalAction = {
+        ...action,
+        status: "ready",
+        payload: { ...action.payload, client_id: client.id },
+      };
+      return runWorkspaceActionNow(messageId, finalAction);
+    },
+    [runWorkspaceActionNow]
+  );
+
+  // Seletor de cliente: criar um cliente novo e, em seguida, o projeto.
+  const createClientForProject = useCallback(
+    async (messageId, action, name) => {
+      updatePending(messageId, { state: "running" });
+      try {
+        const clientRes = await executeBordieAction({
+          action: { type: "client_create", payload: { name } },
+          confirmed: true,
+        });
+        const clientId = clientRes?.ok ? clientRes.result?.entity?.id : null;
+        if (!clientId) {
+          updatePending(messageId, {
+            state: "error",
+            resultMessage: clientRes?.reason || "Não consegui criar o cliente.",
+          });
+          return;
+        }
+        const projectRes = await executeBordieAction({
+          action: {
+            type: "project_create",
+            payload: { ...action.payload, client_id: clientId },
+          },
+          confirmed: true,
+        });
+        if (projectRes?.ok) {
+          updatePending(messageId, {
+            state: "done",
+            resultMessage: projectRes.result?.message || "Projeto criado.",
+            resultEntity: projectRes.result?.entity || null,
+          });
+        } else {
+          updatePending(messageId, {
+            state: "error",
+            resultMessage: projectRes?.reason || "Não consegui criar o projeto.",
+          });
+        }
+      } catch (error) {
+        updatePending(messageId, {
+          state: "error",
+          resultMessage: error.message || "Falha ao criar.",
+        });
+      }
+    },
+    [updatePending]
+  );
+
   const processAssistantResponse = useCallback(
     async (response, { wasPreparing = false } = {}) => {
       const { reply, action, actions, entities } = response;
@@ -361,8 +420,16 @@ export default function BordieChat() {
         }
       }
 
-      // Ações de workspace: card de confirmação inline OU execução automática.
+      // Ações de workspace: seletor de cliente, confirmação inline ou execução automática.
       for (const wsAction of workspaceActions) {
+        if (wsAction.status === "needs_client") {
+          const pickerMsg = createChatMessage("assistant", "", {
+            pendingAction: { action: wsAction, state: "choosing_client" },
+          });
+          setChatMessages((current) => [...current, pickerMsg]);
+          continue;
+        }
+
         const needsConfirm =
           wsAction.requires_confirmation === true || policyMode === "always_confirm";
         const msg = createChatMessage("assistant", "", {
@@ -1064,6 +1131,12 @@ export default function BordieChat() {
                             }
                             onCancel={() => cancelPending(message.id)}
                             onOpen={handleOpenEntity}
+                            onPickClient={(client) =>
+                              pickClientForProject(message.id, message.pendingAction.action, client)
+                            }
+                            onCreateClient={(name) =>
+                              createClientForProject(message.id, message.pendingAction.action, name)
+                            }
                           />
                         ) : null}
                       </>
