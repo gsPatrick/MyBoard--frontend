@@ -814,3 +814,10 @@
     opacity: 0.6;
   }
 }
+
+/* anexo de arquivo no compositor do chat */
+.chatAttach {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  display: inline-flex;
+}

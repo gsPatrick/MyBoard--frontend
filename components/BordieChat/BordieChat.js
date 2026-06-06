@@ -17,6 +17,7 @@ import {
   BordieEntityList,
   renderRichText,
 } from "./BordieRich";
+import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
 import { getWorkspaceSettings } from "@/api/settings";
 import {
   beginBordieActionPreparing,
@@ -1166,6 +1167,15 @@ export default function BordieChat() {
           <form className={styles.chatComposer} onSubmit={handleChatSubmit}>
             {chatError && <p className={styles.chatError}>{chatError}</p>}
             <div className={styles.chatComposerRow}>
+              <span className={styles.chatAttach}>
+                <IngestionUpload
+                  variant="compact"
+                  label="Anexar"
+                  onApplied={() =>
+                    appendChatAssistant("Pronto — importei o arquivo e atualizei o workspace.")
+                  }
+                />
+              </span>
               <textarea
                 ref={chatInputRef}
                 className={styles.chatInput}

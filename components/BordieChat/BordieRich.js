@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Avatar from "@/components/Avatar/Avatar";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
+import { fetchMediaBlobUrl } from "@/api/media";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import { parseAmount } from "@/lib/financialStats";
@@ -111,6 +112,15 @@ function EyeGlyph({ off }) {
   );
 }
 
+function DocGlyph() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4 2.5h5l3 3v8a0 0 0 0 1 0 0H4a0 0 0 0 1 0 0v-11Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M9 2.5v3h3M6 8.5h4M6 11h4" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function GLYPH({ type }) {
   if (type === "client") return <ClientGlyph />;
   if (type === "agenda") return <AgendaGlyph />;
@@ -119,6 +129,7 @@ function GLYPH({ type }) {
   if (type === "folder") return <FolderGlyph />;
   if (type === "tag") return <TagGlyph />;
   if (type === "detail") return <DetailGlyph />;
+  if (type === "document") return <DocGlyph />;
   return <ProjectGlyph />;
 }
 
@@ -365,10 +376,68 @@ function BordieDetailCard({ entity }) {
   );
 }
 
+function BordieDocumentCard({ entity }) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleOpen(download) {
+    if (!entity.media_id) return;
+    setBusy(true);
+    try {
+      const url = await fetchMediaBlobUrl(entity.media_id);
+      if (download) {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = entity.title || "documento";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 4000);
+      } else {
+        window.open(url, "_blank", "noopener");
+        window.setTimeout(() => URL.revokeObjectURL(url), 60000);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const color = "#6366f1";
+  return (
+    <div className={styles.entityCard}>
+      <span className={styles.entityIcon} style={{ background: `${color}1f`, color }} aria-hidden="true">
+        <DocGlyph />
+      </span>
+      <div className={styles.entityBody}>
+        <p className={styles.entityTitle} title={entity.title}>
+          {entity.title}
+        </p>
+        {entity.subtitle && (
+          <p className={styles.entitySub}>
+            <span className={styles.subText}>{entity.subtitle}</span>
+          </p>
+        )}
+      </div>
+      <div className={styles.entityMeta}>
+        <button type="button" className={styles.entityOpen} onClick={() => handleOpen(false)} disabled={busy}>
+          Abrir
+        </button>
+        <button type="button" className={styles.entityOpen} onClick={() => handleOpen(true)} disabled={busy}>
+          Baixar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function BordieEntityCard({ entity, onOpen, compact = false }) {
   if (!entity) return null;
   if (entity.type === "detail") {
     return <BordieDetailCard entity={entity} />;
+  }
+  if (entity.type === "document") {
+    return <BordieDocumentCard entity={entity} />;
   }
   if (entity.type === "project" && !compact) {
     return <ProjectEntityCard entity={entity} onOpen={onOpen} />;
