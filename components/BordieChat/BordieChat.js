@@ -7,6 +7,7 @@ import IconButton from "@/components/IconButton/IconButton";
 import {
   executeBordieAction,
   getBordiePolicy,
+  isAbortError,
   isBoardAction,
   sendBordieCommand,
   sendBordieMessage,
@@ -474,8 +475,10 @@ export default function BordieChat() {
       } catch (error) {
         forceHideBordieActionOverlay();
         setStatusMessage({
-          type: "error",
-          text: error.message || "Não foi possível executar o comando.",
+          type: isAbortError(error) ? "info" : "error",
+          text: isAbortError(error)
+            ? "Processamento cancelado."
+            : error.message || "Não foi possível executar o comando.",
         });
       } finally {
         setIsRunning(false);
@@ -794,9 +797,13 @@ export default function BordieChat() {
       await processAssistantResponse(response, { wasPreparing });
     } catch (error) {
       forceHideBordieActionOverlay();
-      setChatError(error.message || "Não foi possível enviar a mensagem.");
-      setChatMessages((current) => current.slice(0, -1));
-      setChatInput(trimmed);
+      if (isAbortError(error)) {
+        setChatError("Processamento cancelado.");
+      } else {
+        setChatError(error.message || "Não foi possível enviar a mensagem.");
+        setChatMessages((current) => current.slice(0, -1));
+        setChatInput(trimmed);
+      }
     } finally {
       setChatLoading(false);
     }

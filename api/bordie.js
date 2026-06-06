@@ -19,22 +19,53 @@ function normalizeResponse(data) {
   };
 }
 
-export async function sendBordieCommand({ prompt, context, history = [] }) {
-  const data = await apiClient(BORDIE_COMMAND_PATH, {
-    method: "POST",
-    body: { prompt, context, history },
-  });
+// Controla a requisição de chat/comando em andamento para permitir cancelar
+// (o "x" da animação aborta a chamada que estiver rodando).
+let currentController = null;
 
-  return normalizeResponse(data);
+function startAbortable() {
+  if (currentController) currentController.abort();
+  currentController = new AbortController();
+  return currentController.signal;
+}
+
+export function abortBordieRequest() {
+  if (currentController) {
+    currentController.abort();
+    currentController = null;
+  }
+}
+
+export function isAbortError(error) {
+  return error?.name === "AbortError";
+}
+
+export async function sendBordieCommand({ prompt, context, history = [] }) {
+  const signal = startAbortable();
+  try {
+    const data = await apiClient(BORDIE_COMMAND_PATH, {
+      method: "POST",
+      body: { prompt, context, history },
+      signal,
+    });
+    return normalizeResponse(data);
+  } finally {
+    currentController = null;
+  }
 }
 
 export async function sendBordieMessage({ message, context, history = [] }) {
-  const data = await apiClient(BORDIE_CHAT_PATH, {
-    method: "POST",
-    body: { message, context, history },
-  });
-
-  return normalizeResponse(data);
+  const signal = startAbortable();
+  try {
+    const data = await apiClient(BORDIE_CHAT_PATH, {
+      method: "POST",
+      body: { message, context, history },
+      signal,
+    });
+    return normalizeResponse(data);
+  } finally {
+    currentController = null;
+  }
 }
 
 export async function executeBordieAction({ action, confirmed = true }) {
