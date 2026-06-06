@@ -1,23 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
+import Modal from "@/components/Modal/Modal";
 import { listDocuments, uploadDocument, deleteDocument } from "@/api/documents";
 import { fetchMediaBlobUrl } from "@/api/media";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
-import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";
+import SettingsPanelShell from "./SettingsPanelShell";
+import sectionStyles from "@/components/ProjectDetail/ProjectDetailSection.module.css";
 import styles from "./MinhasInformacoesPanel.module.css";
 
-const CATEGORIES = [
-  { id: "cv", label: "Currículo" },
-  { id: "contract", label: "Contrato" },
-  { id: "other", label: "Arquivo" },
-];
-
-const CATEGORY_LABELS = { cv: "Currículo", contract: "Contrato", other: "Arquivo" };
-
 const LANGUAGES = ["Português", "Inglês", "Espanhol", "Francês", "Outro"];
+
+const SECTIONS = [
+  {
+    id: "cv",
+    title: "Currículo",
+    hint: "Seu currículo em um ou mais idiomas — o Bordie entrega quando você pedir.",
+    addLabel: "Adicionar currículo",
+  },
+  {
+    id: "contract",
+    title: "Contratos",
+    hint: "Modelos de contrato (ex.: contrato padrão para fechar projetos, NDA).",
+    addLabel: "Adicionar contrato",
+  },
+  {
+    id: "other",
+    title: "Outros arquivos",
+    hint: "Qualquer arquivo de fácil acesso (portfólio, propostas, tabelas…).",
+    addLabel: "Adicionar arquivo",
+  },
+];
 
 function formatSize(bytes) {
   if (!bytes) return "";
@@ -28,14 +43,15 @@ function formatSize(bytes) {
 export default function MinhasInformacoesPanel() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
   const [busyId, setBusyId] = useState(null);
 
-  const [category, setCategory] = useState("cv");
+  const [modalCat, setModalCat] = useState(null);
   const [title, setTitle] = useState("");
   const [language, setLanguage] = useState("Português");
   const [purpose, setPurpose] = useState("");
   const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -53,8 +69,20 @@ export default function MinhasInformacoesPanel() {
     load();
   }, [load]);
 
-  async function handleUpload(event) {
-    event.preventDefault();
+  function openModal(category) {
+    setModalCat(category);
+    setTitle("");
+    setLanguage("Português");
+    setPurpose("");
+    setFile(null);
+  }
+
+  function closeModal() {
+    if (uploading) return;
+    setModalCat(null);
+  }
+
+  async function handleUpload() {
     if (!file) {
       showErrorToast("Selecione um arquivo.");
       return;
@@ -64,14 +92,12 @@ export default function MinhasInformacoesPanel() {
       await uploadDocument({
         file,
         title: title.trim() || file.name,
-        category,
-        language: category === "cv" ? language : undefined,
-        purpose: category === "contract" ? purpose.trim() : undefined,
+        category: modalCat,
+        language: modalCat === "cv" ? language : undefined,
+        purpose: modalCat === "contract" ? purpose.trim() : undefined,
       });
       showSuccessToast("Documento salvo.");
-      setTitle("");
-      setPurpose("");
-      setFile(null);
+      setModalCat(null);
       await load();
     } catch (error) {
       showErrorToast(error.message || "Falha ao enviar o documento.");
@@ -117,46 +143,140 @@ export default function MinhasInformacoesPanel() {
     }
   }
 
-  const groups = CATEGORIES.map((c) => ({
-    ...c,
-    items: docs.filter((d) => (d.category || "other") === c.id),
-  }));
-
   return (
     <SettingsPanelShell
       title="Minhas informações"
-      hint="Currículo, contratos e arquivos seus de fácil acesso — e que o Bordie pode te entregar no chat."
+      hint="Currículo, contratos e arquivos seus de fácil acesso — e que o Bordie entrega no chat."
     >
-      <form className={settingsPanelStyles.card} onSubmit={handleUpload}>
-        <h3 className={settingsPanelStyles.cardTitle}>Adicionar documento</h3>
-        <div className={styles.formGrid}>
-          <label className={styles.field}>
-            <span className={styles.label}>Tipo</span>
-            <select
-              className={styles.select}
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+      {SECTIONS.map((section) => {
+        const items = docs.filter((d) => (d.category || "other") === section.id);
+        return (
+          <section key={section.id} className={sectionStyles.card}>
+            <div className={sectionStyles.cardHeader}>
+              <div>
+                <h2 className={sectionStyles.cardTitle}>{section.title}</h2>
+                <p className={sectionStyles.cardHint}>{section.hint}</p>
+              </div>
+              <Button variant="secondary" size="sm" onClick={() => openModal(section.id)}>
+                {section.addLabel}
+              </Button>
+            </div>
+
+            {loading ? (
+              <p className={sectionStyles.empty}>Carregando…</p>
+            ) : items.length === 0 ? (
+              <p className={sectionStyles.empty}>Nada por aqui ainda.</p>
+            ) : (
+              <div className={sectionStyles.list}>
+                {items.map((doc) => (
+                  <div key={doc.id} className={sectionStyles.item}>
+                    <div className={sectionStyles.itemMain}>
+                      <p className={sectionStyles.itemTitle}>{doc.title}</p>
+                      <p className={sectionStyles.itemMeta}>
+                        {[doc.language, doc.purpose, formatSize(doc.size_bytes)]
+                          .filter(Boolean)
+                          .join(" · ") || doc.original_name}
+                      </p>
+                    </div>
+                    <div className={sectionStyles.itemActions}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDoc(doc, false)}
+                        disabled={busyId === doc.id}
+                      >
+                        Abrir
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openDoc(doc, true)}
+                        disabled={busyId === doc.id}
+                      >
+                        Baixar
+                      </Button>
+                      <button
+                        type="button"
+                        className={sectionStyles.iconBtn}
+                        title="Excluir"
+                        onClick={() => handleDelete(doc)}
+                        disabled={busyId === doc.id}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })}
+
+      <Modal
+        isOpen={Boolean(modalCat)}
+        onClose={closeModal}
+        title={
+          modalCat === "cv"
+            ? "Adicionar currículo"
+            : modalCat === "contract"
+              ? "Adicionar contrato"
+              : "Adicionar arquivo"
+        }
+        footer={
+          <>
+            <Button variant="ghost" size="sm" onClick={closeModal} disabled={uploading}>
+              Cancelar
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleUpload} disabled={uploading || !file}>
+              {uploading ? "Enviando…" : "Salvar"}
+            </Button>
+          </>
+        }
+      >
+        <div className={sectionStyles.formGrid}>
+          <div className={sectionStyles.formFull}>
+            <button
+              type="button"
+              className={`${styles.drop} ${file ? styles.dropFilled : ""}`}
+              onClick={() => fileInputRef.current?.click()}
             >
-              {CATEGORIES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
+              <span className={styles.dropIcon} aria-hidden="true">
+                ⬆
+              </span>
+              <span className={styles.dropText}>
+                {file ? file.name : "Clique para selecionar o arquivo"}
+              </span>
+              <span className={styles.dropHint}>PDF, DOC, imagem ou texto</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+            />
+          </div>
 
-          <Input
-            label="Nome / título"
-            placeholder={category === "contract" ? "Ex.: Contrato padrão de serviço" : "Ex.: Currículo 2026"}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          <div className={sectionStyles.formFull}>
+            <Input
+              label="Nome / título"
+              placeholder={
+                modalCat === "contract" ? "Ex.: Contrato padrão de serviço" : "Ex.: Currículo 2026"
+              }
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
 
-          {category === "cv" && (
-            <label className={styles.field}>
-              <span className={styles.label}>Idioma</span>
+          {modalCat === "cv" && (
+            <div className={sectionStyles.formFull}>
+              <label className={sectionStyles.fieldLabel} htmlFor="doc-language">
+                Idioma
+              </label>
               <select
-                className={styles.select}
+                id="doc-language"
+                className={sectionStyles.select}
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
               >
@@ -166,98 +286,21 @@ export default function MinhasInformacoesPanel() {
                   </option>
                 ))}
               </select>
-            </label>
+            </div>
           )}
 
-          {category === "contract" && (
-            <Input
-              label="Para que serve"
-              placeholder="Ex.: fechar projetos, NDA, prestação de serviço"
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-            />
+          {modalCat === "contract" && (
+            <div className={sectionStyles.formFull}>
+              <Input
+                label="Para que serve"
+                placeholder="Ex.: fechar projetos, NDA, prestação de serviço"
+                value={purpose}
+                onChange={(e) => setPurpose(e.target.value)}
+              />
+            </div>
           )}
         </div>
-
-        <label className={styles.fileRow}>
-          <input
-            type="file"
-            className={styles.fileInput}
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            accept=".pdf,.doc,.docx,.txt,.md,.png,.jpg,.jpeg"
-          />
-          <span className={styles.fileName}>{file ? file.name : "Nenhum arquivo selecionado"}</span>
-        </label>
-
-        <div className={styles.actions}>
-          <Button type="submit" size="sm" disabled={uploading || !file}>
-            {uploading ? "Enviando…" : "Salvar documento"}
-          </Button>
-        </div>
-      </form>
-
-      {loading ? (
-        <p className={settingsPanelStyles.muted}>Carregando…</p>
-      ) : (
-        groups.map((group) =>
-          group.items.length === 0 ? null : (
-            <article key={group.id} className={settingsPanelStyles.card}>
-              <h3 className={settingsPanelStyles.cardTitle}>{group.label}</h3>
-              <div className={styles.list}>
-                {group.items.map((doc) => (
-                  <div key={doc.id} className={styles.docRow}>
-                    <div className={styles.docInfo}>
-                      <p className={styles.docTitle}>{doc.title}</p>
-                      <p className={styles.docMeta}>
-                        {[
-                          CATEGORY_LABELS[doc.category],
-                          doc.language,
-                          doc.purpose,
-                          formatSize(doc.size_bytes),
-                        ]
-                          .filter(Boolean)
-                          .join(" · ")}
-                      </p>
-                    </div>
-                    <div className={styles.docActions}>
-                      <button
-                        type="button"
-                        className={styles.docBtn}
-                        onClick={() => openDoc(doc, false)}
-                        disabled={busyId === doc.id}
-                      >
-                        Abrir
-                      </button>
-                      <button
-                        type="button"
-                        className={styles.docBtn}
-                        onClick={() => openDoc(doc, true)}
-                        disabled={busyId === doc.id}
-                      >
-                        Baixar
-                      </button>
-                      <button
-                        type="button"
-                        className={`${styles.docBtn} ${styles.docDelete}`}
-                        onClick={() => handleDelete(doc)}
-                        disabled={busyId === doc.id}
-                      >
-                        Excluir
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-          )
-        )
-      )}
-
-      {!loading && docs.length === 0 && (
-        <p className={settingsPanelStyles.muted}>
-          Nenhum documento ainda. Envie seu currículo e contratos acima.
-        </p>
-      )}
+      </Modal>
     </SettingsPanelShell>
   );
 }

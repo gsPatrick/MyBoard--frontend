@@ -1,129 +1,38 @@
-.formGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin: var(--space-3) 0;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.label {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.select {
+.drop {
   width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--background-2);
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-}
-.select:focus {
-  outline: none;
-  border-color: var(--secondary-indigo);
-}
-
-.fileRow {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  padding: var(--space-3);
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-.fileInput {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.fileName {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: var(--space-3);
-}
-
-.list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-}
-
-.docRow {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  flex-wrap: wrap;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  gap: 4px;
+  padding: var(--space-5) var(--space-4);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-lg, var(--radius-md));
+  background: var(--surface-muted, var(--background-2));
+  color: var(--text-secondary);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.drop:hover {
+  border-color: var(--secondary-indigo);
   background: var(--background-1);
 }
-.docInfo {
-  min-width: 0;
-  flex: 1 1 200px;
+.dropFilled {
+  border-style: solid;
+  border-color: var(--secondary-indigo);
 }
-.docTitle {
-  margin: 0;
+.dropIcon {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--secondary-indigo);
+}
+.dropText {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
 }
-.docMeta {
-  margin: 2px 0 0;
-  font-size: 11.5px;
+.dropHint {
+  font-size: 11px;
   color: var(--text-muted);
-}
-.docActions {
-  display: flex;
-  gap: 6px;
-  flex: 0 0 auto;
-}
-.docBtn {
-  padding: 5px 10px;
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--background-2);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color var(--transition-fast), color var(--transition-fast), background var(--transition-fast);
-}
-.docBtn:hover {
-  border-color: var(--secondary-indigo);
-  color: var(--secondary-indigo);
-}
-.docBtn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.docDelete:hover {
-  border-color: #ef4444;
-  color: #ef4444;
-}
-
-@media (max-width: 640px) {
-  .formGrid {
-    grid-template-columns: 1fr;
-  }
 }
