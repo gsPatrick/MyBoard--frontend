@@ -82,10 +82,30 @@ function TimelineItem({ item, selectedDateKey, isLast, onClick }) {
 export default function RoadTimeline() {
   const { selectProject } = useDashboardNav();
   const { setActiveTab } = useDashboardTab();
-  const weekDays = useMemo(() => getWeekDays(), []);
   const todayKey = useMemo(() => toDateKey(new Date()), []);
 
+  const [weekOffset, setWeekOffset] = useState(0);
+
+  const referenceDate = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + weekOffset * 7);
+    return d;
+  }, [weekOffset]);
+
+  const weekDays = useMemo(() => getWeekDays(referenceDate), [referenceDate]);
+
+  const weekLabel = useMemo(() => {
+    const fmt = (d) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+    return `${fmt(weekDays[0].date)} – ${fmt(weekDays[6].date)}`;
+  }, [weekDays]);
+
   const [selectedDateKey, setSelectedDateKey] = useState(todayKey);
+
+  // Ao trocar de semana, seleciona hoje (semana atual) ou o 1º dia da semana.
+  useEffect(() => {
+    setSelectedDateKey(weekOffset === 0 ? todayKey : weekDays[0].dateKey);
+  }, [weekOffset, todayKey, weekDays]);
   const [projects, setProjects] = useState([]);
   const [demands, setDemands] = useState([]);
   const [events, setEvents] = useState([]);
@@ -98,7 +118,7 @@ export default function RoadTimeline() {
     setLoading(true);
     try {
       await ensureActiveTenant();
-      const { start, end } = getWeekRange(new Date());
+      const { start, end } = getWeekRange(referenceDate);
       const rangeQuery = buildIsoRangeQuery(start, end);
 
       const [projectsData, demandsData, eventsData] = await Promise.all([
@@ -117,7 +137,7 @@ export default function RoadTimeline() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [referenceDate]);
 
   useEffect(() => {
     loadTimeline();
@@ -192,11 +212,43 @@ export default function RoadTimeline() {
           <h2 className={styles.title}>Timeline da semana</h2>
           <p className={styles.subtitle}>Reuniões, projetos e demandas do dia.</p>
         </div>
-        {!loading && timelineItems.length > 0 && (
-          <span className={styles.countBadge}>
-            {Math.min(VISIBLE_COUNT, timelineItems.length)} de {timelineItems.length}
-          </span>
-        )}
+        <div className={styles.headerSide}>
+          <div className={styles.weekNav}>
+            <button
+              type="button"
+              className={styles.weekNavBtn}
+              onClick={() => setWeekOffset((o) => o - 1)}
+              aria-label="Semana anterior"
+            >
+              ‹
+            </button>
+            {weekOffset === 0 ? (
+              <span className={styles.weekNavLabel}>Esta semana</span>
+            ) : (
+              <button
+                type="button"
+                className={`${styles.weekNavLabel} ${styles.weekNavLabelBtn}`}
+                onClick={() => setWeekOffset(0)}
+                title="Voltar para esta semana"
+              >
+                {weekLabel}
+              </button>
+            )}
+            <button
+              type="button"
+              className={styles.weekNavBtn}
+              onClick={() => setWeekOffset((o) => o + 1)}
+              aria-label="Próxima semana"
+            >
+              ›
+            </button>
+          </div>
+          {!loading && timelineItems.length > 0 && (
+            <span className={styles.countBadge}>
+              {Math.min(VISIBLE_COUNT, timelineItems.length)} de {timelineItems.length}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className={styles.calendar}>
