@@ -16,7 +16,8 @@ export default function ClientContactSection({ client, onSaved }) {
   const [email, setEmail] = useState(client.email || "");
   const [phone, setPhone] = useState(client.phone || "");
   const [company, setCompany] = useState(client.company || "");
-  const [document, setDocument] = useState(client.document || "");
+  const [cpf, setCpf] = useState(client.cpf || "");
+  const [cnpj, setCnpj] = useState(client.cnpj || "");
   const [photoFile, setPhotoFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -26,7 +27,8 @@ export default function ClientContactSection({ client, onSaved }) {
     setEmail(client.email || "");
     setPhone(client.phone || "");
     setCompany(client.company || "");
-    setDocument(client.document || "");
+    setCpf(client.cpf || "");
+    setCnpj(client.cnpj || "");
     setPhotoFile(null);
   }, [client]);
 
@@ -46,7 +48,8 @@ export default function ClientContactSection({ client, onSaved }) {
         email: email.trim() || null,
         phone: phone.trim() || null,
         company: company.trim() || null,
-        document: document.trim() || null,
+        cpf: cpf.trim() || null,
+        cnpj: cnpj.trim() || null,
       });
 
       if (photoFile) {
@@ -116,9 +119,17 @@ export default function ClientContactSection({ client, onSaved }) {
           disabled={saving}
         />
         <Input
-          label="CPF/CNPJ"
-          value={document}
-          onChange={(e) => setDocument(e.target.value)}
+          label="CPF"
+          placeholder="000.000.000-00"
+          value={cpf}
+          onChange={(e) => setCpf(e.target.value)}
+          disabled={saving}
+        />
+        <Input
+          label="CNPJ"
+          placeholder="00.000.000/0000-00"
+          value={cnpj}
+          onChange={(e) => setCnpj(e.target.value)}
           disabled={saving}
         />
       </div>

@@ -35,6 +35,33 @@
   background: var(--surface-hover);
 }
 
+.textarea {
+  width: 100%;
+  min-height: 72px;
+  resize: vertical;
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-muted);
+  border: 0.5px solid transparent;
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.textarea:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.textarea:focus {
+  border-color: var(--border-strong);
+}
+
 .select:focus {
   border-color: var(--border-strong);
 }

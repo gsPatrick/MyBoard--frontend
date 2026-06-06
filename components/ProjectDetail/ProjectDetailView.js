@@ -10,6 +10,10 @@ import { ensureActiveTenant } from "@/lib/tenantContext";
 import {
   CONTRACT_DETAIL_KEY,
   findDetailByKey,
+  MARKETPLACE_CHAT_NOTES_KEY,
+  MARKETPLACE_CHAT_URL_KEY,
+  MARKETPLACE_PLATFORM_SCOPE_KEY,
+  MARKETPLACE_PROJECT_URL_KEY,
   SCOPE_DETAIL_KEY,
 } from "@/lib/projectDetailConfig";
 import { loadGroupedProjectDetails } from "@/lib/projectDetailsHelpers";
@@ -28,7 +32,17 @@ import CredentialsSection from "./sections/CredentialsSection";
 import GithubSection from "./sections/GithubSection";
 import ProjectWhatsappSection from "./sections/ProjectWhatsappSection";
 import MarketplaceSection from "./sections/MarketplaceSection";
+import AdditionalDetailsSection from "./sections/AdditionalDetailsSection";
 import styles from "./ProjectDetailView.module.css";
+
+const HANDLED_DETAIL_KEYS = new Set([
+  SCOPE_DETAIL_KEY,
+  CONTRACT_DETAIL_KEY,
+  MARKETPLACE_PROJECT_URL_KEY,
+  MARKETPLACE_CHAT_URL_KEY,
+  MARKETPLACE_PLATFORM_SCOPE_KEY,
+  MARKETPLACE_CHAT_NOTES_KEY,
+]);
 
 const BASE_SECTIONS = [
   { id: "overview", label: "Visão geral" },
@@ -38,6 +52,7 @@ const BASE_SECTIONS = [
   { id: "financial", label: "Financeiro" },
   { id: "credentials", label: "Credenciais" },
   { id: "github", label: "GitHub" },
+  { id: "additional", label: "Outros dados" },
   { id: "whatsapp", label: "WhatsApp" },
 ];
 
@@ -79,6 +94,16 @@ export default function ProjectDetailView() {
   const contractDetail = findDetailByKey(flatDetails, CONTRACT_DETAIL_KEY);
   const credentials = groupedDetails.credentials || [];
   const repos = groupedDetails.github || [];
+  const additionalDetails = useMemo(
+    () =>
+      flatDetails.filter(
+        (d) =>
+          d.category !== "credentials" &&
+          d.category !== "github" &&
+          !HANDLED_DETAIL_KEYS.has(d.key)
+      ),
+    [flatDetails]
+  );
 
   const openDemandsCount = demands.filter(
     (d) => d.status !== "done" && d.status !== "cancelled"
@@ -290,6 +315,14 @@ export default function ProjectDetailView() {
               <GithubSection
                 projectId={project.id}
                 repos={repos}
+                onChange={reloadDetails}
+              />
+            )}
+
+            {activeSection === "additional" && (
+              <AdditionalDetailsSection
+                projectId={project.id}
+                details={additionalDetails}
                 onChange={reloadDetails}
               />
             )}

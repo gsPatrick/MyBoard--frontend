@@ -32,6 +32,13 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Cancelado" },
 ];
 
+const ORIGIN_OPTIONS = [
+  { value: "", label: "—" },
+  { value: "own", label: "Próprio" },
+  { value: "99freelas", label: "99Freelas" },
+  { value: "workana", label: "Workana" },
+];
+
 const CATEGORY_LABELS = {
   github: "GitHub",
   credentials: "Credenciais",
@@ -367,8 +374,18 @@ export default function IngestionUpload({
               <Input label="E-mail" value={client.email || ""} onChange={(e) => setClientField("email", e.target.value)} />
               <Input label="Empresa" value={client.company || ""} onChange={(e) => setClientField("company", e.target.value)} />
               <Input label="Telefone" value={client.phone || ""} onChange={(e) => setClientField("phone", e.target.value)} />
-              <Input label="Documento" value={client.document || ""} onChange={(e) => setClientField("document", e.target.value)} />
+              <Input label="CPF" value={client.cpf || ""} onChange={(e) => setClientField("cpf", e.target.value)} />
+              <Input label="CNPJ" value={client.cnpj || ""} onChange={(e) => setClientField("cnpj", e.target.value)} />
             </div>
+            <label className={styles.field}>
+              <span className={styles.fieldLabel}>Observações</span>
+              <textarea
+                className={styles.textarea}
+                rows={3}
+                value={client.notes || ""}
+                onChange={(e) => setClientField("notes", e.target.value)}
+              />
+            </label>
           </section>
         )}
 
@@ -386,6 +403,20 @@ export default function IngestionUpload({
                   onChange={(e) => setProjectField("status", e.target.value || null)}
                 >
                   {STATUS_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.field}>
+                <span className={styles.fieldLabel}>Plataforma / Origem</span>
+                <select
+                  className={styles.select}
+                  value={project.origin || ""}
+                  onChange={(e) => setProjectField("origin", e.target.value || null)}
+                >
+                  {ORIGIN_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
                       {o.label}
                     </option>
