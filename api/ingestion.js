@@ -43,6 +43,13 @@ export async function analyzeUpload(files = [], target = {}) {
   return postForm(ENDPOINTS.ingestion.analyze, formData);
 }
 
+/** Lê o conteúdo dos arquivos (anexar à conversa) sem gravar nada. Retorna { text, files }. */
+export async function extractUpload(files = []) {
+  const formData = new FormData();
+  for (const file of files) formData.append("files", file);
+  return postForm(ENDPOINTS.ingestion.extract, formData);
+}
+
 /** Confirma a proposta (possivelmente editada) e grava cliente/projeto/credenciais. */
 export async function applyIngestion({ proposal, files = [], target = {} }) {
   const formData = new FormData();

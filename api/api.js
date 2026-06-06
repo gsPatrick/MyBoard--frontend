@@ -36,6 +36,7 @@ export const ENDPOINTS = {
   ingestion: {
     analyze: `/${API_VERSION}/ingestion/analyze`,
     apply: `/${API_VERSION}/ingestion/apply`,
+    extract: `/${API_VERSION}/ingestion/extract`,
   },
   bordie: {
     chat: `/${API_VERSION}/bordie/chat`,
