@@ -99,6 +99,140 @@
   margin-left: auto;
 }
 
+/* ---------- card detalhado de projeto (espelha a aba Projetos) ---------- */
+.projCard {
+  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-1);
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.projTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.projAvatarBtn {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  line-height: 0;
+}
+.projAvatarBtn:hover {
+  opacity: 0.85;
+}
+
+.projNames {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.projNameBtn,
+.projClientBtn {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  min-width: 0;
+  max-width: 100%;
+}
+.projClientBtn:disabled {
+  cursor: default;
+}
+.projLabel {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.projName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary, var(--text-secondary));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.projNameBtn:hover .projName,
+.projClientBtn:not(:disabled):hover .projClientName {
+  text-decoration: underline;
+  color: var(--secondary-indigo);
+}
+.projClientName {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.projInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+.projInfoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.projInfoLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.projStatusRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.projOpenBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 5px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-2);
+  color: var(--secondary-indigo);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+.projOpenBtn svg {
+  width: 13px;
+  height: 13px;
+}
+.projOpenBtn:hover {
+  border-color: var(--secondary-indigo);
+  background: var(--background-1);
+}
+
 .entityStatus {
   flex: 0 0 auto;
   display: inline-flex;

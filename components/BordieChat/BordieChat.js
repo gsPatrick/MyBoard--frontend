@@ -273,11 +273,11 @@ export default function BordieChat() {
   }, []);
 
   const handleOpenEntity = useCallback(
-    (entity) => {
-      if (!entity?.open) return;
-      const { kind, id, name } = entity.open;
+    (target) => {
+      if (!target?.kind) return;
+      const { kind, id, name } = target;
       if (kind === "project") {
-        selectProject({ id, name, ...(entity.meta || {}) });
+        selectProject({ id, name });
       } else if (kind === "client") {
         selectClient({ id, name });
       } else if (kind === "agenda") {
