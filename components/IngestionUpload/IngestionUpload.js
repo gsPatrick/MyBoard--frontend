@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
@@ -51,6 +51,10 @@ export default function IngestionUpload({
   onApplied,
 }) {
   const inputRef = useRef(null);
+  const wrapRef = useRef(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [textOpen, setTextOpen] = useState(false);
+  const [textValue, setTextValue] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [applying, setApplying] = useState(false);
@@ -166,6 +170,26 @@ export default function IngestionUpload({
 
   const handleApply = () => runApply(proposal, files);
 
+  // Fecha o menu de opções ao clicar fora.
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    function onClickOutside(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [menuOpen]);
+
+  // Texto colado/digitado vira um .txt e segue o mesmo fluxo de análise.
+  const submitText = useCallback(async () => {
+    const text = textValue.trim();
+    if (!text) return;
+    const file = new File([text], "texto-colado.txt", { type: "text/plain" });
+    setTextOpen(false);
+    setTextValue("");
+    await handleFiles([file]);
+  }, [textValue, handleFiles]);
+
   const setClientField = (field, value) =>
     setProposal((p) => ({ ...p, client: { ...(p.client || {}), [field]: value } }));
   const setProjectField = (field, value) =>
@@ -192,7 +216,7 @@ export default function IngestionUpload({
       <button
         type="button"
         className={`${styles.compact} ${dragOver ? styles.compactOver : ""}`}
-        onClick={() => inputRef.current?.click()}
+        onClick={() => setMenuOpen((o) => !o)}
         onDragOver={(e) => {
           e.preventDefault();
           setDragOver(true);
@@ -215,8 +239,8 @@ export default function IngestionUpload({
         onDrop={onDrop}
         role="button"
         tabIndex={0}
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && inputRef.current?.click()}
+        onClick={() => setMenuOpen((o) => !o)}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setMenuOpen((o) => !o)}
       >
         <p className={styles.zoneText}>
           {analyzing ? (
@@ -235,7 +259,43 @@ export default function IngestionUpload({
 
   return (
     <>
-      {dropzone}
+      <div className={styles.chooserWrap} ref={wrapRef}>
+        {dropzone}
+        {menuOpen && (
+          <div className={styles.chooser} role="menu">
+            <button
+              type="button"
+              className={styles.chooserItem}
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                setTextOpen(true);
+              }}
+            >
+              <TextIcon />
+              <span className={styles.chooserText}>
+                <strong>Colar ou digitar texto</strong>
+                <small>Cole de um notepad ou escreva</small>
+              </span>
+            </button>
+            <button
+              type="button"
+              className={styles.chooserItem}
+              role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                inputRef.current?.click();
+              }}
+            >
+              <UploadIcon />
+              <span className={styles.chooserText}>
+                <strong>Selecionar arquivo</strong>
+                <small>zip, pdf ou txt</small>
+              </span>
+            </button>
+          </div>
+        )}
+      </div>
       <input
         ref={inputRef}
         type="file"
@@ -384,7 +444,47 @@ export default function IngestionUpload({
           </section>
         )}
       </Modal>
+
+      <Modal
+        isOpen={textOpen}
+        onClose={() => !analyzing && setTextOpen(false)}
+        title="Colar ou escrever o conteúdo"
+        size="lg"
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setTextOpen(false)} disabled={analyzing}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={submitText} disabled={analyzing || !textValue.trim()}>
+              {analyzing ? "Analisando…" : "Analisar com a IA"}
+            </Button>
+          </>
+        }
+      >
+        <p className={styles.notepadHint}>
+          Cole o conteúdo (proposta, briefing, e-mail, credenciais…) ou escreva. A Bordie vai ler e
+          extrair cliente, projeto e dados.
+        </p>
+        <textarea
+          className={styles.notepad}
+          value={textValue}
+          onChange={(e) => setTextValue(e.target.value)}
+          placeholder="Cole aqui o texto ou escreva tudo…"
+          rows={14}
+          autoFocus
+          disabled={analyzing}
+        />
+      </Modal>
     </>
+  );
+}
+
+function TextIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" width="16" height="16" aria-hidden="true">
+      <rect x="3" y="2.5" width="10" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M5.5 5.5h5M5.5 8h5M5.5 10.5h3" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" />
+    </svg>
   );
 }
 
