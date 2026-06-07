@@ -18,6 +18,7 @@ import {
   renderRichText,
 } from "./BordieRich";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
+import { isNative, ocr } from "@/lib/nativeBridge";
 import { getWorkspaceSettings } from "@/api/settings";
 import {
   beginBordieActionPreparing,
@@ -895,11 +896,23 @@ export default function BordieChat() {
 
     try {
       let attachments = [];
+      let outgoing = messageToSend;
       if (hadAttachment?.file) {
         const dataUrl = await fileToDataUrl(hadAttachment.file);
         attachments = [
           { name: hadAttachment.name, mime: hadAttachment.type, data: dataUrl },
         ];
+        // No app Mac: OCR on-device (Vision) complementa — lê PDF escaneado/imagem.
+        if (isNative()) {
+          try {
+            const ocrText = await ocr(dataUrl);
+            if (ocrText && ocrText.trim()) {
+              outgoing = `Conteúdo (OCR) do arquivo "${hadAttachment.name}":\n${ocrText.trim()}\n\n---\n\n${messageToSend}`;
+            }
+          } catch {
+            /* sem OCR — segue o fluxo normal */
+          }
+        }
       }
 
       const requestContext = await buildBordieContextWithFreshBoard({
@@ -911,7 +924,7 @@ export default function BordieChat() {
       });
       const history = nextMessages.map(({ role, content }) => ({ role, content }));
       const response = await sendBordieMessage({
-        message: messageToSend,
+        message: outgoing,
         context: requestContext,
         history: history.slice(0, -1),
         attachments,
