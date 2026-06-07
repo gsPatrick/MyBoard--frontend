@@ -1,5 +1,10 @@
+import {
+  startRegistration,
+  startAuthentication,
+  browserSupportsWebAuthn,
+} from "@simplewebauthn/browser";
 import { ENDPOINTS } from "./api";
-import { apiGet, apiPatch, apiPost, getToken, saveSession, clearSession } from "./client";
+import { apiGet, apiPatch, apiPost, apiDelete, getToken, saveSession, clearSession } from "./client";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { clearTenantScopedStorage } from "@/lib/tenantStorage";
 import {
@@ -66,9 +71,48 @@ export async function loginWithBiometrics() {
   }
 }
 
-/** Remove a credencial salva (desativar Touch ID). */
+/** Remove a credencial salva (desativar Touch ID nativo do app). */
 export async function disableBiometricLogin() {
   await keychainDelete(BIOMETRIC_TOKEN_KEY);
+}
+
+// ---- Passkeys / WebAuthn (Touch ID / Face ID / Windows Hello no NAVEGADOR) ----
+
+export function passkeySupported() {
+  try {
+    return browserSupportsWebAuthn();
+  } catch {
+    return false;
+  }
+}
+
+/** Login por biometria no navegador (passkey). */
+export async function passkeyLogin() {
+  const { flowId, options } = await apiPost(ENDPOINTS.auth.passkeyLoginOptions, {}, { auth: false });
+  const response = await startAuthentication({ optionsJSON: options });
+  const data = await apiPost(
+    ENDPOINTS.auth.passkeyLoginVerify,
+    { flowId, response },
+    { auth: false }
+  );
+  saveSession(data);
+  await ensureActiveTenant();
+  return data;
+}
+
+/** Cadastra uma passkey para o usuário logado (ativar Touch ID). */
+export async function registerPasskey(label) {
+  const { flowId, options } = await apiPost(ENDPOINTS.auth.passkeyRegisterOptions, {});
+  const response = await startRegistration({ optionsJSON: options });
+  return apiPost(ENDPOINTS.auth.passkeyRegisterVerify, { flowId, response, label });
+}
+
+export async function listPasskeys() {
+  return apiGet(ENDPOINTS.auth.passkeyList);
+}
+
+export async function deletePasskey(id) {
+  return apiDelete(ENDPOINTS.auth.passkeyDelete(id));
 }
 
 export async function me() {

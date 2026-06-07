@@ -2,9 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
-import { me } from "@/api/auth";
+import { me, passkeySupported, registerPasskey, listPasskeys, deletePasskey } from "@/api/auth";
 import { getStoredUser, getStoredTenant } from "@/api/client";
 import { getUserAvatarUrl } from "@/lib/mediaUrl";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import EditAccountModal from "./EditAccountModal";
 import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";
 import styles from "./AccountSettingsPanel.module.css";
@@ -23,6 +24,50 @@ export default function AccountSettingsPanel() {
   const [tenant, setTenant] = useState(() => getStoredTenant());
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
+  const [pkSupported, setPkSupported] = useState(false);
+  const [passkeys, setPasskeys] = useState([]);
+  const [pkBusy, setPkBusy] = useState(false);
+
+  const loadPasskeys = useCallback(async () => {
+    try {
+      const data = await listPasskeys();
+      setPasskeys(Array.isArray(data) ? data : []);
+    } catch {
+      setPasskeys([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    setPkSupported(passkeySupported());
+    loadPasskeys();
+  }, [loadPasskeys]);
+
+  async function enablePasskey() {
+    setPkBusy(true);
+    try {
+      const label = `Touch ID — ${typeof navigator !== "undefined" ? navigator.platform || "este dispositivo" : "este dispositivo"}`;
+      await registerPasskey(label);
+      showSuccessToast("Touch ID ativado! Use no próximo login.");
+      await loadPasskeys();
+    } catch (err) {
+      if (err?.name !== "NotAllowedError") {
+        showErrorToast(err.message || "Não foi possível ativar o Touch ID.");
+      }
+    } finally {
+      setPkBusy(false);
+    }
+  }
+
+  async function removePasskey(id) {
+    if (!window.confirm("Remover esta passkey?")) return;
+    try {
+      await deletePasskey(id);
+      showSuccessToast("Passkey removida.");
+      await loadPasskeys();
+    } catch (err) {
+      showErrorToast(err.message || "Falha ao remover.");
+    }
+  }
 
   const refreshProfile = useCallback(async () => {
     setLoading(true);
@@ -97,6 +142,43 @@ export default function AccountSettingsPanel() {
             </div>
           </div>
         )}
+
+        <article className={settingsPanelStyles.card} style={{ marginTop: 16 }}>
+          <h3 className={settingsPanelStyles.cardTitle}>Login com Touch ID</h3>
+          <p className={settingsPanelStyles.cardText}>
+            Entre sem senha usando Touch ID / Face ID (passkey) — funciona no navegador e no app.
+          </p>
+
+          {!pkSupported ? (
+            <p className={settingsPanelStyles.muted}>
+              Este navegador/dispositivo não suporta biometria (passkey).
+            </p>
+          ) : (
+            <>
+              {passkeys.length > 0 && (
+                <ul className={styles.passkeyList}>
+                  {passkeys.map((pk) => (
+                    <li key={pk.id} className={styles.passkeyItem}>
+                      <span className={styles.passkeyName}>🔒 {pk.name || "Touch ID"}</span>
+                      <button
+                        type="button"
+                        className={styles.passkeyRemove}
+                        onClick={() => removePasskey(pk.id)}
+                      >
+                        Remover
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div style={{ marginTop: 12 }}>
+                <Button variant="secondary" size="sm" onClick={enablePasskey} disabled={pkBusy}>
+                  {pkBusy ? "Ativando…" : passkeys.length ? "Adicionar outro dispositivo" : "Ativar Touch ID"}
+                </Button>
+              </div>
+            </>
+          )}
+        </article>
       </SettingsPanelShell>
 
       <EditAccountModal
