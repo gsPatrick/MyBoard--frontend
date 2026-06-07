@@ -20,6 +20,7 @@ import OnboardingTour from "@/components/OnboardingTour/OnboardingTour";
 import OnboardingWelcomeModal from "@/components/OnboardingWelcomeModal/OnboardingWelcomeModal";
 import BordieChat from "@/components/BordieChat/BordieChat";
 import BordieActionOverlay from "@/components/BordieActionOverlay/BordieActionOverlay";
+import NativeNotificationsSync from "@/components/NativeNotificationsSync/NativeNotificationsSync";
 import Toaster from "@/components/Toast/Toaster";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { BordieChatProvider, useBordieChat } from "@/context/BordieChatContext";
@@ -92,6 +93,7 @@ function DashboardShell() {
       <WorkspaceSearch />
       <BordieActionOverlay />
       <BordieChat />
+      <NativeNotificationsSync />
       <OnboardingTour />
       <OnboardingWelcomeModal />
       <DailyFocusModal />
