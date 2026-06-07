@@ -9,7 +9,16 @@ import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import Text from "@/components/Text/Text";
 import { ApiError } from "@/api/client";
-import { login, register, forgotPassword, passkeyLogin, passkeySupported } from "@/api/auth";
+import {
+  login,
+  register,
+  forgotPassword,
+  passkeyLogin,
+  passkeySupported,
+  loginWithBiometrics,
+  hasBiometricLogin,
+} from "@/api/auth";
+import { isNative } from "@/lib/nativeBridge";
 import styles from "./page.module.css";
 
 const MODES = {
@@ -55,7 +64,15 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    setBioAvailable(passkeySupported());
+    // No app Mac (WKWebView) o passkey é bloqueado → usa Touch ID nativo.
+    // No navegador → passkey (WebAuthn).
+    if (isNative()) {
+      hasBiometricLogin()
+        .then(setBioAvailable)
+        .catch(() => setBioAvailable(false));
+    } else {
+      setBioAvailable(passkeySupported());
+    }
   }, []);
 
   async function handleBiometricLogin() {
@@ -63,15 +80,19 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
     try {
-      await passkeyLogin();
+      if (isNative()) {
+        await loginWithBiometrics();
+      } else {
+        await passkeyLogin();
+      }
       router.push("/dashboard");
     } catch (err) {
-      // Cancelar o prompt do SO não é erro a mostrar
       if (err?.name === "NotAllowedError" || /cancel/i.test(err?.message || "")) {
         setLoading(false);
         return;
       }
       setError(err.message || "Não foi possível entrar com Touch ID.");
+      if (/expirada/i.test(err?.message || "")) setBioAvailable(false);
     } finally {
       setLoading(false);
     }

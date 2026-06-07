@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import { me, passkeySupported, registerPasskey, listPasskeys, deletePasskey } from "@/api/auth";
+import { isNative } from "@/lib/nativeBridge";
 import { getStoredUser, getStoredTenant } from "@/api/client";
 import { getUserAvatarUrl } from "@/lib/mediaUrl";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
@@ -149,7 +150,12 @@ export default function AccountSettingsPanel() {
             Entre sem senha usando Touch ID / Face ID (passkey) — funciona no navegador e no app.
           </p>
 
-          {!pkSupported ? (
+          {isNative() ? (
+            <p className={settingsPanelStyles.muted}>
+              Neste app o Touch ID já funciona automaticamente: entre uma vez com a senha e, no
+              próximo login, use o botão Touch ID.
+            </p>
+          ) : !pkSupported ? (
             <p className={settingsPanelStyles.muted}>
               Este navegador/dispositivo não suporta biometria (passkey).
             </p>
