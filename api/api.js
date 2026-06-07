@@ -16,6 +16,7 @@ export const ENDPOINTS = {
     register: `/${API_VERSION}/auth/register`,
     login: `/${API_VERSION}/auth/login`,
     me: `/${API_VERSION}/auth/me`,
+    refresh: `/${API_VERSION}/auth/refresh`,
     onboarding: `/${API_VERSION}/auth/onboarding`,
     updateProfile: `/${API_VERSION}/auth/me`,
     forgotPassword: `/${API_VERSION}/auth/forgot-password`,

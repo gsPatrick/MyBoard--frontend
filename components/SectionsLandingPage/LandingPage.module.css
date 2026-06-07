@@ -558,3 +558,91 @@
     animation: none;
   }
 }
+
+/* ---------- seção de download ---------- */
+.download {
+  max-width: var(--lp-max);
+  margin: 0 auto;
+  padding: 0 var(--lp-pad) clamp(56px, 9vw, 96px);
+  text-align: center;
+}
+.downloadTitle {
+  font-size: clamp(24px, 3.5vw, 34px);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+}
+.downloadGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+.downloadCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(24px, 3vw, 36px) var(--space-4);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl, 20px);
+  background: var(--background-1);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.downloadCard:hover {
+  border-color: var(--text-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+}
+.downloadSoon {
+  opacity: 0.6;
+  cursor: default;
+}
+.downloadSoon:hover {
+  transform: none;
+  border-color: var(--border-default);
+  box-shadow: none;
+}
+.downloadIcon {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+.downloadName {
+  font-size: 18px;
+  font-weight: 600;
+}
+.downloadHint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.downloadBtn {
+  margin-top: 10px;
+  padding: 8px 22px;
+  border-radius: var(--radius-full, 999px);
+  background: var(--text-primary);
+  color: var(--background-1);
+  font-size: 14px;
+  font-weight: 600;
+}
+.downloadBadge {
+  margin-top: 10px;
+  padding: 6px 16px;
+  border-radius: var(--radius-full, 999px);
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 760px) {
+  .downloadGrid {
+    grid-template-columns: 1fr;
+  }
+}

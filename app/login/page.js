@@ -9,7 +9,7 @@ import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import Text from "@/components/Text/Text";
 import { ApiError } from "@/api/client";
-import { login, register, forgotPassword } from "@/api/auth";
+import { login, register, forgotPassword, loginWithBiometrics, hasBiometricLogin } from "@/api/auth";
 import styles from "./page.module.css";
 
 const MODES = {
@@ -30,6 +30,7 @@ export default function LoginPage() {
   const [tenantSlug, setTenantSlug] = useState("");
   const [tenantOptions, setTenantOptions] = useState([]);
 
+  const [bioAvailable, setBioAvailable] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
     name: "",
@@ -51,6 +52,27 @@ export default function LoginPage() {
     setError("");
     setSuccess("");
     setTenantOptions([]);
+  }
+
+  useEffect(() => {
+    hasBiometricLogin()
+      .then(setBioAvailable)
+      .catch(() => setBioAvailable(false));
+  }, []);
+
+  async function handleBiometricLogin() {
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      await loginWithBiometrics();
+      router.push("/dashboard");
+    } catch (err) {
+      setError(err.message || "Não foi possível entrar com Touch ID.");
+      if (/expirada/i.test(err.message || "")) setBioAvailable(false);
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleLogin(event) {
@@ -171,6 +193,21 @@ export default function LoginPage() {
               </header>
 
               <form className={styles.form} onSubmit={handleLogin}>
+                {bioAvailable && (
+                  <div className={styles.stagger2}>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="lg"
+                      fullWidth
+                      disabled={loading}
+                      onClick={handleBiometricLogin}
+                    >
+                      🔒 Entrar com Touch ID
+                    </Button>
+                    <p className={styles.bioDivider}>ou entre com a senha</p>
+                  </div>
+                )}
                 <div className={styles.stagger2}>
                   <Input
                     label="E-mail"

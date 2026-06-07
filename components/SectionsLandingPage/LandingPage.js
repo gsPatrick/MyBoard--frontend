@@ -122,6 +122,31 @@ function ProjectVisual() {
   );
 }
 
+function AppleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="28" height="28">
+      <path d="M16.36 12.78c.02 2.5 2.2 3.33 2.22 3.34-.02.06-.35 1.2-1.15 2.37-.69 1.02-1.41 2.03-2.54 2.05-1.11.02-1.47-.66-2.74-.66-1.27 0-1.66.64-2.71.68-1.09.04-1.92-1.1-2.62-2.11-1.43-2.07-2.52-5.85-1.05-8.41.73-1.27 2.03-2.07 3.45-2.09 1.07-.02 2.08.72 2.74.72.65 0 1.88-.89 3.17-.76.54.02 2.06.22 3.03 1.65-.08.05-1.81 1.06-1.8 3.16M14.3 5.39c.58-.7.97-1.68.86-2.65-.84.03-1.85.56-2.45 1.26-.54.62-1.01 1.61-.88 2.56.93.07 1.89-.47 2.47-1.17" />
+    </svg>
+  );
+}
+
+function WindowsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" width="28" height="28">
+      <path d="M3 5.5 10.5 4.4v7.1H3V5.5m0 13 7.5 1.1v-7H3v5.9m8.5 1.2L21 21V12.6h-9.5v7.1m0-15.6L21 3v8.4h-9.5V4.1" />
+    </svg>
+  );
+}
+
+function GlobeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true" width="28" height="28">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18" />
+    </svg>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className={styles.page} data-theme="light">
@@ -216,6 +241,44 @@ export default function LandingPage() {
           <br />
           à altura da entrega.
         </h2>
+      </section>
+
+      <section id="baixar" className={styles.download}>
+        <p className={styles.sectionLabel}>Baixar</p>
+        <h2 className={styles.downloadTitle}>Use no desktop ou no navegador</h2>
+        <div className={styles.downloadGrid}>
+          <a
+            className={styles.downloadCard}
+            href="https://github.com/gsPatrick/MyBoard--mac/releases/latest"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span className={styles.downloadIcon}>
+              <AppleIcon />
+            </span>
+            <span className={styles.downloadName}>Mac</span>
+            <span className={styles.downloadHint}>App nativo (.dmg) com Touch ID</span>
+            <span className={styles.downloadBtn}>Baixar</span>
+          </a>
+
+          <div className={`${styles.downloadCard} ${styles.downloadSoon}`}>
+            <span className={styles.downloadIcon}>
+              <WindowsIcon />
+            </span>
+            <span className={styles.downloadName}>Windows</span>
+            <span className={styles.downloadHint}>App desktop</span>
+            <span className={styles.downloadBadge}>Em breve</span>
+          </div>
+
+          <Link className={styles.downloadCard} href="/login">
+            <span className={styles.downloadIcon}>
+              <GlobeIcon />
+            </span>
+            <span className={styles.downloadName}>Web</span>
+            <span className={styles.downloadHint}>Use direto no navegador</span>
+            <span className={styles.downloadBtn}>Abrir</span>
+          </Link>
+        </div>
       </section>
 
       <section className={styles.cta}>
