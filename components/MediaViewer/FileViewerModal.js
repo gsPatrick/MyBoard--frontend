@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Modal from "@/components/Modal/Modal";
 import { fetchMediaBlobUrl } from "@/api/media";
-import { resolveMediaUrl } from "@/lib/mediaUrl";
 import styles from "./FileViewerModal.module.css";
 
 function fileKind(mime = "", name = "") {
@@ -87,13 +86,13 @@ export default function FileViewerModal({ isOpen, onClose, media }) {
       setError(null);
       setTextContent(null);
       try {
-        const direct = resolveMediaUrl(media);
-        const url = direct || (blobUrl = await fetchMediaBlobUrl(media.id));
+        // Sempre via blob autenticado (mesma origem dos thumbnails) — robusto p/ todos os tipos.
+        blobUrl = await fetchMediaBlobUrl(media.id);
         if (cancelled) return;
-        setSrc(url);
+        setSrc(blobUrl);
 
         if (fileKind(media.mime_type, media.original_name) === "text") {
-          const res = await fetch(url);
+          const res = await fetch(blobUrl);
           const txt = await res.text();
           if (!cancelled) setTextContent(txt.slice(0, 50000));
         }
