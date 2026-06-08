@@ -109,8 +109,11 @@ const IngestionUpload = forwardRef(function IngestionUpload(
         reset();
         return true;
       } catch (e) {
-        setError(e.message || "Falha ao aplicar a importação.");
-        showErrorToast(e.message || "Falha ao aplicar a importação.");
+        // eslint-disable-next-line no-console
+        console.error("[ingestion] apply falhou:", { message: e.message, code: e.code, status: e.status, details: e.details, error: e });
+        const detail = e.code ? `${e.message} (${e.code})` : e.message;
+        setError(detail || "Falha ao aplicar a importação.");
+        showErrorToast(detail || "Falha ao aplicar a importação.");
         return false;
       } finally {
         setApplying(false);
@@ -139,8 +142,11 @@ const IngestionUpload = forwardRef(function IngestionUpload(
         sts = result.stats || null;
       } catch (e) {
         ok = false;
-        setError(e.message || "Falha ao analisar os arquivos.");
-        showErrorToast(e.message || "Falha ao analisar os arquivos.");
+        // eslint-disable-next-line no-console
+        console.error("[ingestion] analyze falhou:", { message: e.message, code: e.code, status: e.status, details: e.details, error: e });
+        const detail = e.code ? `${e.message} (${e.code})` : e.message;
+        setError(detail || "Falha ao analisar os arquivos.");
+        showErrorToast(detail || "Falha ao analisar os arquivos.");
         setFiles([]);
       }
 
