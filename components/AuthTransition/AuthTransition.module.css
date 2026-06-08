@@ -27,23 +27,18 @@
   gap: var(--space-3);
   padding: var(--space-8) var(--space-9);
   border-radius: var(--radius-xl);
-  background: var(--background-2);
-  border: 0.5px solid var(--border-default);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+  background: #ffffff;
+  border: 1px solid #ececf3;
+  box-shadow: 0 24px 80px rgba(33, 33, 66, 0.28);
   animation: cardPop 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
 }
 
 .logoutLogo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
   border-radius: var(--radius-lg);
-  background: var(--gradient-brand);
-  color: #fff;
-  font-size: 26px;
-  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(99, 102, 241, 0.26);
   animation: logoSpin 0.8s ease forwards;
 }
 
@@ -51,13 +46,13 @@
   font-size: 20px;
   font-weight: 600;
   line-height: 28px;
-  color: var(--text-primary);
+  color: #15152b;
 }
 
 .logoutSub {
   font-size: 13px;
   line-height: 18px;
-  color: var(--text-secondary);
+  color: #6c6c82;
 }
 
 .logoutBar {
@@ -65,7 +60,7 @@
   height: 4px;
   margin-top: var(--space-2);
   border-radius: var(--radius-full);
-  background: var(--surface-muted);
+  background: #ececf3;
   overflow: hidden;
 }
 

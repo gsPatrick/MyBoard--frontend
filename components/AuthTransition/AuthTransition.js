@@ -17,7 +17,8 @@ export function LogoutOverlay({ visible }) {
     <div className={styles.logoutOverlay} role="status" aria-live="polite" aria-label="Saindo">
       <div className={styles.logoutGlow} aria-hidden="true" />
       <div className={styles.logoutCard}>
-        <span className={styles.logoutLogo}>M</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/myboardlogo.png" alt="MyBoard" className={styles.logoutLogo} />
         <p className={styles.logoutTitle}>Até logo!</p>
         <p className={styles.logoutSub}>Encerrando sua sessão...</p>
         <div className={styles.logoutBar}>
