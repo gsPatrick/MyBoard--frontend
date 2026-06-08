@@ -10,6 +10,7 @@ import {
 } from "@/api/media";
 import { getStoredUser } from "@/api/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import FileViewerModal from "@/components/MediaViewer/FileViewerModal";
 import styles from "./MediaLibrary.module.css";
 
 const CATEGORIES = [
@@ -95,6 +96,7 @@ export default function MediaLibrary({ entityType, entityId }) {
   const [search, setSearch] = useState("");
   const [pendingFile, setPendingFile] = useState(null);
   const [uploadCategory, setUploadCategory] = useState("documento");
+  const [viewing, setViewing] = useState(null);
   const inputRef = useRef(null);
 
   const load = useCallback(async () => {
@@ -302,15 +304,20 @@ export default function MediaLibrary({ entityType, entityId }) {
                   className={styles.thumb}
                   role="button"
                   tabIndex={0}
-                  onClick={() => handleDownload(item)}
-                  title="Baixar"
+                  onClick={() => setViewing(item)}
+                  title="Visualizar"
                 >
                   <Thumb id={item.id} mime={item.mime_type} name={item.original_name} />
                 </div>
                 <div className={styles.cardBody}>
-                  <span className={styles.cardName} title={item.original_name}>
+                  <button
+                    type="button"
+                    className={styles.cardName}
+                    title={item.original_name}
+                    onClick={() => setViewing(item)}
+                  >
                     {item.original_name}
-                  </span>
+                  </button>
                   <div className={styles.cardMeta}>
                     <span>{formatBytes(item.size_bytes)}</span>
                     {cat && <span className={styles.cat}>{CATEGORY_LABEL[cat] || cat}</span>}
@@ -320,6 +327,9 @@ export default function MediaLibrary({ entityType, entityId }) {
                   </div>
                 </div>
                 <div className={styles.cardActions}>
+                  <button type="button" className={styles.actionBtn} onClick={() => setViewing(item)}>
+                    Ver
+                  </button>
                   <button type="button" className={styles.actionBtn} onClick={() => handleDownload(item)}>
                     Baixar
                   </button>
@@ -339,6 +349,8 @@ export default function MediaLibrary({ entityType, entityId }) {
           })}
         </div>
       )}
+
+      <FileViewerModal isOpen={!!viewing} onClose={() => setViewing(null)} media={viewing} />
     </div>
   );
 }

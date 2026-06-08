@@ -143,12 +143,22 @@
   gap: 4px;
 }
 .cardName {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.cardName:hover {
+  color: var(--secondary-indigo, #6366f1);
 }
 .cardMeta {
   display: flex;
