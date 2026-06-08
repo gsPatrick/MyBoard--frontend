@@ -40,6 +40,7 @@ export default function LoginPage() {
   const [tenantOptions, setTenantOptions] = useState([]);
 
   const [bioAvailable, setBioAvailable] = useState(false);
+  const [nativeMode, setNativeMode] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
     name: "",
@@ -54,6 +55,9 @@ export default function LoginPage() {
     if (searchParams.get("logout") === "1") {
       setShowLogoutBanner(true);
     }
+    if (searchParams.get("mode") === "register") {
+      setMode(MODES.REGISTER);
+    }
   }, [searchParams]);
 
   function switchMode(nextMode) {
@@ -66,7 +70,9 @@ export default function LoginPage() {
   useEffect(() => {
     // No app Mac (WKWebView) o passkey é bloqueado → usa Touch ID nativo.
     // No navegador → passkey (WebAuthn).
-    if (isNative()) {
+    const native = isNative();
+    setNativeMode(native);
+    if (native) {
       hasBiometricLogin()
         .then(setBioAvailable)
         .catch(() => setBioAvailable(false));
@@ -396,8 +402,8 @@ export default function LoginPage() {
             </>
           )}
 
-          <Link href="/" className={styles.homeLink}>
-            ← Voltar para o site
+          <Link href={nativeMode ? "/welcome" : "/"} className={styles.homeLink}>
+            {nativeMode ? "← Voltar" : "← Voltar para o site"}
           </Link>
         </div>
       </section>
