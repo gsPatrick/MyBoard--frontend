@@ -23,9 +23,10 @@ export function switchProjectToLive(projectId) {
   return apiClient(`${WA}/projects/${projectId}/import/switch-live`, { method: "POST" });
 }
 
-async function uploadImport(path, file, confirm) {
+async function uploadImport(path, file, confirm, name) {
   const formData = new FormData();
   formData.append("file", file);
+  if (name) formData.append("name", name);
 
   const headers = {};
   const token = getToken();
@@ -55,11 +56,11 @@ async function uploadImport(path, file, confirm) {
   return payload?.data ?? payload;
 }
 
-export function importClientChat(clientId, file, { confirm = false } = {}) {
-  return uploadImport(`${WA}/clients/${clientId}/import`, file, confirm);
+export function importClientChat(clientId, file, { confirm = false, name } = {}) {
+  return uploadImport(`${WA}/clients/${clientId}/import`, file, confirm, name);
 }
-export function importProjectChat(projectId, file, { confirm = false } = {}) {
-  return uploadImport(`${WA}/projects/${projectId}/import`, file, confirm);
+export function importProjectChat(projectId, file, { confirm = false, name } = {}) {
+  return uploadImport(`${WA}/projects/${projectId}/import`, file, confirm, name);
 }
 
 export async function listWhatsappInstances() {
