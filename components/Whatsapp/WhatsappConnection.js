@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getStoredUser } from "@/api/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Button from "@/components/Button/Button";
 import {
   getClientImportMode,
   getProjectImportMode,
@@ -13,6 +14,7 @@ import {
   switchClientToLive,
   switchProjectToLive,
 } from "@/api/whatsapp";
+import WhatsappImportModal from "./WhatsappImportModal";
 import styles from "./WhatsappConnection.module.css";
 
 const API = {
@@ -48,11 +50,8 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
   const [view, setView] = useState("live");
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [dragOver, setDragOver] = useState(false);
-  const [staged, setStaged] = useState(null); // { file, name } — passo de nomear
-  const [pendingSwitch, setPendingSwitch] = useState(null); // { file, name } — troca live→import
+  const [importOpen, setImportOpen] = useState(false); // modal de importação
   const [confirmLive, setConfirmLive] = useState(false); // troca import→live
-  const inputRef = useRef(null);
 
   const load = useCallback(
     async ({ silent = false } = {}) => {
@@ -86,43 +85,11 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
     return () => clearInterval(t);
   }, [anyProcessing, load]);
 
-  async function doUpload(file, name, confirm) {
-    setBusy(true);
-    try {
-      await api.importChat(entityId, file, { confirm, name });
-      showSuccessToast("Importando em segundo plano… avisamos quando terminar.");
-      setStaged(null);
-      setPendingSwitch(null);
-      setView("import");
-      await load({ silent: true });
-    } catch (error) {
-      if (error.code === "SWITCH_TO_IMPORT_REQUIRED") {
-        setStaged(null);
-        setPendingSwitch({ file, name }); // aguarda confirmação do usuário
-      } else {
-        showErrorToast(error.message || "Falha ao importar a conversa.");
-      }
-    } finally {
-      setBusy(false);
-    }
-  }
+  const importChat = (file, opts) => api.importChat(entityId, file, opts);
 
-  function defaultName(fileName) {
-    return String(fileName || "")
-      .replace(/\.(zip|txt)$/i, "")
-      .replace(/^WhatsApp Chat (with|-)\s*/i, "")
-      .replace(/^Conversa do WhatsApp (com|-)\s*/i, "")
-      .trim();
-  }
-
-  function handleFiles(fileList) {
-    const file = fileList?.[0];
-    if (!file) return;
-    if (!/\.(zip|txt)$/i.test(file.name)) {
-      showErrorToast("Envie o arquivo exportado do WhatsApp (.zip ou .txt).");
-      return;
-    }
-    setStaged({ file, name: defaultName(file.name) });
+  function onImported() {
+    setView("import");
+    load({ silent: true });
   }
 
   async function handleRemove(conversationId) {
@@ -216,82 +183,10 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
           </p>
 
           {canEdit && (
-            <div
-              className={`${styles.dropzone} ${dragOver ? styles.dropzoneOver : ""}`}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragOver(false);
-                handleFiles(e.dataTransfer.files);
-              }}
-              onClick={() => !busy && inputRef.current?.click()}
-              role="button"
-              tabIndex={0}
-            >
-              <input
-                ref={inputRef}
-                type="file"
-                accept=".zip,.txt"
-                hidden
-                onChange={(e) => handleFiles(e.target.files)}
-              />
-              <span className={styles.dropIcon}>⬆️</span>
-              <span className={styles.dropTitle}>
-                {busy ? "Processando…" : "Arraste o .zip aqui ou clique para escolher"}
-              </span>
-              <span className={styles.dropHint}>WhatsApp · .zip ou .txt</span>
-            </div>
-          )}
-
-          {staged && (
-            <div className={styles.stageBar}>
-              <span className={styles.stageFile}>📄 {staged.file.name}</span>
-              <input
-                type="text"
-                className={styles.nameInput}
-                placeholder={isProject ? "Nome (ex.: Grupo X, Contato Y)" : "Nome (opcional)"}
-                value={staged.name}
-                onChange={(e) => setStaged((s) => ({ ...s, name: e.target.value }))}
-                autoFocus
-              />
-              <button
-                type="button"
-                className={styles.danger}
-                style={{ background: "linear-gradient(135deg,#6366f1,#7c3aed)" }}
-                disabled={busy}
-                onClick={() => doUpload(staged.file, staged.name, false)}
-              >
-                {busy ? "Enviando…" : "Importar"}
-              </button>
-              <button type="button" className={styles.ghost} disabled={busy} onClick={() => setStaged(null)}>
-                Cancelar
-              </button>
-            </div>
-          )}
-
-          {pendingSwitch && (
-            <div className={styles.confirm}>
-              <p>
-                Este {isProject ? "projeto" : "cliente"} está conectado em <strong>tempo real</strong>. Importar vai{" "}
-                <strong>apagar a conexão atual</strong> e usar só a conversa importada. Continuar?
-              </p>
-              <div className={styles.confirmActions}>
-                <button
-                  type="button"
-                  className={styles.danger}
-                  disabled={busy}
-                  onClick={() => doUpload(pendingSwitch.file, pendingSwitch.name, true)}
-                >
-                  {busy ? "Importando…" : "Apagar e importar"}
-                </button>
-                <button type="button" className={styles.ghost} disabled={busy} onClick={() => setPendingSwitch(null)}>
-                  Cancelar
-                </button>
-              </div>
+            <div>
+              <Button variant="primary" size="sm" icon="+" onClick={() => setImportOpen(true)}>
+                Importar conversa
+              </Button>
             </div>
           )}
 
@@ -317,8 +212,13 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
                         ? "Lendo, transcrevendo e organizando com a IA…"
                         : `${imp.message_count} mensagens · importado em ${formatDate(imp.imported_at)}`}
                     </span>
-                    {imp.participants?.length > 1 && (
+                    {imp.participants?.length > 1 && imp.status !== "processing" && (
                       <span className={styles.itemMetaSub}>{imp.participants.slice(0, 4).join(", ")}</span>
+                    )}
+                    {imp.status === "processing" && (
+                      <div className={styles.progress}>
+                        <div className={styles.progressBar} />
+                      </div>
                     )}
                   </div>
                   {canEdit && imp.status !== "processing" && (
@@ -335,6 +235,14 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
               ))}
             </ul>
           )}
+
+          <WhatsappImportModal
+            isOpen={importOpen}
+            onClose={() => setImportOpen(false)}
+            isProject={isProject}
+            importChat={importChat}
+            onImported={onImported}
+          />
         </div>
       )}
     </div>
