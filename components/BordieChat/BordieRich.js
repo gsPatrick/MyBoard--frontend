@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Avatar from "@/components/Avatar/Avatar";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
-import { fetchMediaBlobUrl } from "@/api/media";
+import { fetchMediaBlobUrl, getMedia } from "@/api/media";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import { parseAmount } from "@/lib/financialStats";
+import FileViewerModal from "@/components/MediaViewer/FileViewerModal";
 import styles from "./BordieRich.module.css";
 
 /* ---------- ícones por tipo de entidade ---------- */
@@ -378,24 +379,34 @@ function BordieDetailCard({ entity }) {
 
 function BordieDocumentCard({ entity }) {
   const [busy, setBusy] = useState(false);
+  const [viewMedia, setViewMedia] = useState(null);
 
-  async function handleOpen(download) {
+  async function handleView() {
+    if (!entity.media_id) return;
+    setBusy(true);
+    try {
+      const media = await getMedia(entity.media_id);
+      setViewMedia(media);
+    } catch {
+      // fallback com os dados que temos
+      setViewMedia({ id: entity.media_id, original_name: entity.title, mime_type: entity.mime_type || "" });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleDownload() {
     if (!entity.media_id) return;
     setBusy(true);
     try {
       const url = await fetchMediaBlobUrl(entity.media_id);
-      if (download) {
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = entity.title || "documento";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 4000);
-      } else {
-        window.open(url, "_blank", "noopener");
-        window.setTimeout(() => URL.revokeObjectURL(url), 60000);
-      }
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = entity.title || "documento";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 4000);
     } catch {
       /* ignore */
     } finally {
@@ -420,13 +431,14 @@ function BordieDocumentCard({ entity }) {
         )}
       </div>
       <div className={styles.entityMeta}>
-        <button type="button" className={styles.entityOpen} onClick={() => handleOpen(false)} disabled={busy}>
+        <button type="button" className={styles.entityOpen} onClick={handleView} disabled={busy}>
           Abrir
         </button>
-        <button type="button" className={styles.entityOpen} onClick={() => handleOpen(true)} disabled={busy}>
+        <button type="button" className={styles.entityOpen} onClick={handleDownload} disabled={busy}>
           Baixar
         </button>
       </div>
+      <FileViewerModal isOpen={!!viewMedia} media={viewMedia} onClose={() => setViewMedia(null)} />
     </div>
   );
 }
