@@ -12,6 +12,10 @@ export function listMedia(entityType, entityId, params) {
   return apiGet(`${ENDPOINTS.media}/entity/${entityType}/${entityId}${withQuery(params)}`);
 }
 
+export function listClientLibrary(clientId, params) {
+  return apiGet(`${ENDPOINTS.media}/client/${clientId}/library${withQuery(params)}`);
+}
+
 export function getMedia(id) {
   return apiGet(`${ENDPOINTS.media}/${id}`);
 }
@@ -24,12 +28,13 @@ export function getMediaDownloadUrl(id) {
   return buildApiUrl(`${ENDPOINTS.media}/${id}/download`);
 }
 
-export async function uploadMedia({ file, entityType, entityId, kind = "attachment" }) {
+export async function uploadMedia({ file, entityType, entityId, kind = "attachment", category }) {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("entity_type", entityType);
   formData.append("entity_id", entityId);
   formData.append("kind", kind);
+  if (category) formData.append("category", category);
 
   const token = getToken();
   const headers = {};

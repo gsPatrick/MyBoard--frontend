@@ -24,6 +24,7 @@ import ClientContactSection from "./sections/ClientContactSection";
 import ClientProjectsSection from "./sections/ClientProjectsSection";
 import ClientNotesSection from "./sections/ClientNotesSection";
 import ClientFinancialSection from "./sections/ClientFinancialSection";
+import MediaLibrary from "@/components/MediaLibrary/MediaLibrary";
 import styles from "../ProjectDetail/ProjectDetailView.module.css";
 
 const SECTIONS = [
@@ -31,6 +32,7 @@ const SECTIONS = [
   { id: "contact", label: "Contato" },
   { id: "projects", label: "Projetos" },
   { id: "notes", label: "Observações" },
+  { id: "library", label: "Mídias" },
   { id: "financial", label: "Financeiro" },
 ];
 
@@ -203,6 +205,10 @@ export default function ClientDetailView() {
 
             {activeSection === "notes" && (
               <ClientNotesSection client={client} onSaved={setClient} />
+            )}
+
+            {activeSection === "library" && (
+              <MediaLibrary entityType="client" entityId={client.id} />
             )}
 
             {activeSection === "financial" && (

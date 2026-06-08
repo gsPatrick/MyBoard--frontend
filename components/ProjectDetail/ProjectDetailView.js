@@ -32,6 +32,7 @@ import CredentialsSection from "./sections/CredentialsSection";
 import GithubSection from "./sections/GithubSection";
 import ProjectWhatsappSection from "./sections/ProjectWhatsappSection";
 import WhatsappConnection from "@/components/Whatsapp/WhatsappConnection";
+import MediaLibrary from "@/components/MediaLibrary/MediaLibrary";
 import MarketplaceSection from "./sections/MarketplaceSection";
 import AdditionalDetailsSection from "./sections/AdditionalDetailsSection";
 import styles from "./ProjectDetailView.module.css";
@@ -54,6 +55,7 @@ const BASE_SECTIONS = [
   { id: "credentials", label: "Credenciais" },
   { id: "github", label: "GitHub" },
   { id: "additional", label: "Outros dados" },
+  { id: "library", label: "Mídias" },
   { id: "whatsapp", label: "WhatsApp" },
 ];
 
@@ -326,6 +328,10 @@ export default function ProjectDetailView() {
                 details={additionalDetails}
                 onChange={reloadDetails}
               />
+            )}
+
+            {activeSection === "library" && (
+              <MediaLibrary entityType="project" entityId={project.id} />
             )}
 
             {activeSection === "whatsapp" && (
