@@ -10,6 +10,7 @@ import {
 } from "@/api/media";
 import { getStoredUser } from "@/api/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Button from "@/components/Button/Button";
 import FileViewerModal from "@/components/MediaViewer/FileViewerModal";
 import styles from "./MediaLibrary.module.css";
 
@@ -176,21 +177,6 @@ export default function MediaLibrary({ entityType, entityId }) {
     }
   }
 
-  async function handleDownload(item) {
-    try {
-      const url = await fetchMediaBlobUrl(item.id);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = item.original_name || "arquivo";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 4000);
-    } catch (error) {
-      showErrorToast(error.message || "Não foi possível baixar.");
-    }
-  }
-
   async function handleDelete(item) {
     if (!window.confirm(`Remover "${item.original_name}" da biblioteca?`)) return;
     setBusy(true);
@@ -231,9 +217,9 @@ export default function MediaLibrary({ entityType, entityId }) {
           </select>
         )}
         {canEdit && (
-          <button type="button" className={styles.uploadBtn} onClick={pickFile} disabled={busy}>
-            + Enviar arquivo
-          </button>
+          <Button variant="primary" size="sm" icon="+" onClick={pickFile} disabled={busy}>
+            Enviar arquivo
+          </Button>
         )}
         <input
           ref={inputRef}
@@ -277,12 +263,12 @@ export default function MediaLibrary({ entityType, entityId }) {
               </option>
             ))}
           </select>
-          <button type="button" className={styles.uploadBtn} onClick={confirmUpload} disabled={busy}>
+          <Button variant="primary" size="sm" onClick={confirmUpload} disabled={busy}>
             {busy ? "Enviando…" : "Enviar"}
-          </button>
-          <button type="button" className={styles.ghost} onClick={() => setPendingFile(null)} disabled={busy}>
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setPendingFile(null)} disabled={busy}>
             Cancelar
-          </button>
+          </Button>
         </div>
       )}
 
@@ -327,20 +313,19 @@ export default function MediaLibrary({ entityType, entityId }) {
                   </div>
                 </div>
                 <div className={styles.cardActions}>
-                  <button type="button" className={styles.actionBtn} onClick={() => setViewing(item)}>
-                    Ver
-                  </button>
-                  <button type="button" className={styles.actionBtn} onClick={() => handleDownload(item)}>
-                    Baixar
-                  </button>
+                  <Button variant="secondary" size="sm" fullWidth onClick={() => setViewing(item)}>
+                    Abrir
+                  </Button>
                   {canEdit && (
                     <button
                       type="button"
                       className={styles.deleteBtn}
                       onClick={() => handleDelete(item)}
                       disabled={busy}
+                      title="Excluir"
+                      aria-label="Excluir"
                     >
-                      Excluir
+                      ✕
                     </button>
                   )}
                 </div>
