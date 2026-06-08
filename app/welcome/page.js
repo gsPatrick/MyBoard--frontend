@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/Button/Button";
 import { getToken } from "@/api/client";
 import { isNative } from "@/lib/nativeBridge";
 import {
@@ -53,41 +52,48 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} data-theme="light">
       <div className={styles.card}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/myboardlogo.png" alt="MyBoard" className={styles.logo} />
-        <h1 className={styles.title}>MyBoard</h1>
-        <p className={styles.subtitle}>Projetos, clientes, agenda e o Bordie — tudo num lugar só.</p>
+        <h1 className={styles.title}>Bem-vindo ao MyBoard</h1>
+        <p className={styles.subtitle}>
+          Seus projetos, clientes, agenda e o Bordie — tudo num lugar só.
+        </p>
 
         <div className={styles.actions}>
           {bio && (
-            <Button variant="primary" size="lg" fullWidth onClick={handleBio} disabled={loading}>
-              {loading ? "Entrando…" : "🔒 Entrar com Touch ID"}
-            </Button>
+            <button
+              type="button"
+              className={styles.btnPrimary}
+              onClick={handleBio}
+              disabled={loading}
+            >
+              {loading ? "Entrando…" : "Entrar com Touch ID"}
+            </button>
           )}
-          <Button
-            variant={bio ? "secondary" : "primary"}
-            size="lg"
-            fullWidth
+          <button
+            type="button"
+            className={bio ? styles.btnSecondary : styles.btnPrimary}
             disabled={loading}
             onClick={() => router.push("/login")}
           >
             Entrar
-          </Button>
-          <Button
-            variant="ghost"
-            size="lg"
-            fullWidth
+          </button>
+          <button
+            type="button"
+            className={styles.btnGhost}
             disabled={loading}
             onClick={() => router.push("/login?mode=register")}
           >
             Criar conta
-          </Button>
+          </button>
         </div>
 
         {error && <p className={styles.error}>{error}</p>}
       </div>
+
+      <p className={styles.footer}>MyBoard • organize. execute. entregue.</p>
     </div>
   );
 }

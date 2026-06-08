@@ -1,54 +1,134 @@
+/* Tela de pré-login estilo app desktop (Discord/Nubank): tema CLARO,
+   gradiente de marca suave, card branco arredondado com sombra. */
 .wrap {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: var(--space-6);
-  background: var(--background-1);
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px;
+  background:
+    radial-gradient(1100px 520px at 50% -8%, #eceaff 0%, rgba(236, 234, 255, 0) 62%),
+    radial-gradient(900px 480px at 100% 110%, #e7f0ff 0%, rgba(231, 240, 255, 0) 55%),
+    #f7f7fb;
+  color: #15152b;
+  -webkit-app-region: drag; /* arrastar a janela pela área de fundo (app Mac) */
 }
 
 .card {
+  -webkit-app-region: no-drag;
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--space-3);
-  padding: clamp(28px, 5vw, 44px);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl, 20px);
-  background: var(--background-2);
+  gap: 14px;
+  padding: 44px 34px 36px;
+  background: #ffffff;
+  border: 1px solid #ececf3;
+  border-radius: 26px;
+  box-shadow:
+    0 1px 2px rgba(33, 33, 66, 0.04),
+    0 24px 60px rgba(79, 70, 229, 0.13);
 }
 
 .logo {
-  width: 96px;
-  height: 96px;
+  width: 84px;
+  height: 84px;
   object-fit: contain;
   border-radius: 22px;
+  box-shadow: 0 10px 26px rgba(99, 102, 241, 0.28);
 }
 
 .title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--text-primary);
+  margin: 6px 0 0;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: #14142b;
 }
 
 .subtitle {
-  font-size: 14px;
+  margin: 0 0 10px;
+  font-size: 14.5px;
   line-height: 1.5;
-  color: var(--text-muted);
-  margin-bottom: var(--space-3);
+  color: #6c6c82;
+  max-width: 300px;
 }
 
 .actions {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 11px;
+}
+
+.btnPrimary,
+.btnSecondary,
+.btnGhost {
+  -webkit-app-region: no-drag;
+  width: 100%;
+  height: 50px;
+  border-radius: 15px;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.18s ease,
+    background 0.18s ease, opacity 0.18s ease;
+}
+
+.btnPrimary {
+  border: none;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 100%);
+  box-shadow: 0 10px 22px rgba(99, 102, 241, 0.32);
+}
+.btnPrimary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(99, 102, 241, 0.4);
+}
+
+.btnSecondary {
+  border: 1.5px solid #e3e3ef;
+  background: #ffffff;
+  color: #4f46e5;
+}
+.btnSecondary:hover:not(:disabled) {
+  background: #f6f6ff;
+  border-color: #d6d6ee;
+}
+
+.btnGhost {
+  border: none;
+  background: transparent;
+  color: #7a7a90;
+  height: 44px;
+  font-weight: 600;
+}
+.btnGhost:hover:not(:disabled) {
+  color: #4f46e5;
+}
+
+.btnPrimary:disabled,
+.btnSecondary:disabled,
+.btnGhost:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .error {
-  margin-top: var(--space-2);
+  margin: 4px 0 0;
   font-size: 13px;
   color: #ef4444;
+}
+
+.footer {
+  -webkit-app-region: no-drag;
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  color: #9a9ab0;
 }
