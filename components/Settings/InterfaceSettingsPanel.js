@@ -5,6 +5,13 @@ import { useTheme } from "@/components/ThemeProvider/ThemeProvider";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
 import { getIngestionAuto, setIngestionAuto } from "@/lib/ingestionPrefs";
 import {
+  isNative,
+  getLaunchAtLogin,
+  setLaunchAtLogin,
+  requestNotificationPermission,
+} from "@/lib/nativeBridge";
+import { showSuccessToast } from "@/lib/toast";
+import {
   CONTENT_WIDTH,
   CONTENT_WIDTH_OPTIONS,
   RIGHT_PANEL_SECTIONS,
@@ -138,9 +145,29 @@ export default function InterfaceSettingsPanel() {
   const enabledSectionCount = Object.values(rightPanelSections).filter(Boolean).length;
 
   const [ingestAuto, setIngestAuto] = useState(false);
+  const [native, setNative] = useState(false);
+  const [launchAtLogin, setLaunchState] = useState(false);
   useEffect(() => {
     setIngestAuto(getIngestionAuto());
+    if (isNative()) {
+      setNative(true);
+      getLaunchAtLogin().then(setLaunchState).catch(() => {});
+    }
   }, []);
+
+  async function toggleLaunch() {
+    const next = !launchAtLogin;
+    const ok = await setLaunchAtLogin(next);
+    if (ok) {
+      setLaunchState(next);
+      showSuccessToast(next ? "MyBoard abrirá com o sistema." : "Abertura automática desativada.");
+    }
+  }
+
+  async function enableNotifications() {
+    const ok = await requestNotificationPermission();
+    showSuccessToast(ok ? "Notificações ativadas." : "Permissão de notificações não concedida.");
+  }
   function chooseIngest(auto) {
     setIngestAuto(auto);
     setIngestionAuto(auto);
@@ -161,6 +188,40 @@ export default function InterfaceSettingsPanel() {
       title="Interface"
       hint="Tema, largura do conteúdo, sidebars e seções do painel direito."
     >
+      {native && (
+        <div className={styles.section}>
+          <div className={styles.pickerHeader}>
+            <h3 className={styles.pickerTitle}>Desktop</h3>
+            <p className={styles.pickerHint}>Preferências exclusivas do app instalado.</p>
+          </div>
+          <div className={styles.sectionToggles}>
+            <button
+              type="button"
+              className={`${styles.sectionToggle} ${launchAtLogin ? styles.sectionToggleActive : ""}`}
+              aria-pressed={launchAtLogin}
+              onClick={toggleLaunch}
+            >
+              <span className={styles.sectionToggleLabel}>
+                Abrir ao iniciar o sistema {launchAtLogin ? "· ativado" : "· desativado"}
+              </span>
+              <span className={styles.sectionToggleHint}>
+                O MyBoard inicia sozinho quando você liga o computador.
+              </span>
+            </button>
+            <button
+              type="button"
+              className={styles.sectionToggle}
+              onClick={enableNotifications}
+            >
+              <span className={styles.sectionToggleLabel}>Ativar notificações nativas</span>
+              <span className={styles.sectionToggleHint}>
+                Alertas e contador no Dock para itens não lidos.
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={styles.section}>
         <div className={styles.pickerHeader}>
           <h3 className={styles.pickerTitle}>Tema</h3>
