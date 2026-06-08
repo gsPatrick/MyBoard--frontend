@@ -115,6 +115,19 @@ export async function deletePasskey(id) {
   return apiDelete(ENDPOINTS.auth.passkeyDelete(id));
 }
 
+/* ---------- Sessões / dispositivos conectados ---------- */
+export async function listSessions() {
+  return apiGet(ENDPOINTS.auth.sessions);
+}
+
+export async function revokeSession(id) {
+  return apiDelete(ENDPOINTS.auth.sessionRevoke(id));
+}
+
+export async function revokeOtherSessions() {
+  return apiDelete(ENDPOINTS.auth.sessionsRevokeOthers);
+}
+
 export async function me() {
   return apiGet(ENDPOINTS.auth.me);
 }

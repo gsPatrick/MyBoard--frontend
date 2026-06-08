@@ -1,6 +1,16 @@
 import { buildApiUrl } from "./api";
 import { clearTenantScopedStorage } from "@/lib/tenantStorage";
 
+// Plataforma do cliente (web | macos | windows) para rastrear sessões.
+// Lê o bridge nativo sem quebrar SSR/web pura.
+function clientPlatform() {
+  if (typeof window === "undefined") return null;
+  if (window.__MYBOARD_NATIVE__ === true) {
+    return window.MyBoardNative?.platform || "macos";
+  }
+  return null;
+}
+
 const TOKEN_KEY = "myboard_token";
 const USER_KEY = "myboard_user";
 const TENANT_KEY = "myboard_tenant";
@@ -71,6 +81,11 @@ export async function apiClient(path, options = {}) {
     Accept: "application/json",
     ...headers,
   };
+
+  const platform = clientPlatform();
+  if (platform) {
+    requestHeaders["X-Client-Platform"] = platform;
+  }
 
   if (body !== undefined) {
     requestHeaders["Content-Type"] = "application/json";
