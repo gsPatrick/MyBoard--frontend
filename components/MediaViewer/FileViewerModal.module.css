@@ -68,6 +68,44 @@
   font-size: 56px;
 }
 
+.audioWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 28px 24px;
+  width: 100%;
+  overflow: auto;
+}
+.transcription {
+  width: 100%;
+  max-width: 560px;
+  text-align: left;
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  background: var(--background-2);
+  padding: 16px 18px;
+}
+.transcriptionTitle {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.transcriptionText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+.noTranscription {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
 .meta {
   display: flex;
   flex-direction: column;

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Modal from "@/components/Modal/Modal";
 import { fetchMediaBlobUrl } from "@/api/media";
+import AudioPlayer from "./AudioPlayer";
 import styles from "./FileViewerModal.module.css";
 
 function fileKind(mime = "", name = "") {
@@ -145,9 +146,17 @@ export default function FileViewerModal({ isOpen, onClose, media }) {
             <iframe title={media.original_name} src={src} className={styles.frame} />
           )}
           {!loading && !error && src && kind === "audio" && (
-            <div className={styles.center}>
+            <div className={styles.audioWrap}>
               <span className={styles.bigIcon}>🎧</span>
-              <audio controls src={src} className={styles.audio} />
+              <AudioPlayer src={src} />
+              {media.metadata?.transcription ? (
+                <div className={styles.transcription}>
+                  <h4 className={styles.transcriptionTitle}>Transcrição</h4>
+                  <p className={styles.transcriptionText}>{media.metadata.transcription}</p>
+                </div>
+              ) : (
+                <p className={styles.noTranscription}>Sem transcrição disponível para este áudio.</p>
+              )}
             </div>
           )}
           {!loading && !error && src && kind === "video" && (
