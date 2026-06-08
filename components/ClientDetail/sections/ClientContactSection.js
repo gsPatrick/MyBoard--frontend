@@ -9,6 +9,7 @@ import { uploadMedia } from "@/api/media";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
 import { showSuccessToast } from "@/lib/toast";
 import ClientWhatsappLinks from "@/components/Whatsapp/ClientWhatsappLinks";
+import WhatsappConnection from "@/components/Whatsapp/WhatsappConnection";
 import sectionStyles from "../../ProjectDetail/ProjectDetailSection.module.css";
 
 export default function ClientContactSection({ client, onSaved }) {
@@ -142,7 +143,9 @@ export default function ClientContactSection({ client, onSaved }) {
         </Button>
       </div>
 
-      <ClientWhatsappLinks clientId={client.id} />
+      <WhatsappConnection entityType="client" entityId={client.id}>
+        <ClientWhatsappLinks clientId={client.id} />
+      </WhatsappConnection>
     </section>
   );
 }

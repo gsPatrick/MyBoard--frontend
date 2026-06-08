@@ -1,4 +1,66 @@
-import { apiClient } from "./client";
+import { buildApiUrl } from "./api";
+import { apiClient, getActiveTenantId, getToken } from "./client";
+
+const WA = "/v1/whatsapp";
+
+/* ---------- Importação de conversa exportada (.zip/.txt) ---------- */
+export function getClientImportMode(clientId) {
+  return apiClient(`${WA}/clients/${clientId}/import`);
+}
+export function getProjectImportMode(projectId) {
+  return apiClient(`${WA}/projects/${projectId}/import`);
+}
+export function removeClientImport(clientId, conversationId) {
+  return apiClient(`${WA}/clients/${clientId}/import/${conversationId}`, { method: "DELETE" });
+}
+export function removeProjectImport(projectId, conversationId) {
+  return apiClient(`${WA}/projects/${projectId}/import/${conversationId}`, { method: "DELETE" });
+}
+export function switchClientToLive(clientId) {
+  return apiClient(`${WA}/clients/${clientId}/import/switch-live`, { method: "POST" });
+}
+export function switchProjectToLive(projectId) {
+  return apiClient(`${WA}/projects/${projectId}/import/switch-live`, { method: "POST" });
+}
+
+async function uploadImport(path, file, confirm) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const headers = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const tenantId = getActiveTenantId();
+  if (tenantId) headers["X-Tenant-Id"] = tenantId;
+
+  const response = await fetch(buildApiUrl(`${path}${confirm ? "?confirm=1" : ""}`), {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  let payload = null;
+  try {
+    payload = await response.json();
+  } catch {
+    /* sem corpo */
+  }
+
+  if (!response.ok) {
+    const err = new Error(payload?.error?.message || "Falha na importação");
+    err.code = payload?.error?.code;
+    err.status = response.status;
+    throw err;
+  }
+  return payload?.data ?? payload;
+}
+
+export function importClientChat(clientId, file, { confirm = false } = {}) {
+  return uploadImport(`${WA}/clients/${clientId}/import`, file, confirm);
+}
+export function importProjectChat(projectId, file, { confirm = false } = {}) {
+  return uploadImport(`${WA}/projects/${projectId}/import`, file, confirm);
+}
 
 export async function listWhatsappInstances() {
   return apiClient("/v1/whatsapp/instances");

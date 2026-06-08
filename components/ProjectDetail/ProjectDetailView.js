@@ -31,6 +31,7 @@ import DemandsSection from "./sections/DemandsSection";
 import CredentialsSection from "./sections/CredentialsSection";
 import GithubSection from "./sections/GithubSection";
 import ProjectWhatsappSection from "./sections/ProjectWhatsappSection";
+import WhatsappConnection from "@/components/Whatsapp/WhatsappConnection";
 import MarketplaceSection from "./sections/MarketplaceSection";
 import AdditionalDetailsSection from "./sections/AdditionalDetailsSection";
 import styles from "./ProjectDetailView.module.css";
@@ -328,7 +329,9 @@ export default function ProjectDetailView() {
             )}
 
             {activeSection === "whatsapp" && (
-              <ProjectWhatsappSection projectId={project.id} />
+              <WhatsappConnection entityType="project" entityId={project.id}>
+                <ProjectWhatsappSection projectId={project.id} />
+              </WhatsappConnection>
             )}
           </div>
         </div>
