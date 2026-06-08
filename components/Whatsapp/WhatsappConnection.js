@@ -78,8 +78,15 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
     setBusy(true);
     try {
       const result = await api.importChat(entityId, file, { confirm });
+      const msgs = result?.messages ?? result?.conversation?.message_count ?? 0;
+      const stats = result?.stats || {};
+      const extras = [];
+      if (stats.media?.saved) extras.push(`${stats.media.saved} arquivo(s) salvo(s)`);
+      if (stats.ai?.details) extras.push(`${stats.ai.details} detalhe(s)`);
+      if (stats.ai?.demands) extras.push(`${stats.ai.demands} demanda(s)`);
+      if (stats.ai?.meetings) extras.push(`${stats.ai.meetings} reunião(ões)`);
       showSuccessToast(
-        `Conversa importada (${result?.messages ?? result?.conversation?.message_count ?? 0} mensagens).`
+        `Conversa importada (${msgs} mensagens)${extras.length ? ` · ${extras.join(", ")}` : ""}.`
       );
       setPendingFile(null);
       await load();
@@ -186,10 +193,12 @@ export default function WhatsappConnection({ entityType, entityId, children }) {
       {view === "import" && (
         <div className={styles.importSlot}>
           <p className={styles.help}>
-            No WhatsApp: abra a conversa → <strong>⋮ / Mais → Exportar conversa</strong> → salve o{" "}
-            <strong>.zip</strong> e solte aqui.{" "}
+            No WhatsApp: abra a conversa → <strong>⋮ / Mais → Exportar conversa → Incluir mídia</strong> → salve o{" "}
+            <strong>.zip</strong> e solte aqui. A IA lê a conversa, os documentos e os áudios, salva os arquivos
+            para você baixar e organiza tudo nos lugares certos (descrição, credenciais, GitHub, servidor, demandas
+            e reuniões).{" "}
             {isProject
-              ? "Você pode importar quantos grupos e contatos quiser. Reimportar o mesmo chat substitui (sem duplicar)."
+              ? "Importe quantos grupos e contatos quiser. Reimportar o mesmo chat substitui (sem duplicar)."
               : "Reimportar substitui a conversa anterior deste cliente (sem duplicar)."}
           </p>
 
