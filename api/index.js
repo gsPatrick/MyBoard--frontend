@@ -1,12 +1,28 @@
 export * from "./api";
 export * from "./client";
-export * as authApi from "./auth";
-export * as clientsApi from "./clients";
-export * as projectsApi from "./projects";
-export * as usersApi from "./users";
-export * as foldersApi from "./folders";
-export * as tagsApi from "./tags";
-export * as agendaApi from "./agenda";
-export * as notificationsApi from "./notifications";
-export * as adminApi from "./admin";
-export * as mediaApi from "./media";
+
+// Evita `export * as ns` (não suportado pelo transform do Vercel/Babel).
+// import * as + export {} faz o mesmo barrel de forma compatível.
+import * as authApi from "./auth";
+import * as clientsApi from "./clients";
+import * as projectsApi from "./projects";
+import * as usersApi from "./users";
+import * as foldersApi from "./folders";
+import * as tagsApi from "./tags";
+import * as agendaApi from "./agenda";
+import * as notificationsApi from "./notifications";
+import * as adminApi from "./admin";
+import * as mediaApi from "./media";
+
+export {
+  authApi,
+  clientsApi,
+  projectsApi,
+  usersApi,
+  foldersApi,
+  tagsApi,
+  agendaApi,
+  notificationsApi,
+  adminApi,
+  mediaApi,
+};
