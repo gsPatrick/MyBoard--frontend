@@ -11,6 +11,7 @@ import LucroView from "./LucroView";
 import DemandasView from "./DemandasView";
 import BoardView from "./BoardView";
 import AgendaView from "./AgendaView";
+import ChatsView from "./ChatsView";
 import ConfiguracoesView from "./ConfiguracoesView";
 
 const VIEWS = {
@@ -30,6 +31,11 @@ export default function DashboardCenter() {
 
   if (activeTab === "configuracoes") {
     return <ConfiguracoesView />;
+  }
+
+  // Chats tem seu próprio seletor de projeto — não cai no detalhe de projeto/cliente.
+  if (activeTab === "chats") {
+    return <ChatsView />;
   }
 
   if (selectedClient && activeTab !== "lucro" && activeTab !== "board" && activeTab !== "agenda") {
