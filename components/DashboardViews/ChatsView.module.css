@@ -101,13 +101,22 @@
 }
 .titleInput {
   flex: 1;
-  border: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
   background: transparent;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
   outline: none;
-  padding: 4px 0;
+  padding: 5px 8px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.titleInput:hover {
+  border-color: var(--border-default);
+}
+.titleInput:focus {
+  border-color: color-mix(in srgb, var(--secondary-indigo, #6366f1) 55%, transparent);
+  background: var(--background-1);
 }
 .settingsToggle {
   flex: none;

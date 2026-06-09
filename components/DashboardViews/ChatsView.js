@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import Text from "@/components/Text/Text";
 import { listProjects } from "@/api/projects";
+import { fetchAiProxyModels } from "@/api/settings";
 import {
   listChats,
   createChat,
@@ -48,6 +49,7 @@ function fileToDataUrl(file) {
 
 export default function ChatsView() {
   const [projects, setProjects] = useState([]);
+  const [models, setModels] = useState([]);
   const [projectFilter, setProjectFilter] = useState("all"); // all | none | <projectId>
   const [chats, setChats] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -67,8 +69,12 @@ export default function ChatsView() {
   /* ----- carregamentos ----- */
   useEffect(() => {
     listProjects({ limit: 200 })
-      .then((data) => setProjects(normalizeListResponse(data).items || []))
+      .then((data) => setProjects(normalizeListResponse(data)))
       .catch(() => setProjects([]));
+    // modelos do proxy (usa as credenciais salvas no backend)
+    fetchAiProxyModels()
+      .then((data) => setModels(Array.isArray(data?.models) ? data.models : []))
+      .catch(() => setModels([]));
   }, []);
 
   const loadChats = useCallback(async () => {
@@ -372,10 +378,20 @@ export default function ChatsView() {
 
       {/* ---------- run settings ---------- */}
       {activeChat && settingsOpen && (
-        <aside className={styles.settings}>
+        <aside className={styles.settings} key={activeChat.id}>
           <Text variant="label" muted>
             Configurações da conversa
           </Text>
+
+          <label className={styles.field}>
+            <span className={styles.fieldLabel}>Nome do chat</span>
+            <input
+              className={styles.input}
+              placeholder="Nova conversa"
+              defaultValue={activeChat.title || ""}
+              onBlur={(e) => patchActive({ title: e.target.value })}
+            />
+          </label>
 
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Projeto</span>
@@ -394,6 +410,31 @@ export default function ChatsView() {
           </label>
 
           <label className={styles.field}>
+            <span className={styles.fieldLabel}>Modelo</span>
+            {models.length > 0 ? (
+              <select
+                className={styles.select}
+                value={activeChat.model || ""}
+                onChange={(e) => patchActive({ model: e.target.value || null })}
+              >
+                <option value="">Padrão da conta</option>
+                {models.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.id}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                className={styles.input}
+                placeholder="padrão da conta"
+                defaultValue={activeChat.model || ""}
+                onBlur={(e) => patchActive({ model: e.target.value || null })}
+              />
+            )}
+          </label>
+
+          <label className={styles.field}>
             <span className={styles.fieldLabel}>System instructions</span>
             <textarea
               className={styles.sysArea}
@@ -401,16 +442,6 @@ export default function ChatsView() {
               defaultValue={activeChat.system_instructions || ""}
               onBlur={(e) => patchActive({ system_instructions: e.target.value })}
               rows={8}
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Modelo (opcional)</span>
-            <input
-              className={styles.input}
-              placeholder="padrão da conta"
-              defaultValue={activeChat.model || ""}
-              onBlur={(e) => patchActive({ model: e.target.value || null })}
             />
           </label>
 
