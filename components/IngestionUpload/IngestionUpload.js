@@ -151,17 +151,21 @@ const IngestionUpload = forwardRef(function IngestionUpload(
       }
 
       setAnalyzing(false);
-      forceHideBordieActionOverlay();
-      if (!ok) return;
+      if (!ok) {
+        forceHideBordieActionOverlay();
+        return;
+      }
 
       setStats(sts);
 
-      // Modo automático: aplica direto, sem abrir o modal de confirmação.
+      // Modo automático: aplica direto (runApply controla o overlay).
       if (prop && getIngestionAuto()) {
         await runApply(prop, picked);
         return;
       }
 
+      // Mantém o overlay rodando até o modal montar — quem o esconde é o efeito abaixo,
+      // pra não ter vão entre a animação e a abertura do modal de revisão.
       setProposal(prop);
       setStep(0);
     },
@@ -180,6 +184,12 @@ const IngestionUpload = forwardRef(function IngestionUpload(
   };
 
   const handleApply = () => runApply(proposal, files);
+
+  // Esconde o overlay "Bordie analisando…" exatamente quando o modal de revisão
+  // monta — assim a animação continua até o modal aparecer (sem vão).
+  useEffect(() => {
+    if (proposal) forceHideBordieActionOverlay();
+  }, [proposal]);
 
   // Fecha o menu de opções ao clicar fora.
   useEffect(() => {
