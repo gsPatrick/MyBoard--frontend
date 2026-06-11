@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
-import { getWorkspaceSettings, updatePrivacySettings } from "@/api/settings";
-import { getStoredUser } from "@/api/client";
+import { getWorkspaceSettings, updatePrivacySettings } from "@/services/settings";
+import { getStoredUser } from "@/services/client";
 import { BORDIE_POLICY_OPTIONS } from "@/lib/settingsTabs";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import SettingsPanelShell, { settingsPanelStyles } from "./SettingsPanelShell";

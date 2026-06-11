@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/api/client";
+import { getToken } from "@/services/client";
 import { isNative } from "@/lib/nativeBridge";
 import {
   hasBiometricLogin,
   loginWithBiometrics,
   passkeySupported,
   passkeyLogin,
-} from "@/api/auth";
+} from "@/services/auth";
 import styles from "./page.module.css";
 
 export default function WelcomePage() {

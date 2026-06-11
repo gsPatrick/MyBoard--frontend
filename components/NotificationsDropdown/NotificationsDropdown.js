@@ -7,7 +7,7 @@ import {
   listNotifications,
   markAllAsRead,
   markAsRead,
-} from "@/api/notifications";
+} from "@/services/notifications";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import styles from "./NotificationsDropdown.module.css";

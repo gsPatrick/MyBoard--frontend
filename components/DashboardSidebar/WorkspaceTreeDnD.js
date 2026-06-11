@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { reorderWorkspace } from "@/api/folders";
+import { reorderWorkspace } from "@/services/folders";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import {
   DND_MIME,

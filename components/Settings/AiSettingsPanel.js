@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import Select from "@/components/Select/Select";
-import { fetchAiProxyModels, getWorkspaceSettings, testAiConnection, updateAiSettings } from "@/api/settings";
-import { getStoredUser } from "@/api/client";
+import { fetchAiProxyModels, getWorkspaceSettings, testAiConnection, updateAiSettings } from "@/services/settings";
+import { getStoredUser } from "@/services/client";
 import {
   AI_PROVIDER_IDS,
   AI_PROVIDER_PRESETS,

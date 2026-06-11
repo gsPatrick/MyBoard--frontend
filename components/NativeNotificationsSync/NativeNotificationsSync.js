@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { isNative, requestNotificationPermission, setBadge, notify } from "@/lib/nativeBridge";
-import { getUnreadCount, listNotifications } from "@/api/notifications";
+import { getUnreadCount, listNotifications } from "@/services/notifications";
 
 /**
  * No app nativo (Mac): mantém o badge do Dock com o nº de notificações não lidas

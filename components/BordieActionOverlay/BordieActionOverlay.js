@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { abortBordieRequest } from "@/api/bordie";
+import { abortBordieRequest } from "@/services/bordie";
 import { forceHideBordieActionOverlay } from "@/lib/bordieActionOverlay";
 import styles from "./BordieActionOverlay.module.css";
 

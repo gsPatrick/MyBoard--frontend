@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "@/components/Button/Button";
 import Text from "@/components/Text/Text";
-import { listProjects } from "@/api/projects";
-import { fetchAiProxyModels } from "@/api/settings";
+import { listProjects } from "@/services/projects";
+import { fetchAiProxyModels } from "@/services/settings";
 import {
   listChats,
   createChat,
@@ -12,7 +12,7 @@ import {
   deleteChat,
   listChatMessages,
   sendChatMessage,
-} from "@/api/chats";
+} from "@/services/chats";
 import { normalizeListResponse } from "@/lib/apiList";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import Markdown from "@/components/Markdown/Markdown";

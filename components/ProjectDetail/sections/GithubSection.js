@@ -8,7 +8,7 @@ import {
   createProjectDetail,
   deleteProjectDetail,
   updateProjectDetail,
-} from "@/api/projectDetails";
+} from "@/services/projectDetails";
 import { GITHUB_ROLES, parseGithubDetail } from "@/lib/projectDetailConfig";
 import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";

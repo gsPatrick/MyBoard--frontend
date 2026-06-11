@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
-import { deleteMedia, fetchMediaBlobUrl, listMedia, uploadMedia } from "@/api/media";
+import { deleteMedia, fetchMediaBlobUrl, listMedia, uploadMedia } from "@/services/media";
 import { showSuccessToast } from "@/lib/toast";
 import { upsertMarkdownDetail } from "@/lib/projectDetailsHelpers";
 import PdfViewerModal from "../PdfViewerModal";

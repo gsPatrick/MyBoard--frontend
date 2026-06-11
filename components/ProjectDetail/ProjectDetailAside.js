@@ -3,7 +3,7 @@
 import { useState } from "react";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
-import { updateProject } from "@/api/projects";
+import { updateProject } from "@/services/projects";
 import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
 import { PROJECT_ORIGINS, PROJECT_ORIGIN_LABELS } from "@/lib/projectOrigin";

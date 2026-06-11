@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Chip from "@/components/Chip/Chip";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
-import { updateClient } from "@/api/clients";
+import { updateClient } from "@/services/clients";
 import { showSuccessToast } from "@/lib/toast";
 import {
   CLIENT_CHIP_STATUS,

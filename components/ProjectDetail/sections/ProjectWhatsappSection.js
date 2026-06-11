@@ -8,8 +8,8 @@ import {
   formatWhatsappPhone,
   listProjectWhatsappLinks,
   removeProjectWhatsappLink,
-} from "@/api/whatsapp";
-import { getStoredUser } from "@/api/client";
+} from "@/services/whatsapp";
+import { getStoredUser } from "@/services/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import WhatsappChatSearch from "@/components/Whatsapp/WhatsappChatSearch";
 import WhatsappConversationViewer from "@/components/Whatsapp/WhatsappConversationViewer";

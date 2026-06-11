@@ -9,7 +9,7 @@ import {
   deleteProjectDetail,
   getProjectDetail,
   updateProjectDetail,
-} from "@/api/projectDetails";
+} from "@/services/projectDetails";
 import { CREDENTIAL_KINDS, parseCredentialDetail } from "@/lib/projectDetailConfig";
 import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";

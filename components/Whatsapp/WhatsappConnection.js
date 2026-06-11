@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { getStoredUser } from "@/api/client";
+import { getStoredUser } from "@/services/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import Button from "@/components/Button/Button";
 import {
@@ -13,7 +13,7 @@ import {
   removeProjectImport,
   switchClientToLive,
   switchProjectToLive,
-} from "@/api/whatsapp";
+} from "@/services/whatsapp";
 import WhatsappImportModal from "./WhatsappImportModal";
 import styles from "./WhatsappConnection.module.css";
 

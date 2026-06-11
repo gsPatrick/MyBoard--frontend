@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { logout } from "@/api/auth";
+import { logout } from "@/services/auth";
 
 const LOGOUT_DURATION_MS = 1400;
 

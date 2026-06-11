@@ -6,7 +6,7 @@ import {
   createProjectDetail,
   deleteProjectDetail,
   updateProjectDetail,
-} from "@/api/projectDetails";
+} from "@/services/projectDetails";
 import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 import styles from "./AdditionalDetailsSection.module.css";

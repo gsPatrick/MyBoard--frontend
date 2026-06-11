@@ -8,7 +8,7 @@ import {
   createProjectFinancialEntry,
   deleteProjectFinancialEntry,
   listProjectFinancialEntries,
-} from "@/api/projectFinancial";
+} from "@/services/projectFinancial";
 import { FINANCIAL_ENTRY_TYPES, FINANCIAL_ENTRY_LABELS } from "@/lib/financialLabels";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import { parseCurrencyInput } from "@/lib/currencyInput";

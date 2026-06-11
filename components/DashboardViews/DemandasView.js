@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import DemandsKanban from "@/components/DemandsKanban/DemandsKanban";
 import DemandDetailModal from "@/components/DemandDetailModal/DemandDetailModal";
-import { listDemands } from "@/api/demands";
-import { listProjects } from "@/api/projects";
-import { createProjectDemand, updateProjectDemand } from "@/api/projectDemands";
+import { listDemands } from "@/services/demands";
+import { listProjects } from "@/services/projects";
+import { createProjectDemand, updateProjectDemand } from "@/services/projectDemands";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { showSuccessToast } from "@/lib/toast";

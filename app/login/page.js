@@ -8,7 +8,7 @@ import { LoginWelcomeBanner } from "@/components/AuthTransition/AuthTransition";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import Text from "@/components/Text/Text";
-import { ApiError } from "@/api/client";
+import { ApiError } from "@/services/client";
 import {
   login,
   register,
@@ -17,7 +17,7 @@ import {
   passkeySupported,
   loginWithBiometrics,
   hasBiometricLogin,
-} from "@/api/auth";
+} from "@/services/auth";
 import { isNative } from "@/lib/nativeBridge";
 import styles from "./page.module.css";
 

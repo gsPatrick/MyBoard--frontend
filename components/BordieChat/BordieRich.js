@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Avatar from "@/components/Avatar/Avatar";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
-import { fetchMediaBlobUrl, getMedia } from "@/api/media";
+import { fetchMediaBlobUrl, getMedia } from "@/services/media";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import { parseAmount } from "@/lib/financialStats";

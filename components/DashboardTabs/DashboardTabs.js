@@ -6,7 +6,7 @@ import Tab from "@/components/Tab/Tab";
 import NewClientModal from "@/components/NewClientModal/NewClientModal";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
 import NewDemandModal from "@/components/NewDemandModal/NewDemandModal";
-import { listProjects } from "@/api/projects";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { DASHBOARD_TABS, useDashboardTab } from "@/context/DashboardTabContext";

@@ -4,9 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import AgendaCalendar, { getAgendaPeriodLabel } from "@/components/AgendaCalendar/AgendaCalendar";
 import AgendaEventModal from "@/components/AgendaEventModal/AgendaEventModal";
-import { listEvents, updateEvent } from "@/api/agenda";
-import { listClients } from "@/api/clients";
-import { listProjects } from "@/api/projects";
+import { listEvents, updateEvent } from "@/services/agenda";
+import { listClients } from "@/services/clients";
+import { listProjects } from "@/services/projects";
 import {
   addMonths,
   addDays,

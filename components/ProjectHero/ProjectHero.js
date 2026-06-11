@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AvatarGroup from "@/components/AvatarGroup/AvatarGroup";
 import StatusStrip from "@/components/StatusStrip/StatusStrip";
-import { listProjects } from "@/api/projects";
-import { getStoredTenant } from "@/api/client";
+import { listProjects } from "@/services/projects";
+import { getStoredTenant } from "@/services/client";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";

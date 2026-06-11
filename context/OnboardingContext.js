@@ -8,8 +8,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { me, updateOnboarding } from "@/api/auth";
-import { getStoredUser } from "@/api/client";
+import { me, updateOnboarding } from "@/services/auth";
+import { getStoredUser } from "@/services/client";
 import {
   isOnboardingActive,
   isOnboardingFinished,

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import SettingsPanelShell from "./SettingsPanelShell";
-import { listSessions, revokeSession, revokeOtherSessions } from "@/api/auth";
+import { listSessions, revokeSession, revokeOtherSessions } from "@/services/auth";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import styles from "./SessionsSettingsPanel.module.css";
 

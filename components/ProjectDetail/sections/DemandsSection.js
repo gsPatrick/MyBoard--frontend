@@ -7,7 +7,7 @@ import {
   createProjectDemand,
   deleteProjectDemand,
   updateProjectDemand,
-} from "@/api/projectDemands";
+} from "@/services/projectDemands";
 import { DEMAND_STATUS_LABELS } from "@/lib/projectDetailConfig";
 import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";

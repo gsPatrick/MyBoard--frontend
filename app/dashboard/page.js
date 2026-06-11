@@ -24,7 +24,7 @@ import NativeNotificationsSync from "@/components/NativeNotificationsSync/Native
 import Toaster from "@/components/Toast/Toaster";
 import { OnboardingProvider } from "@/context/OnboardingContext";
 import { BordieChatProvider, useBordieChat } from "@/context/BordieChatContext";
-import { getToken } from "@/api/client";
+import { getToken } from "@/services/client";
 import styles from "./page.module.css";
 
 function DashboardShell() {

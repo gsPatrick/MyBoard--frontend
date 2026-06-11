@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
-import { updateClient } from "@/api/clients";
+import { updateClient } from "@/services/clients";
 import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../../ProjectDetail/ProjectDetailSection.module.css";
 

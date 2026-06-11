@@ -11,7 +11,7 @@ import {
   isBoardAction,
   sendBordieCommand,
   sendBordieMessage,
-} from "@/api/bordie";
+} from "@/services/bordie";
 import {
   BordieActionConfirm,
   BordieEntityList,
@@ -19,7 +19,7 @@ import {
 } from "./BordieRich";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
 import { isNative, ocr } from "@/lib/nativeBridge";
-import { getWorkspaceSettings } from "@/api/settings";
+import { getWorkspaceSettings } from "@/services/settings";
 import {
   beginBordieActionPreparing,
   beginBordieActionOverlay,
@@ -30,7 +30,7 @@ import {
   paintOverlayFrame,
   updateBordieActionOverlayLabel,
 } from "@/lib/bordieActionOverlay";
-import { getStoredUser } from "@/api/client";
+import { getStoredUser } from "@/services/client";
 import { useBordieChat } from "@/context/BordieChatContext";
 import { useDashboardLayout } from "@/context/DashboardLayoutContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";

@@ -7,8 +7,8 @@ import {
   formatWhatsappPhone,
   listClientWhatsappLinks,
   removeClientWhatsappLink,
-} from "@/api/whatsapp";
-import { getStoredUser } from "@/api/client";
+} from "@/services/whatsapp";
+import { getStoredUser } from "@/services/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import WhatsappChatSearch from "./WhatsappChatSearch";
 import WhatsappConversationViewer from "./WhatsappConversationViewer";

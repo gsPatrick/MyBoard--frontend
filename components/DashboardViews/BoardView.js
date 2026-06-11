@@ -14,8 +14,8 @@ import {
   getDefaultBoard,
   listBoards,
   updateBoard,
-} from "@/api/boards";
-import { listProjects } from "@/api/projects";
+} from "@/services/boards";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import {
   EMPTY_SCENE,

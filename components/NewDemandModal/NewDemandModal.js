@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Modal, { ModalActions } from "@/components/Modal/Modal";
 import Input from "@/components/Input/Input";
-import { createProjectDemand } from "@/api/projectDemands";
+import { createProjectDemand } from "@/services/projectDemands";
 import { DEMAND_KANBAN_COLUMNS } from "@/lib/demandKanban";
 import { showSuccessToast } from "@/lib/toast";
 import formStyles from "../shared/ModalForm.module.css";

@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import Button from "@/components/Button/Button";
 import SearchInput from "@/components/SearchInput/SearchInput";
-import { searchWhatsappChats } from "@/api/whatsapp";
+import { searchWhatsappChats } from "@/services/whatsapp";
 import styles from "./WhatsappChatSearch.module.css";
 
 export default function WhatsappChatSearch({

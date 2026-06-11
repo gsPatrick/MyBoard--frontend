@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Button from "@/components/Button/Button";
-import { getStoredUser } from "@/api/client";
+import { getStoredUser } from "@/services/client";
 import {
   markOnboardingWelcomeShown,
   shouldShowOnboardingWelcome,

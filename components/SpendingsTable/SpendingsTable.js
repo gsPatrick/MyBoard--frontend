@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ProjectsTable from "@/components/ProjectsTable/ProjectsTable";
-import { listFinancialEntries } from "@/api/finance";
-import { listProjects } from "@/api/projects";
+import { listFinancialEntries } from "@/services/finance";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { buildReceivedByProjectId } from "@/lib/financialStats";
 import { ensureActiveTenant } from "@/lib/tenantContext";

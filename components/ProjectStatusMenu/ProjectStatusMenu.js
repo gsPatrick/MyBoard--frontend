@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Chip from "@/components/Chip/Chip";
-import { updateProject } from "@/api/projects";
+import { updateProject } from "@/services/projects";
 import {
   PROJECT_CHIP_STATUS,
   PROJECT_STATUS_LABELS,

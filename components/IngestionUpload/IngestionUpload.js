@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import Modal from "@/components/Modal/Modal";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
-import { analyzeUpload, applyIngestion } from "@/api/ingestion";
+import { analyzeUpload, applyIngestion } from "@/services/ingestion";
 import {
   setBordieActionOverlay,
   forceHideBordieActionOverlay,

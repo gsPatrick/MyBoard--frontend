@@ -7,8 +7,8 @@ import {
   uploadMedia,
   deleteMedia,
   fetchMediaBlobUrl,
-} from "@/api/media";
-import { getStoredUser } from "@/api/client";
+} from "@/services/media";
+import { getStoredUser } from "@/services/client";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import Button from "@/components/Button/Button";
 import FileViewerModal from "@/components/MediaViewer/FileViewerModal";

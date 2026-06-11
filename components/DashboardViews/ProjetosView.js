@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ProjectsTable from "@/components/ProjectsTable/ProjectsTable";
-import { listProjects } from "@/api/projects";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";

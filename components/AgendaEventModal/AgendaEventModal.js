@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/Button/Button";
 import Modal, { ModalActions } from "@/components/Modal/Modal";
 import Input from "@/components/Input/Input";
-import { createClient } from "@/api/clients";
-import { createEvent, deleteEvent, updateEvent } from "@/api/agenda";
-import { createProject } from "@/api/projects";
-import { listClients } from "@/api/clients";
-import { listProjects } from "@/api/projects";
+import { createClient } from "@/services/clients";
+import { createEvent, deleteEvent, updateEvent } from "@/services/agenda";
+import { createProject } from "@/services/projects";
+import { listClients } from "@/services/clients";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import {
   AGENDA_CLIENT_PICKER_NEW,

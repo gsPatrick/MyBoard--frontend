@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
-import { listProjects } from "@/api/projects";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { formatRelativeTime } from "@/lib/relativeTime";

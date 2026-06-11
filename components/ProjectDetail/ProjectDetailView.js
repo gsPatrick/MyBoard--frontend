@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Tab from "@/components/Tab/Tab";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
-import { getProject } from "@/api/projects";
-import { listProjectDemands } from "@/api/projectDemands";
+import { getProject } from "@/services/projects";
+import { listProjectDemands } from "@/services/projectDemands";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import {

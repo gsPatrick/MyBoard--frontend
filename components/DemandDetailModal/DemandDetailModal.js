@@ -5,8 +5,8 @@ import { createPortal } from "react-dom";
 import {
   deleteProjectDemand,
   updateProjectDemand,
-} from "@/api/projectDemands";
-import { deleteMedia, fetchMediaBlobUrl, listMedia, uploadMedia } from "@/api/media";
+} from "@/services/projectDemands";
+import { deleteMedia, fetchMediaBlobUrl, listMedia, uploadMedia } from "@/services/media";
 import { DEMAND_KANBAN_COLUMNS } from "@/lib/demandKanban";
 import { DEMAND_STATUS_LABELS } from "@/lib/projectDetailConfig";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";

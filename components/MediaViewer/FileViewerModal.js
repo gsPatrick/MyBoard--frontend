@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "@/components/Modal/Modal";
-import { fetchMediaBlobUrl } from "@/api/media";
+import { fetchMediaBlobUrl } from "@/services/media";
 import AudioPlayer from "./AudioPlayer";
 import styles from "./FileViewerModal.module.css";
 

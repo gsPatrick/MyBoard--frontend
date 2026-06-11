@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import ClientsTable from "@/components/ClientsTable/ClientsTable";
-import { listClients } from "@/api/clients";
+import { listClients } from "@/services/clients";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";

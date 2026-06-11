@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Avatar from "@/components/Avatar/Avatar";
-import { listEvents } from "@/api/agenda";
-import { listDemands } from "@/api/demands";
-import { listProjects } from "@/api/projects";
+import { listEvents } from "@/services/agenda";
+import { listDemands } from "@/services/demands";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { buildIsoRangeQuery, getWeekRange } from "@/lib/agendaDates";
 import { ensureActiveTenant } from "@/lib/tenantContext";

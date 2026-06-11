@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FinancialEntriesTable from "@/components/FinancialEntriesTable/FinancialEntriesTable";
 import Tab from "@/components/Tab/Tab";
-import { listFinancialEntries } from "@/api/finance";
-import { listClients } from "@/api/clients";
-import { listProjects } from "@/api/projects";
+import { listFinancialEntries } from "@/services/finance";
+import { listClients } from "@/services/clients";
+import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { useDashboardNav } from "@/context/DashboardNavContext";

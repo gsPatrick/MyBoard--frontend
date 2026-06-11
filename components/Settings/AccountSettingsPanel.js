@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
-import { me, passkeySupported, registerPasskey, listPasskeys, deletePasskey } from "@/api/auth";
+import { me, passkeySupported, registerPasskey, listPasskeys, deletePasskey } from "@/services/auth";
 import { isNative } from "@/lib/nativeBridge";
-import { getStoredUser, getStoredTenant } from "@/api/client";
+import { getStoredUser, getStoredTenant } from "@/services/client";
 import { getUserAvatarUrl } from "@/lib/mediaUrl";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import EditAccountModal from "./EditAccountModal";

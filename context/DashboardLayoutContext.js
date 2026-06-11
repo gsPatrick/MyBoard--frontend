@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { getActiveTenantId } from "@/api/client";
+import { getActiveTenantId } from "@/services/client";
 import { buildTenantScopedKey } from "@/lib/tenantStorage";
 import {
   SIDEBAR_COLLAPSE_STYLE,

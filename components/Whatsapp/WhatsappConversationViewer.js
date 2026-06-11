@@ -7,7 +7,7 @@ import {
   listClientWhatsappThreads,
   listProjectWhatsappThreads,
   listWhatsappConversationMessages,
-} from "@/api/whatsapp";
+} from "@/services/whatsapp";
 import { showErrorToast } from "@/lib/toast";
 import sectionStyles from "@/components/ProjectDetail/ProjectDetailSection.module.css";
 import styles from "./WhatsappConversationViewer.module.css";

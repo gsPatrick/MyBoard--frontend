@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Kbd from "@/components/Kbd/Kbd";
 import Avatar from "@/components/Avatar/Avatar";
-import { listClients } from "@/api/clients";
-import { listProjects } from "@/api/projects";
+import { listClients } from "@/services/clients";
+import { listProjects } from "@/services/projects";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
 import { normalizeListResponse } from "@/lib/apiList";

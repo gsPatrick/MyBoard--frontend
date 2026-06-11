@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Modal from "@/components/Modal/Modal";
-import { fetchMediaBlobUrl } from "@/api/media";
+import { fetchMediaBlobUrl } from "@/services/media";
 import { resolveMediaUrl } from "@/lib/mediaUrl";
 import styles from "./PdfViewerModal.module.css";
 
