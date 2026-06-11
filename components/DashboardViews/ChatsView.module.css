@@ -5,6 +5,10 @@
   height: calc(100vh - 150px);
   min-height: 520px;
 }
+/* Sem painel de configurações → a conversa ocupa o espaço todo. */
+.wrapWide {
+  grid-template-columns: 260px 1fr;
+}
 
 /* ---------------- sidebar de conversas ---------------- */
 .sidebar {

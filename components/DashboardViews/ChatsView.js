@@ -210,9 +210,10 @@ export default function ChatsView() {
   }
 
   const projectName = (id) => projects.find((p) => p.id === id)?.name || null;
+  const showSettings = !!activeChat && settingsOpen;
 
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap} ${showSettings ? "" : styles.wrapWide}`}>
       {/* ---------- conversas ---------- */}
       <aside className={styles.sidebar}>
         <div className={styles.sidebarTop}>
@@ -400,7 +401,7 @@ export default function ChatsView() {
       </section>
 
       {/* ---------- run settings ---------- */}
-      {activeChat && settingsOpen && (
+      {showSettings && (
         <aside className={styles.settings} key={activeChat.id}>
           <Text variant="label" muted>
             Configurações da conversa
