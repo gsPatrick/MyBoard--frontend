@@ -15,28 +15,10 @@ import {
 } from "@/api/chats";
 import { normalizeListResponse } from "@/lib/apiList";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import Markdown from "@/components/Markdown/Markdown";
 import styles from "./ChatsView.module.css";
 
-/* Renderiza texto preservando quebras e destacando blocos de código ```...``` */
-function renderContent(text) {
-  const parts = String(text || "").split(/```/);
-  return parts.map((part, i) => {
-    if (i % 2 === 1) {
-      const firstNl = part.indexOf("\n");
-      const code = firstNl >= 0 ? part.slice(firstNl + 1) : part;
-      return (
-        <pre key={i} className={styles.codeBlock}>
-          <code>{code.replace(/\n$/, "")}</code>
-        </pre>
-      );
-    }
-    return (
-      <span key={i} className={styles.textPart}>
-        {part}
-      </span>
-    );
-  });
-}
+const VIEW_MODE_KEY = "chats_view_mode";
 
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -60,11 +42,30 @@ export default function ChatsView() {
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [settingsOpen, setSettingsOpen] = useState(true);
+  const [viewMode, setViewMode] = useState("markdown"); // markdown | plain
 
   const fileRef = useRef(null);
   const scrollRef = useRef(null);
 
   const activeChat = useMemo(() => chats.find((c) => c.id === activeId) || null, [chats, activeId]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(VIEW_MODE_KEY);
+      if (saved === "markdown" || saved === "plain") setViewMode(saved);
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  function changeViewMode(mode) {
+    setViewMode(mode);
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, mode);
+    } catch {
+      /* ignore */
+    }
+  }
 
   /* ----- carregamentos ----- */
   useEffect(() => {
@@ -286,6 +287,22 @@ export default function ChatsView() {
                 }
                 onBlur={(e) => patchActive({ title: e.target.value })}
               />
+              <div className={styles.viewToggle} role="group" aria-label="Modo de exibição">
+                <button
+                  type="button"
+                  className={viewMode === "markdown" ? styles.viewActive : ""}
+                  onClick={() => changeViewMode("markdown")}
+                >
+                  Markdown
+                </button>
+                <button
+                  type="button"
+                  className={viewMode === "plain" ? styles.viewActive : ""}
+                  onClick={() => changeViewMode("plain")}
+                >
+                  Texto
+                </button>
+              </div>
               <button
                 type="button"
                 className={styles.settingsToggle}
@@ -308,7 +325,13 @@ export default function ChatsView() {
                     className={`${styles.msg} ${m.role === "user" ? styles.msgUser : styles.msgAssistant}`}
                   >
                     <span className={styles.msgRole}>{m.role === "user" ? "Você" : "Bordie"}</span>
-                    <div className={styles.msgBody}>{renderContent(m.content)}</div>
+                    <div className={styles.msgBody}>
+                      {viewMode === "markdown" ? (
+                        <Markdown text={m.content} />
+                      ) : (
+                        <span className={styles.plain}>{m.content}</span>
+                      )}
+                    </div>
                     {m.attachments?.length > 0 && (
                       <div className={styles.msgAttachments}>
                         {m.attachments.map((a, i) => (
