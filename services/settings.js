@@ -33,3 +33,10 @@ export async function updatePrivacySettings(payload) {
     body: payload,
   });
 }
+
+export async function updateIngestionSettings(payload) {
+  return apiClient("/v1/settings/ingestion", {
+    method: "PATCH",
+    body: payload,
+  });
+}

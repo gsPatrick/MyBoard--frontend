@@ -3,6 +3,7 @@
 import { useState } from "react";
 import AccountSettingsPanel from "@/components/Settings/AccountSettingsPanel";
 import AiSettingsPanel from "@/components/Settings/AiSettingsPanel";
+import IngestionSettingsPanel from "@/components/Settings/IngestionSettingsPanel";
 import InterfaceSettingsPanel from "@/components/Settings/InterfaceSettingsPanel";
 import MinhasInformacoesPanel from "@/components/Settings/MinhasInformacoesPanel";
 import MyWalletSettingsPanel from "@/components/Settings/MyWalletSettingsPanel";
@@ -33,6 +34,7 @@ export default function ConfiguracoesView() {
         {activeSettingsTab === "whatsapp" && <WhatsappSettingsPanel />}
         {activeSettingsTab === "privacy" && <PrivacySettingsPanel />}
         {activeSettingsTab === "account" && <AccountSettingsPanel />}
+        {activeSettingsTab === "ingestion" && <IngestionSettingsPanel />}
         {activeSettingsTab === "sessions" && <SessionsSettingsPanel />}
         {activeSettingsTab === "documents" && <MinhasInformacoesPanel />}
         {activeSettingsTab === "interface" && <InterfaceSettingsPanel />}
