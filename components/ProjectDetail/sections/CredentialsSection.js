@@ -32,33 +32,55 @@ function parseSecretPayload(detail, revealed) {
   }
 }
 
+const FIELD_PRESETS = [
+  "API Token",
+  "Bearer Token",
+  "API Key",
+  "URL da página",
+  "Base URL",
+  "Webhook",
+  "Client ID",
+  "Client Secret",
+  "Instância",
+];
+
+const EMPTY_FORM = {
+  label: "",
+  kind: "vps",
+  host: "",
+  username: "",
+  password: "",
+  port: "",
+  notes: "",
+  fields: [],
+};
+
 export default function CredentialsSection({ projectId, credentials, onChange }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [revealedIds, setRevealedIds] = useState({});
   const [revealedData, setRevealedData] = useState({});
-  const [form, setForm] = useState({
-    label: "",
-    kind: "vps",
-    host: "",
-    username: "",
-    password: "",
-    port: "",
-    notes: "",
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+
+  function addField(label = "") {
+    setForm((f) => ({ ...f, fields: [...f.fields, { label, value: "" }] }));
+  }
+
+  function updateField(index, key, value) {
+    setForm((f) => ({
+      ...f,
+      fields: f.fields.map((field, i) => (i === index ? { ...field, [key]: value } : field)),
+    }));
+  }
+
+  function removeField(index) {
+    setForm((f) => ({ ...f, fields: f.fields.filter((_, i) => i !== index) }));
+  }
 
   function openCreate() {
     setEditing(null);
-    setForm({
-      label: "",
-      kind: "vps",
-      host: "",
-      username: "",
-      password: "",
-      port: "",
-      notes: "",
-    });
+    setForm(EMPTY_FORM);
     setModalOpen(true);
   }
 
@@ -80,6 +102,7 @@ export default function CredentialsSection({ projectId, credentials, onChange })
       password: data?.password || "",
       port: data?.port || "",
       notes: data?.notes || "",
+      fields: Array.isArray(data?.fields) ? data.fields : [],
     });
     setModalOpen(true);
   }
@@ -108,6 +131,12 @@ export default function CredentialsSection({ projectId, credentials, onChange })
         password: form.password,
         port: form.port.trim(),
         notes: form.notes.trim(),
+        fields: form.fields
+          .map((field) => ({
+            label: (field.label || "").trim(),
+            value: (field.value || "").trim(),
+          }))
+          .filter((field) => field.label || field.value),
       }),
       metadata: { kind: form.kind },
     };
@@ -139,7 +168,7 @@ export default function CredentialsSection({ projectId, credentials, onChange })
           <div>
             <h2 className={sectionStyles.cardTitle}>Credenciais</h2>
             <p className={sectionStyles.cardHint}>
-              VPS, FTP, e-mail, painéis — nomeie e guarde acesso com segurança
+              VPS, VPN, e-mail, integrações e APIs (Z-API, webhooks, tokens) — guarde com segurança
             </p>
           </div>
           <Button variant="secondary" size="sm" onClick={openCreate}>
@@ -194,6 +223,13 @@ export default function CredentialsSection({ projectId, credentials, onChange })
                             <span className={sectionStyles.credValue}>{revealed.notes}</span>
                           </>
                         )}
+                        {Array.isArray(revealed.fields) &&
+                          revealed.fields.map((field, i) => (
+                            <div key={i} style={{ display: "contents" }}>
+                              <span className={sectionStyles.credLabel}>{field.label}</span>
+                              <span className={sectionStyles.credValue}>{field.value}</span>
+                            </div>
+                          ))}
                       </div>
                     ) : (
                       <p className={sectionStyles.itemMeta} style={{ marginTop: 8 }}>
@@ -304,6 +340,57 @@ export default function CredentialsSection({ projectId, credentials, onChange })
               value={form.notes}
               onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
             />
+          </div>
+
+          <div className={sectionStyles.formFull}>
+            <label className={sectionStyles.fieldLabel}>Campos adicionais</label>
+            <p className={sectionStyles.cardHint} style={{ marginBottom: 8 }}>
+              Para integrações e APIs: token, webhook, URL da página, etc.
+            </p>
+
+            <div className={sectionStyles.credPresetRow}>
+              {FIELD_PRESETS.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  className={sectionStyles.credPresetBtn}
+                  onClick={() => addField(preset)}
+                >
+                  + {preset}
+                </button>
+              ))}
+            </div>
+
+            {form.fields.map((field, index) => (
+              <div key={index} className={sectionStyles.credFieldRow}>
+                <Input
+                  placeholder="Nome do campo"
+                  value={field.label}
+                  onChange={(e) => updateField(index, "label", e.target.value)}
+                />
+                <Input
+                  placeholder="Valor"
+                  value={field.value}
+                  onChange={(e) => updateField(index, "value", e.target.value)}
+                />
+                <button
+                  type="button"
+                  className={sectionStyles.iconBtn}
+                  title="Remover campo"
+                  onClick={() => removeField(index)}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              className={sectionStyles.credPresetBtn}
+              onClick={() => addField("")}
+            >
+              + Adicionar campo
+            </button>
           </div>
         </div>
       </Modal>
