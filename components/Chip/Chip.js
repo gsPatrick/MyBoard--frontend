@@ -6,6 +6,7 @@ const STATUS_MAP = {
   pending: { variant: styles.blue, dot: styles.blueDot },
   approved: { variant: styles.orange, dot: styles.orangeDot },
   rejected: { variant: styles.rejected, dot: styles.rejectedDot },
+  recurring: { variant: styles.indigo, dot: styles.indigoDot },
 };
 
 export default function Chip({ children, status = "in-progress", className = "" }) {

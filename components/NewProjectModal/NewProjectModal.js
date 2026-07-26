@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Modal, { ModalActions } from "@/components/Modal/Modal";
 import Input from "@/components/Input/Input";
 import CurrencyInput from "@/components/CurrencyInput/CurrencyInput";
+import Checkbox from "@/components/Checkbox/Checkbox";
 import AvatarDropzone from "@/components/AvatarDropzone/AvatarDropzone";
 import { listClients } from "@/services/clients";
 import { createProject, getProject } from "@/services/projects";
@@ -22,6 +23,10 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
   const [logoFile, setLogoFile] = useState(null);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrenceAmount, setRecurrenceAmount] = useState("");
+  const [recurrenceDay, setRecurrenceDay] = useState("");
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
   const [clients, setClients] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,6 +62,10 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
     setBudget("");
     setOrigin("own");
     setLogoFile(null);
+    setIsRecurring(false);
+    setRecurrenceAmount("");
+    setRecurrenceDay("");
+    setRecurrenceEndDate("");
     setError("");
   }
 
@@ -91,9 +100,13 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
       const payload = {
         name: trimmedName,
         client_id: clientId,
-        status: "in_progress",
         origin,
       };
+
+      // Status "recurring" é definido pelo backend quando is_recurring = true.
+      if (!isRecurring) {
+        payload.status = "in_progress";
+      }
 
       if (dueDate) {
         payload.has_deadline = true;
@@ -108,6 +121,27 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
           return;
         }
         payload.budget = value;
+      }
+
+      if (isRecurring) {
+        const amount = parseCurrencyInput(recurrenceAmount);
+        const day = Number(recurrenceDay);
+        if (amount == null || amount <= 0) {
+          setError("Informe o valor recebido a cada mês");
+          setLoading(false);
+          return;
+        }
+        if (!Number.isInteger(day) || day < 1 || day > 31) {
+          setError("Dia do recebimento deve ser entre 1 e 31");
+          setLoading(false);
+          return;
+        }
+        payload.is_recurring = true;
+        payload.recurrence_amount = amount;
+        payload.recurrence_day = day;
+        if (recurrenceEndDate) {
+          payload.recurrence_end_date = recurrenceEndDate;
+        }
       }
 
       let project = await createProject(payload);
@@ -231,6 +265,51 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
             disabled={loading}
           />
         </div>
+
+        <div className={formStyles.field}>
+          <Checkbox
+            id="project-recurring"
+            label="Projeto recorrente (recebo todo mês)"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+            disabled={loading}
+          />
+          <span className={formStyles.hint}>
+            Todo mês, no dia escolhido, o valor entra automaticamente no financeiro do projeto.
+          </span>
+        </div>
+
+        {isRecurring && (
+          <div className={formStyles.row}>
+            <CurrencyInput
+              label="Valor por mês"
+              placeholder="0,00"
+              value={recurrenceAmount}
+              onChange={(e) => setRecurrenceAmount(e.target.value)}
+              disabled={loading}
+            />
+            <Input
+              label="Dia do recebimento"
+              type="number"
+              min={1}
+              max={31}
+              placeholder="Ex: 30"
+              value={recurrenceDay}
+              onChange={(e) => setRecurrenceDay(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+        )}
+
+        {isRecurring && (
+          <Input
+            label="Encerrar recorrência em (opcional)"
+            type="date"
+            value={recurrenceEndDate}
+            onChange={(e) => setRecurrenceEndDate(e.target.value)}
+            disabled={loading}
+          />
+        )}
 
         <p className={formStyles.hint}>
           Detalhes, credenciais e arquivos você adiciona depois na página do projeto.

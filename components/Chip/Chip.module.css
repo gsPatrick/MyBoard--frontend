@@ -53,3 +53,11 @@
 .rejectedDot {
   background: var(--secondary-red);
 }
+
+.indigo {
+  color: var(--secondary-indigo);
+}
+
+.indigoDot {
+  background: var(--secondary-indigo);
+}

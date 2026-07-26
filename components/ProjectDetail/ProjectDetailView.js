@@ -27,6 +27,7 @@ import {
 } from "@/lib/projectOrigin";
 import ProjectDetailAside from "./ProjectDetailAside";
 import OverviewSection from "./sections/OverviewSection";
+import ProjectSettingsSection from "./sections/ProjectSettingsSection";
 import FinancialSection from "./sections/FinancialSection";
 import ScopeContractSection from "./sections/ScopeContractSection";
 import DemandsSection from "./sections/DemandsSection";
@@ -50,6 +51,7 @@ const HANDLED_DETAIL_KEYS = new Set([
 
 const BASE_SECTIONS = [
   { id: "overview", label: "Visão geral" },
+  { id: "settings", label: "Configurações" },
   { id: "scope", label: "Escopo" },
   { id: "contract", label: "Contrato" },
   { id: "demands", label: "Demandas" },
@@ -260,6 +262,10 @@ export default function ProjectDetailView() {
                 reposCount={repos.length}
                 onNavigate={setActiveSection}
               />
+            )}
+
+            {activeSection === "settings" && (
+              <ProjectSettingsSection project={project} onSaved={handleProjectUpdated} />
             )}
 
             {activeSection === "marketplace" && isMarketplaceOrigin(project.origin) && (

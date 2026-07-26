@@ -175,6 +175,14 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
               {project.budget != null ? formatCurrencyBRL(project.budget) : "—"}
             </dd>
           </div>
+          {project.is_recurring && (
+            <div className={asideStyles.row}>
+              <dt>Recorrência</dt>
+              <dd>
+                {formatCurrencyBRL(project.recurrence_amount)} · todo dia {project.recurrence_day}
+              </dd>
+            </div>
+          )}
           <div className={asideStyles.row}>
             <dt>Importância</dt>
             <dd>{project.importance_level || "—"}</dd>
