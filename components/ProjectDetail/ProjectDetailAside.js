@@ -176,12 +176,23 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
             </dd>
           </div>
           {project.is_recurring && (
-            <div className={asideStyles.row}>
-              <dt>Recorrência</dt>
-              <dd>
-                {formatCurrencyBRL(project.recurrence_amount)} · todo dia {project.recurrence_day}
-              </dd>
-            </div>
+            <>
+              <div className={asideStyles.row}>
+                <dt>Recorrência</dt>
+                <dd>
+                  {formatCurrencyBRL(project.recurrence_amount)} · todo dia {project.recurrence_day}
+                </dd>
+              </div>
+              <div className={asideStyles.row}>
+                <dt>Já recebido</dt>
+                <dd>
+                  {project.recurrence_received_count || 0}x ·{" "}
+                  {formatCurrencyBRL(
+                    (project.recurrence_received_count || 0) * Number(project.recurrence_amount || 0)
+                  )}
+                </dd>
+              </div>
+            </>
           )}
           <div className={asideStyles.row}>
             <dt>Importância</dt>

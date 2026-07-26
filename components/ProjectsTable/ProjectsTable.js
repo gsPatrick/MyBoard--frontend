@@ -8,6 +8,16 @@ import { formatCurrencyBRL } from "@/lib/projectStats";
 import styles from "./ProjectsTable.module.css";
 
 function ProjectValueCell({ project, received = 0 }) {
+  if (project.is_recurring && project.recurrence_amount != null) {
+    const amount = parseAmount(project.recurrence_amount);
+    return (
+      <span className={styles.valueTotal} title="Valor recebido por mês">
+        {formatCurrencyBRL(amount)}
+        <span className={styles.valueSep}>/mês</span>
+      </span>
+    );
+  }
+
   const budget = parseAmount(project.budget);
   const hasBudget = budget > 0;
   const hasReceived = received > 0;
@@ -116,6 +126,11 @@ export default function ProjectsTable({
                 project={project}
                 received={receivedByProjectId[project.id] || 0}
               />
+            ) : project.is_recurring && project.recurrence_amount != null ? (
+              <span title="Valor recebido por mês">
+                {formatCurrencyBRL(parseFloat(project.recurrence_amount))}
+                <span className={styles.valueSep}>/mês</span>
+              </span>
             ) : project.budget != null && project.budget !== "" ? (
               formatCurrencyBRL(parseFloat(project.budget))
             ) : (

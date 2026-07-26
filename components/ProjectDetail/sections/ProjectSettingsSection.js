@@ -205,6 +205,11 @@ export default function ProjectSettingsSection({ project, onSaved }) {
             onChange={(e) => setIsRecurring(e.target.checked)}
             disabled={saving}
           />
+          {project.is_recurring && (
+            <p className={sectionStyles.cardHint}>
+              Já recebido {project.recurrence_received_count || 0} vez(es) até agora.
+            </p>
+          )}
         </div>
 
         {isRecurring && (

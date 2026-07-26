@@ -45,6 +45,18 @@ function NavIcon({ type }) {
   return <span className={styles.navIcon}>{icons[type] || icons.folder}</span>;
 }
 
+function ProjectTreeAvatar({ project, projectsById }) {
+  const full = projectsById?.get(project.id) || project;
+  return (
+    <Avatar
+      src={getProjectLogoUrl(full)}
+      name={project.name}
+      size="xs"
+      className={styles.recentAvatar}
+    />
+  );
+}
+
 function FolderTreeNode({
   folder,
   depth,
@@ -54,6 +66,7 @@ function FolderTreeNode({
   onSelectProject,
   activeProjectId,
   managingFolderId,
+  projectsById,
   dnd,
 }) {
   const isExpanded = expandedIds.has(folder.id);
@@ -126,7 +139,7 @@ function FolderTreeNode({
                 }
               }}
             >
-              <NavIcon type="file" />
+              <ProjectTreeAvatar project={project} projectsById={projectsById} />
               <span className={styles.navLabel}>{project.name}</span>
             </div>
           </div>
@@ -144,6 +157,7 @@ function FolderTreeNode({
               onSelectProject={onSelectProject}
               activeProjectId={activeProjectId}
               managingFolderId={managingFolderId}
+              projectsById={projectsById}
               dnd={dnd}
             />
           </div>
@@ -478,7 +492,7 @@ export default function DashboardSidebar({ compact = false }) {
                     className={`${styles.navItemIndent} ${selectedProjectId === project.id ? styles.active : ""}`}
                     onClick={() => handleSelectProject(project)}
                   >
-                    <NavIcon type="file" />
+                    <ProjectTreeAvatar project={project} projectsById={projectsById} />
                     <span className={styles.navLabel}>{project.name}</span>
                   </button>
                 ))}
@@ -517,6 +531,7 @@ export default function DashboardSidebar({ compact = false }) {
                     onSelectProject={handleSelectProject}
                     activeProjectId={selectedProjectId}
                     managingFolderId={manageFolder?.id}
+                    projectsById={projectsById}
                     dnd={dnd}
                   />
                 </div>
@@ -543,7 +558,7 @@ export default function DashboardSidebar({ compact = false }) {
                         }
                       }}
                     >
-                      <NavIcon type="file" />
+                      <ProjectTreeAvatar project={project} projectsById={projectsById} />
                       <span className={styles.navLabel}>{project.name}</span>
                     </div>
                   </div>
