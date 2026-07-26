@@ -139,3 +139,78 @@
 .footer kbd {
   margin: 0 2px;
 }
+
+/* Item de dado (busca escopada) */
+.dataDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin: 0 8px;
+  border-radius: 50%;
+  background: var(--secondary-indigo);
+}
+
+/* Modal de cópia */
+.copyList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.copyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 0.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--surface-muted);
+}
+
+.copyInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.copyLabel {
+  font-size: 11px;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.copyValue {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-primary);
+  word-break: break-all;
+}
+
+.copyActions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.copyBtn {
+  border: 0.5px solid var(--border-default);
+  background: var(--background-1);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 16px;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition-fast);
+}
+
+.copyBtn:hover {
+  background: var(--surface-muted);
+}
