@@ -3,7 +3,11 @@
 import { useState } from "react";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
 import IngestionUpload from "@/components/IngestionUpload/IngestionUpload";
-import { updateProject } from "@/services/projects";
+import AvatarDropzone from "@/components/AvatarDropzone/AvatarDropzone";
+import Button from "@/components/Button/Button";
+import { getProject, updateProject } from "@/services/projects";
+import { uploadMedia } from "@/services/media";
+import { getProjectLogoUrl } from "@/lib/mediaUrl";
 import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_PRIORITIES } from "@/lib/projectDetailConfig";
 import { PROJECT_ORIGINS, PROJECT_ORIGIN_LABELS } from "@/lib/projectOrigin";
@@ -24,9 +28,34 @@ function formatDate(value) {
 export default function ProjectDetailAside({ project, onProjectChange }) {
   const [savingPriority, setSavingPriority] = useState(false);
   const [savingOrigin, setSavingOrigin] = useState(false);
+  const [logoFile, setLogoFile] = useState(null);
+  const [savingLogo, setSavingLogo] = useState(false);
 
   function handleProjectUpdated(updated) {
     onProjectChange({ ...project, ...updated });
+  }
+
+  async function handleSaveLogo() {
+    if (!project?.id || !logoFile) return;
+
+    setSavingLogo(true);
+    try {
+      await uploadMedia({
+        file: logoFile,
+        entityType: "project",
+        entityId: project.id,
+        kind: "cover",
+      });
+      const updated = await getProject(project.id);
+      onProjectChange(updated);
+      setLogoFile(null);
+      showSuccessToast("Logo do projeto atualizada");
+      window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
+    } catch {
+      /* mantém anterior */
+    } finally {
+      setSavingLogo(false);
+    }
   }
 
   async function handleOriginChange(event) {
@@ -64,6 +93,25 @@ export default function ProjectDetailAside({ project, onProjectChange }) {
 
   return (
     <aside className={asideStyles.aside}>
+      <section className={asideStyles.card}>
+        <h2 className={asideStyles.title}>Logo do projeto</h2>
+        <AvatarDropzone
+          label=""
+          file={logoFile}
+          onFileChange={setLogoFile}
+          disabled={savingLogo}
+          previewName={project.name}
+          existingPreviewUrl={logoFile ? null : getProjectLogoUrl(project)}
+        />
+        {logoFile && (
+          <div style={{ marginTop: "var(--space-3, 12px)" }}>
+            <Button variant="primary" onClick={handleSaveLogo} disabled={savingLogo}>
+              {savingLogo ? "Salvando..." : "Salvar logo"}
+            </Button>
+          </div>
+        )}
+      </section>
+
       <section className={asideStyles.card}>
         <h2 className={asideStyles.title}>Resumo</h2>
         <dl className={asideStyles.dl}>

@@ -23,7 +23,7 @@ import {
   sortFocusProjects,
 } from "@/lib/dailyFocus";
 import { DEMAND_STATUS_LABELS } from "@/lib/projectDetailConfig";
-import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { getProjectLogoUrl } from "@/lib/mediaUrl";
 import { isProjectOverdue, toDateKey } from "@/lib/roadTimelineDates";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import styles from "./DailyFocusModal.module.css";
@@ -217,8 +217,8 @@ export default function DailyFocusModal() {
                               aria-hidden="true"
                             />
                             <Avatar
-                              src={getClientAvatarUrl(project.client)}
-                              name={project.client?.name || project.name}
+                              src={getProjectLogoUrl(project)}
+                              name={project.name || project.client?.name}
                               size="sm"
                             />
                             <span className={styles.projectMain}>

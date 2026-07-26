@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Tab from "@/components/Tab/Tab";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
+import Avatar from "@/components/Avatar/Avatar";
+import { getProjectLogoUrl } from "@/lib/mediaUrl";
 import { getProject } from "@/services/projects";
 import { listProjectDemands } from "@/services/projectDemands";
 import { useDashboardNav } from "@/context/DashboardNavContext";
@@ -197,10 +199,11 @@ export default function ProjectDetailView() {
       <header className={styles.hero}>
         <div className={styles.heroMain}>
           <div className={styles.heroTop}>
-            <span
-              className={styles.iconDot}
-              style={{ background: project.color || "#3b82f6" }}
-              aria-hidden="true"
+            <Avatar
+              src={getProjectLogoUrl(project)}
+              name={displayName}
+              alt={displayName}
+              size="md"
             />
             <h1 className={styles.title}>{displayName}</h1>
           </div>

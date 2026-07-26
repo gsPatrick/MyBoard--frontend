@@ -6,7 +6,7 @@ import Avatar from "@/components/Avatar/Avatar";
 import { listClients } from "@/services/clients";
 import { listProjects } from "@/services/projects";
 import { ensureActiveTenant } from "@/lib/tenantContext";
-import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { getClientAvatarUrl, getProjectLogoUrl } from "@/lib/mediaUrl";
 import { normalizeListResponse } from "@/lib/apiList";
 import { formatBinding } from "@/lib/keyboardShortcuts";
 import { useDashboardNav } from "@/context/DashboardNavContext";
@@ -228,8 +228,8 @@ export default function WorkspaceSearch() {
                     onClick={() => handleSelect({ type: "project", data: project })}
                   >
                     <Avatar
-                      src={getClientAvatarUrl(project.client)}
-                      name={clientName || project.name}
+                      src={getProjectLogoUrl(project)}
+                      name={project.name || clientName}
                       size="sm"
                     />
                     <div className={styles.itemMain}>

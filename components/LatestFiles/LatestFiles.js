@@ -6,6 +6,7 @@ import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { formatRelativeTime } from "@/lib/relativeTime";
+import { getProjectLogoUrl } from "@/lib/mediaUrl";
 import { useDashboardNav } from "@/context/DashboardNavContext";
 import LatestProjectsEmpty from "./LatestProjectsEmpty";
 import styles from "./LatestFiles.module.css";
@@ -13,8 +14,18 @@ import styles from "./LatestFiles.module.css";
 const RECENT_LIMIT = 5;
 
 function ProjectBadge({ project }) {
+  const logoUrl = getProjectLogoUrl(project);
   const label = project.name?.slice(0, 2).toUpperCase() || "PR";
   const color = project.color || "#3b82f6";
+
+  if (logoUrl) {
+    return (
+      <span className={styles.projectBadge} aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={logoUrl} alt="" className={styles.projectBadgeImg} />
+      </span>
+    );
+  }
 
   return (
     <span

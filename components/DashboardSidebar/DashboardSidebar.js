@@ -8,7 +8,7 @@ import { useAnimatedLogout } from "@/hooks/useAnimatedLogout";
 import { LogoutOverlay } from "@/components/AuthTransition/AuthTransition";
 import { groupProjectsByFolder, isHighPriority } from "@/lib/workspaceSidebar";
 import { normalizeListResponse } from "@/lib/apiList";
-import { getClientAvatarUrl, getUserAvatarUrl } from "@/lib/mediaUrl";
+import { getProjectLogoUrl, getUserAvatarUrl } from "@/lib/mediaUrl";
 import { getStoredUser, getToken } from "@/services/client";
 import { getWorkspaceTree } from "@/services/folders";
 import { listProjects } from "@/services/projects";
@@ -348,8 +348,8 @@ export default function DashboardSidebar({ compact = false }) {
                     }
                   >
                     <Avatar
-                      src={getClientAvatarUrl(client)}
-                      name={avatarName}
+                      src={getProjectLogoUrl(fullProject || { client, cover: item.cover })}
+                      name={item.name || avatarName}
                       size="sm"
                     />
                   </button>
@@ -442,8 +442,8 @@ export default function DashboardSidebar({ compact = false }) {
                 }
               >
                 <Avatar
-                  src={getClientAvatarUrl(client)}
-                  name={avatarName}
+                  src={getProjectLogoUrl(fullProject || { client, cover: item.cover })}
+                  name={item.name || avatarName}
                   size="sm"
                   className={styles.recentAvatar}
                 />

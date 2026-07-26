@@ -2,7 +2,7 @@
 
 import Avatar from "@/components/Avatar/Avatar";
 import ProjectStatusMenu from "@/components/ProjectStatusMenu/ProjectStatusMenu";
-import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { getProjectLogoUrl } from "@/lib/mediaUrl";
 import { parseAmount } from "@/lib/financialStats";
 import { formatCurrencyBRL } from "@/lib/projectStats";
 import styles from "./ProjectsTable.module.css";
@@ -75,8 +75,8 @@ export default function ProjectsTable({
             onClick={() => onProjectClick?.(project)}
           >
             <Avatar
-              src={getClientAvatarUrl(project.client)}
-              name={project.client?.name || project.name}
+              src={getProjectLogoUrl(project)}
+              name={project.name || project.client?.name}
               size="sm"
             />
             <span className={styles.nameBlock}>

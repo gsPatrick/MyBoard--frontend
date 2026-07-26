@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Avatar from "@/components/Avatar/Avatar";
-import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { getProjectLogoUrl } from "@/lib/mediaUrl";
 import styles from "./ProjectPicker.module.css";
 
 function SearchIcon() {
@@ -116,8 +116,8 @@ export default function ProjectPicker({
                   {isSelected && <CheckIcon />}
                 </span>
                 <Avatar
-                  src={getClientAvatarUrl(project.client)}
-                  name={clientName || project.name}
+                  src={getProjectLogoUrl(project)}
+                  name={project.name || clientName}
                   size="sm"
                 />
                 <div className={styles.itemMain}>

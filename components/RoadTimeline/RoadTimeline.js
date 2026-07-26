@@ -8,7 +8,7 @@ import { listProjects } from "@/services/projects";
 import { normalizeListResponse } from "@/lib/apiList";
 import { buildIsoRangeQuery, getWeekRange } from "@/lib/agendaDates";
 import { ensureActiveTenant } from "@/lib/tenantContext";
-import { getClientAvatarUrl } from "@/lib/mediaUrl";
+import { getClientAvatarUrl, getProjectLogoUrl } from "@/lib/mediaUrl";
 import { isPastDateKey } from "@/lib/agendaDates";
 import { getWeekDays, isProjectOverdue, toDateKey } from "@/lib/roadTimelineDates";
 import { buildTimelineItems, TIMELINE_ITEM_TYPES } from "@/lib/timelineFeed";
@@ -52,6 +52,15 @@ function TimelineItem({ item, selectedDateKey, isLast, onClick }) {
         ? item.data.project?.client
         : item.data.client;
 
+  const project =
+    item.type === TIMELINE_ITEM_TYPES.PROJECT
+      ? item.data
+      : item.type === TIMELINE_ITEM_TYPES.DEMAND
+        ? item.data.project
+        : null;
+
+  const avatarSrc = project ? getProjectLogoUrl(project) : getClientAvatarUrl(client);
+
   return (
     <article
       data-timeline-item
@@ -59,9 +68,9 @@ function TimelineItem({ item, selectedDateKey, isLast, onClick }) {
     >
       <button type="button" className={styles.itemButton} onClick={() => onClick(item)}>
         <Avatar
-          src={getClientAvatarUrl(client)}
-          name={client?.name || item.title}
-          alt={client?.name || ""}
+          src={avatarSrc}
+          name={project?.name || client?.name || item.title}
+          alt={project?.name || client?.name || ""}
           size="sm"
         />
         <div className={styles.itemText}>

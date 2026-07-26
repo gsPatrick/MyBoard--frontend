@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Modal, { ModalActions } from "@/components/Modal/Modal";
 import Input from "@/components/Input/Input";
 import CurrencyInput from "@/components/CurrencyInput/CurrencyInput";
+import AvatarDropzone from "@/components/AvatarDropzone/AvatarDropzone";
 import { listClients } from "@/services/clients";
-import { createProject } from "@/services/projects";
+import { createProject, getProject } from "@/services/projects";
+import { uploadMedia } from "@/services/media";
 import { normalizeListResponse } from "@/lib/apiList";
 import { parseCurrencyInput } from "@/lib/currencyInput";
 import { ensureActiveTenant } from "@/lib/tenantContext";
@@ -19,6 +21,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
   const [origin, setOrigin] = useState("own");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
+  const [logoFile, setLogoFile] = useState(null);
   const [clients, setClients] = useState([]);
   const [loadingClients, setLoadingClients] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,6 +56,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
     setDueDate("");
     setBudget("");
     setOrigin("own");
+    setLogoFile(null);
     setError("");
   }
 
@@ -106,7 +110,17 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
         payload.budget = value;
       }
 
-      const project = await createProject(payload);
+      let project = await createProject(payload);
+
+      if (logoFile && project?.id) {
+        await uploadMedia({
+          file: logoFile,
+          entityType: "project",
+          entityId: project.id,
+          kind: "cover",
+        });
+        project = await getProject(project.id);
+      }
 
       resetForm();
       onCreated?.(project);
@@ -135,6 +149,14 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
       }
     >
       <div className={formStyles.form}>
+        <AvatarDropzone
+          label="Logo do projeto (opcional)"
+          file={logoFile}
+          onFileChange={setLogoFile}
+          disabled={loading}
+          previewName={name}
+        />
+
         <Input
           label="Nome do projeto"
           placeholder="Ex: Site institucional"

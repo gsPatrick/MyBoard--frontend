@@ -114,6 +114,13 @@
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  overflow: hidden;
+}
+
+.projectBadgeImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .fileText {
