@@ -22,7 +22,10 @@ export default function SpendingsTable() {
   );
 
   const inProgressProjects = useMemo(
-    () => projects.filter((p) => p.status === "in_progress"),
+    () =>
+      projects.filter(
+        (p) => p.status === "in_progress" || p.status === "recurring"
+      ),
     [projects]
   );
 
@@ -62,7 +65,7 @@ export default function SpendingsTable() {
 
   return (
     <section className={styles.card}>
-      <h2 className={styles.title}>Projetos em andamento</h2>
+      <h2 className={styles.title}>Projetos recorrentes e em andamento</h2>
 
       {loading && <p className={styles.empty}>Carregando...</p>}
 
@@ -72,7 +75,7 @@ export default function SpendingsTable() {
           receivedByProjectId={receivedByProjectId}
           onProjectClick={selectProject}
           onProjectUpdated={handleProjectUpdated}
-          emptyMessage="Nenhum projeto em andamento"
+          emptyMessage="Nenhum projeto recorrente ou em andamento"
         />
       )}
     </section>
