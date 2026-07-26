@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Button from "@/components/Button/Button";
 import Input from "@/components/Input/Input";
 import CurrencyInput from "@/components/CurrencyInput/CurrencyInput";
-import Checkbox from "@/components/Checkbox/Checkbox";
 import { updateProject } from "@/services/projects";
 import { listClients } from "@/services/clients";
 import { normalizeListResponse } from "@/lib/apiList";
@@ -13,6 +12,7 @@ import {
   parseCurrencyInput,
   formatCurrencyInputFromNumber,
 } from "@/lib/currencyInput";
+import { PROJECT_TYPES, getProjectType } from "@/lib/projectLabels";
 import { showSuccessToast } from "@/lib/toast";
 import sectionStyles from "../ProjectDetailSection.module.css";
 
@@ -26,7 +26,7 @@ export default function ProjectSettingsSection({ project, onSaved }) {
   const [clientId, setClientId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
-  const [isRecurring, setIsRecurring] = useState(false);
+  const [projectType, setProjectType] = useState("common");
   const [recurrenceAmount, setRecurrenceAmount] = useState("");
   const [recurrenceDay, setRecurrenceDay] = useState("");
   const [recurrenceEndDate, setRecurrenceEndDate] = useState("");
@@ -40,7 +40,7 @@ export default function ProjectSettingsSection({ project, onSaved }) {
     setClientId(project.client_id || project.client?.id || "");
     setDueDate(project.has_deadline ? toDateInput(project.due_date) : "");
     setBudget(formatCurrencyInputFromNumber(project.budget));
-    setIsRecurring(Boolean(project.is_recurring));
+    setProjectType(getProjectType(project));
     setRecurrenceAmount(formatCurrencyInputFromNumber(project.recurrence_amount));
     setRecurrenceDay(project.recurrence_day ? String(project.recurrence_day) : "");
     setRecurrenceEndDate(toDateInput(project.recurrence_end_date));
@@ -90,6 +90,10 @@ export default function ProjectSettingsSection({ project, onSaved }) {
 
     payload.budget = budget.trim() ? parseCurrencyInput(budget) : null;
 
+    const typeConfig =
+      PROJECT_TYPES.find((t) => t.id === projectType) || PROJECT_TYPES[0];
+    const isRecurring = typeConfig.recurring;
+
     payload.is_recurring = isRecurring;
     if (isRecurring) {
       const amount = parseCurrencyInput(recurrenceAmount);
@@ -105,7 +109,12 @@ export default function ProjectSettingsSection({ project, onSaved }) {
       payload.recurrence_amount = amount;
       payload.recurrence_day = day;
       payload.recurrence_end_date = recurrenceEndDate || null;
+      // Envia o status explícito (recurring vs maintenance).
+      payload.status = typeConfig.status;
     }
+    // Para "comum" não enviamos status: o backend volta para "em andamento"
+    // apenas se o projeto era recorrente/manutenção, sem sobrescrever
+    // estados como concluído/pausado.
 
     setSaving(true);
     setError("");
@@ -189,30 +198,37 @@ export default function ProjectSettingsSection({ project, onSaved }) {
 
       <div className={sectionStyles.cardHeader} style={{ marginTop: "var(--space-4, 16px)" }}>
         <div>
-          <h2 className={sectionStyles.cardTitle}>Recorrência</h2>
+          <h2 className={sectionStyles.cardTitle}>Tipo e recorrência</h2>
           <p className={sectionStyles.cardHint}>
-            Trabalho recorrente que você recebe todo mês no dia escolhido
+            Recorrente ou Manutenção geram um recebimento todo mês no dia escolhido
           </p>
         </div>
       </div>
 
       <div className={sectionStyles.formGrid}>
         <div className={sectionStyles.formFull}>
-          <Checkbox
-            id="project-settings-recurring"
-            label="Este é um projeto recorrente"
-            checked={isRecurring}
-            onChange={(e) => setIsRecurring(e.target.checked)}
+          <label className={sectionStyles.fieldLabel}>Tipo de projeto</label>
+          <select
+            className={sectionStyles.select}
+            value={projectType}
+            onChange={(e) => setProjectType(e.target.value)}
             disabled={saving}
-          />
+          >
+            {PROJECT_TYPES.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
           {project.is_recurring && (
             <p className={sectionStyles.cardHint}>
-              Já recebido {project.recurrence_received_count || 0} vez(es) até agora.
+              Já recebido {project.recurrence_received_count || 0} vez(es) até agora. Alterar o
+              valor vale só para os próximos meses.
             </p>
           )}
         </div>
 
-        {isRecurring && (
+        {projectType !== "common" && (
           <>
             <CurrencyInput
               label="Valor por mês"
@@ -233,7 +249,7 @@ export default function ProjectSettingsSection({ project, onSaved }) {
             />
             <div className={sectionStyles.formFull}>
               <Input
-                label="Encerrar recorrência em (opcional)"
+                label="Encerrar em (opcional)"
                 type="date"
                 value={recurrenceEndDate}
                 onChange={(e) => setRecurrenceEndDate(e.target.value)}

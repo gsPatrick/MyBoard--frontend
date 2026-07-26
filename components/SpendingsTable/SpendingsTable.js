@@ -24,7 +24,10 @@ export default function SpendingsTable() {
   const inProgressProjects = useMemo(
     () =>
       projects.filter(
-        (p) => p.status === "in_progress" || p.status === "recurring"
+        (p) =>
+          p.status === "in_progress" ||
+          p.status === "recurring" ||
+          p.status === "maintenance"
       ),
     [projects]
   );

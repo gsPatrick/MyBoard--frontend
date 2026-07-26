@@ -39,6 +39,7 @@ const PROJECT_STATUS = {
   paused: "Pausado",
   cancelled: "Cancelado",
   recurring: "Recorrente",
+  maintenance: "Manutenção",
 };
 
 const DATA_TYPE_LABEL = {

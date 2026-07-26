@@ -47,6 +47,7 @@ a {
   --secondary-blue: #7dbbff;
   --secondary-orange: #ffb55b;
   --secondary-red: #ff6b6b;
+  --secondary-teal: #34d0c3;
   --color-1: #e6f1fd;
   --color-2: #edeefc;
   --background-1: #ffffff;
@@ -83,6 +84,7 @@ a {
   --secondary-blue: #7dbbff;
   --secondary-orange: #ffb55b;
   --secondary-red: #ff6b6b;
+  --secondary-teal: #34d0c3;
   --color-1: rgba(230, 241, 253, 0.12);
   --color-2: rgba(237, 238, 252, 0.12);
   --background-1: #333333;

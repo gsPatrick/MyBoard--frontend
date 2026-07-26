@@ -61,3 +61,11 @@
 .indigoDot {
   background: var(--secondary-indigo);
 }
+
+.teal {
+  color: var(--secondary-teal);
+}
+
+.tealDot {
+  background: var(--secondary-teal);
+}
