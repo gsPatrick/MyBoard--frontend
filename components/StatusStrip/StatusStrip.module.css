@@ -28,7 +28,11 @@
   top: 0;
   bottom: 0;
   border-radius: var(--radius-lg);
-  transition: width var(--transition-slow);
+  transition: width var(--transition-slow), background-color var(--transition-slow);
+}
+
+.green {
+  background: var(--secondary-green);
 }
 
 .indigo {
