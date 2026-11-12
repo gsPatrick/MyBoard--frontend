@@ -1,7 +1,6 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://geral-myboard--api.r954jc.easypanel.host";
+export const API_BASE_URL = "https://myboardapi.codebypatrick.dev";
 
-export const API_PREFIX = process.env.NEXT_PUBLIC_API_PREFIX || "/api";
+export const API_PREFIX = "/api";
 
 export const API_VERSION = "v1";
 
