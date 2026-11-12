@@ -1,4 +1,4 @@
-export const API_BASE_URL = "https://myboardapi.codebypatrick.dev";
+export const API_BASE_URL = "https://01-personal-projects-myboard--api.rf16v6.easypanel.host";
 
 export const API_PREFIX = "/api";
 
