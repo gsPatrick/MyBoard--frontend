@@ -17,6 +17,23 @@
   gap: var(--space-4);
 }
 
+/* Linha do título: nome + selo "Tudo concluído" à esquerda; avatares + logo à direita.
+   Assim as métricas usam a largura toda do card. */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.headTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
 .title {
   font-size: 18px;
   font-weight: 600;
@@ -24,25 +41,42 @@
   color: var(--text-primary);
 }
 
+/*
+ * Métricas numa linha só. Cada item tem o divisor como borda à esquerda;
+ * o .metrics é puxado para a esquerda (padding + borda) e o .metricsClip
+ * esconde o que passa — assim o 1º item de cada linha (inclusive se a tela
+ * estreitar e quebrar) nunca mostra divisor solto.
+ */
+.metricsClip {
+  overflow: hidden;
+  min-width: 0;
+}
+
 .metrics {
+  --metric-pad: var(--space-5);
   display: flex;
-  align-items: center;
+  align-items: stretch;
   flex-wrap: wrap;
-  gap: var(--space-4) var(--space-6);
+  row-gap: var(--space-4);
+  margin-left: calc(-1 * (var(--metric-pad) + 1px));
   min-width: 0;
 }
 
 .metric {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: var(--space-1);
   flex-shrink: 0;
   min-width: 0;
+  padding: 0 var(--metric-pad);
+  border-left: 1px solid var(--border-strong);
 }
 
 .metricStatus {
-  width: 180px;
-  min-width: 180px;
+  box-sizing: content-box;
+  width: 160px;
+  min-width: 160px;
 }
 
 .metricLabel {
@@ -69,34 +103,27 @@
   font-weight: 400;
 }
 
-.divider {
-  width: 1px;
-  height: 52px;
-  background: var(--border-strong);
-  flex-shrink: 0;
-}
-
-/* "Total a receber": some (colapsa) quando todos os projetos são concluídos. */
+/* "Total a receber": some (colapsa) quando não há mais nada a receber. */
 .collapsible {
-  display: flex;
-  align-items: center;
-  gap: var(--space-6);
   max-width: 360px;
   overflow: hidden;
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .collapsibleAnimated {
   transition:
     max-width 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
-    margin-right 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
+    padding 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
+    border-left-width 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
     opacity 280ms ease 700ms,
     transform 420ms ease 700ms;
 }
 
 .collapsed {
   max-width: 0;
-  margin-right: calc(-1 * var(--space-6));
+  padding-left: 0;
+  padding-right: 0;
+  border-left-width: 0;
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
@@ -107,7 +134,6 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-left: var(--space-2);
   padding: 2px 8px 2px 6px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--secondary-green) 28%, transparent);
@@ -201,17 +227,14 @@
 
 .side {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: space-between;
-  align-self: stretch;
-  gap: var(--space-4);
-  min-width: 120px;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .snowLogo {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 
 .noClients {
@@ -226,24 +249,11 @@
     flex-direction: column;
   }
 
-  .divider {
-    display: none;
-  }
-
   .metrics {
-    flex-wrap: wrap;
-    gap: var(--space-4);
+    --metric-pad: var(--space-4);
   }
 
   .metricLabel {
     white-space: normal;
-  }
-
-  .collapsible {
-    gap: var(--space-4);
-  }
-
-  .collapsed {
-    margin-right: calc(-1 * var(--space-4));
   }
 }

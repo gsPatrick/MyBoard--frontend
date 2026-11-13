@@ -121,6 +121,7 @@ export default function ProjectHero() {
   }, [loadData]);
 
   const receivableClass = [
+    styles.metric,
     styles.collapsible,
     animateCollapse ? styles.collapsibleAnimated : "",
     hideReceivable ? styles.collapsed : "",
@@ -134,7 +135,38 @@ export default function ProjectHero() {
       data-tour="central-hero"
     >
       <div className={styles.content}>
-        <h1 className={styles.title}>{tenantName}</h1>
+        <div className={styles.head}>
+          <div className={styles.headTitle}>
+            <h1 className={styles.title}>{tenantName}</h1>
+          {celebrating && (
+            <span className={`${styles.doneBadge} ${styles.doneBadgePop}`} role="status">
+              <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.doneIcon}>
+                <path
+                  d="M3.5 8.5l3 3 6-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={styles.doneCheckDraw}
+                />
+              </svg>
+              Tudo concluído
+            </span>
+          )}
+          </div>
+          <div className={styles.side}>
+            {clientAvatars.length > 0 ? (
+              <AvatarGroup avatars={clientAvatars} max={4} size="md" />
+            ) : (
+              <span className={styles.noClients}>Sem clientes em aberto</span>
+            )}
+            <img src={assets.snowLogo} alt="" className={styles.snowLogo} aria-hidden="true" />
+          </div>
+        </div>
+        {/* Uma linha só; se a tela for estreita quebra, e o divisor do 1º item
+            de cada linha fica escondido (ver .metricsClip no CSS). */}
+        <div className={styles.metricsClip}>
         <div className={styles.metrics}>
           <div className={`${styles.metric} ${styles.metricStatus}`}>
             <span className={styles.metricLabel}>Status</span>
@@ -144,7 +176,6 @@ export default function ProjectHero() {
               color={celebrating ? "green" : "indigo"}
             />
           </div>
-          <div className={styles.divider} aria-hidden="true" />
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Projetos finalizados</span>
             <p className={styles.metricValue}>
@@ -156,30 +187,12 @@ export default function ProjectHero() {
                 <span className={styles.metricMuted}> / </span>
                 <span className={styles.metricStrong}>{loading ? "—" : shown.total}</span>
               </span>
-              {celebrating && (
-                <span className={`${styles.doneBadge} ${styles.doneBadgePop}`} role="status">
-                  <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.doneIcon}>
-                    <path
-                      d="M3.5 8.5l3 3 6-7"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={styles.doneCheckDraw}
-                    />
-                  </svg>
-                  Tudo concluído
-                </span>
-              )}
             </p>
           </div>
-          <div className={styles.divider} aria-hidden="true" />
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Projetos em aberto</span>
             <p className={styles.metricStrong}>{loading ? "—" : stats.openCount}</p>
           </div>
-          <div className={styles.divider} aria-hidden="true" />
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Concluídos no mês</span>
             <p
@@ -189,18 +202,11 @@ export default function ProjectHero() {
               {loading ? "—" : stats.completedThisMonth}
             </p>
           </div>
-        </div>
-
-        {/* Linha do financeiro (fixa, para o layout não pular quando algo some). */}
-        <div className={styles.metrics}>
           <div className={receivableClass} aria-hidden={hideReceivable || undefined}>
-            <div className={styles.metric}>
-              <span className={styles.metricLabel}>Total a receber</span>
-              <p className={styles.metricStrong}>
-                {loading ? "—" : formatCurrencyBRL(stats.totalToReceive)}
-              </p>
-            </div>
-            <div className={styles.divider} aria-hidden="true" />
+            <span className={styles.metricLabel}>Total a receber</span>
+            <p className={styles.metricStrong}>
+              {loading ? "—" : formatCurrencyBRL(stats.totalToReceive)}
+            </p>
           </div>
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Recebido no mês</span>
@@ -209,14 +215,7 @@ export default function ProjectHero() {
             </p>
           </div>
         </div>
-      </div>
-      <div className={styles.side}>
-        <img src={assets.snowLogo} alt="" className={styles.snowLogo} aria-hidden="true" />
-        {clientAvatars.length > 0 ? (
-          <AvatarGroup avatars={clientAvatars} max={4} size="md" />
-        ) : (
-          <span className={styles.noClients}>Sem clientes em aberto</span>
-        )}
+        </div>
       </div>
     </section>
   );
