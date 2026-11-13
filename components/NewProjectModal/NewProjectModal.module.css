@@ -1,0 +1,93 @@
+/* Escolha inicial: Trabalho ou Freela (cards quadrados lado a lado). */
+.choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.choice {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  background: var(--surface-muted);
+  border: 0.5px solid transparent;
+  border-radius: var(--radius-xl);
+  color: var(--text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.choice:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+.choice:active {
+  transform: scale(0.98);
+}
+
+.choice:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.choiceIcon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: auto;
+  color: var(--text-primary);
+}
+
+.choiceTitle {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.choiceText {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-muted);
+}
+
+/* Voltar para a escolha. */
+.back {
+  align-self: flex-start;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.back:hover {
+  color: var(--text-primary);
+}
+
+@media (max-width: 480px) {
+  .choice {
+    padding: var(--space-4);
+  }
+
+  .choiceText {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .choice {
+    transition: none;
+  }
+}

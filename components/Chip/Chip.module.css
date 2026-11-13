@@ -69,3 +69,11 @@
 .tealDot {
   background: var(--secondary-teal);
 }
+
+.yellow {
+  color: var(--secondary-yellow);
+}
+
+.yellowDot {
+  background: var(--secondary-yellow);
+}

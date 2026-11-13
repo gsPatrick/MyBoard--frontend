@@ -27,8 +27,8 @@
 .metrics {
   display: flex;
   align-items: center;
-  flex-wrap: nowrap;
-  gap: var(--space-6);
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
   min-width: 0;
 }
 
@@ -89,14 +89,14 @@
 .collapsibleAnimated {
   transition:
     max-width 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
-    margin-left 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
+    margin-right 520ms cubic-bezier(0.65, 0, 0.35, 1) 900ms,
     opacity 280ms ease 700ms,
     transform 420ms ease 700ms;
 }
 
 .collapsed {
   max-width: 0;
-  margin-left: calc(-1 * var(--space-6));
+  margin-right: calc(-1 * var(--space-6));
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
@@ -138,6 +138,23 @@
   animation: heroGlow 2400ms ease-out;
 }
 
+/* Troca de valor (ex.: N / N → 0 / 0 ao limpar o ciclo). */
+.valueSwap {
+  display: inline-block;
+  animation: valueSwap 420ms ease-out both;
+}
+
+@keyframes valueSwap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes doneBadgePop {
   0% {
     opacity: 0;
@@ -169,6 +186,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .collapsibleAnimated,
+  .valueSwap,
   .doneBadgePop,
   .doneCheckDraw,
   .heroCelebrating {
@@ -226,6 +244,6 @@
   }
 
   .collapsed {
-    margin-left: calc(-1 * var(--space-4));
+    margin-right: calc(-1 * var(--space-4));
   }
 }

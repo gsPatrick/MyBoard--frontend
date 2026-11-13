@@ -27,7 +27,8 @@ export default function SpendingsTable() {
         (p) =>
           p.status === "in_progress" ||
           p.status === "recurring" ||
-          p.status === "maintenance"
+          p.status === "maintenance" ||
+          p.status === "job"
       ),
     [projects]
   );

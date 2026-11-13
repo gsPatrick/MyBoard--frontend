@@ -109,7 +109,7 @@ export default function ProjectSettingsSection({ project, onSaved }) {
       payload.recurrence_amount = amount;
       payload.recurrence_day = day;
       payload.recurrence_end_date = recurrenceEndDate || null;
-      // Envia o status explícito (recurring vs maintenance).
+      // Envia o status explícito (recurring vs maintenance vs job).
       payload.status = typeConfig.status;
     }
     // Para "comum" não enviamos status: o backend volta para "em andamento"
@@ -200,7 +200,7 @@ export default function ProjectSettingsSection({ project, onSaved }) {
         <div>
           <h2 className={sectionStyles.cardTitle}>Tipo e recorrência</h2>
           <p className={sectionStyles.cardHint}>
-            Recorrente ou Manutenção geram um recebimento todo mês no dia escolhido
+            Recorrente, Manutenção ou Trabalho geram um recebimento todo mês no dia escolhido
           </p>
         </div>
       </div>

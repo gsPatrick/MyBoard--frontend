@@ -40,6 +40,7 @@ const PROJECT_STATUS = {
   cancelled: "Cancelado",
   recurring: "Recorrente",
   maintenance: "Manutenção",
+  job: "Trabalho",
 };
 
 const DATA_TYPE_LABEL = {

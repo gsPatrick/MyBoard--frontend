@@ -15,13 +15,39 @@ import { showSuccessToast } from "@/lib/toast";
 import { PROJECT_ORIGINS } from "@/lib/projectOrigin";
 import { PROJECT_TYPES } from "@/lib/projectLabels";
 import formStyles from "../shared/ModalForm.module.css";
+import styles from "./NewProjectModal.module.css";
+
+function BriefcaseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.choiceIcon}>
+      <rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3 12.5h18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function LaptopIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={styles.choiceIcon}>
+      <rect x="5" y="5" width="14" height="10" rx="1.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M3 19h18M10 9.5 8.5 11 10 12.5M14 9.5l1.5 1.5-1.5 1.5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export default function NewProjectModal({ isOpen, onClose, onCreated }) {
+  // "choose" = escolha Trabalho/Freela · "job" = emprego (salário mensal) · "freela" = projeto
+  const [mode, setMode] = useState("choose");
+  const [jobRole, setJobRole] = useState("");
+  const [jobSalary, setJobSalary] = useState("");
+  const [jobPayDay, setJobPayDay] = useState("");
+  const [jobStartDate, setJobStartDate] = useState("");
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState("");
   const [origin, setOrigin] = useState("own");
   const [dueDate, setDueDate] = useState("");
   const [budget, setBudget] = useState("");
+  const [alreadyReceived, setAlreadyReceived] = useState("");
   const [logoFile, setLogoFile] = useState(null);
   const [projectType, setProjectType] = useState("common");
   const [recurrenceAmount, setRecurrenceAmount] = useState("");
@@ -56,10 +82,16 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
   }, [isOpen]);
 
   function resetForm() {
+    setMode("choose");
+    setJobRole("");
+    setJobSalary("");
+    setJobPayDay("");
+    setJobStartDate("");
     setName("");
     setClientId("");
     setDueDate("");
     setBudget("");
+    setAlreadyReceived("");
     setOrigin("own");
     setLogoFile(null);
     setProjectType("common");
@@ -73,6 +105,82 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
     if (loading) return;
     resetForm();
     onClose();
+  }
+
+  function backToChoice() {
+    if (loading) return;
+    setError("");
+    setMode("choose");
+  }
+
+  /** Trabalho: projeto recorrente (salário cai todo mês no dia escolhido),
+   *  vinculado a um cliente existente (a empresa, com foto e dados próprios). */
+  async function handleSubmitJob() {
+    const client = clients.find((c) => c.id === clientId);
+    const role = jobRole.trim();
+    const salary = parseCurrencyInput(jobSalary);
+    const day = Number(jobPayDay);
+
+    if (!client) {
+      setError("Selecione a empresa");
+      return;
+    }
+    if (salary == null || salary <= 0) {
+      setError("Informe o salário");
+      return;
+    }
+    if (!Number.isInteger(day) || day < 1 || day > 31) {
+      setError("Dia do pagamento deve ser entre 1 e 31");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const tenantId = await ensureActiveTenant();
+      if (!tenantId) {
+        setError("Nenhuma organização ativa.");
+        return;
+      }
+
+      const company = client.name.trim();
+      const payload = {
+        name: role ? `${role} · ${company}` : company,
+        client_id: client.id,
+        origin: "own",
+        status: "job",
+        is_recurring: true,
+        recurrence_amount: salary,
+        recurrence_day: day,
+      };
+      if (jobStartDate) {
+        payload.start_date = jobStartDate;
+        payload.recurrence_start_date = jobStartDate;
+      }
+
+      let project = await createProject(payload);
+
+      if (logoFile && project?.id) {
+        await uploadMedia({
+          file: logoFile,
+          entityType: "project",
+          entityId: project.id,
+          kind: "cover",
+        });
+        project = await getProject(project.id);
+      }
+
+      resetForm();
+      onCreated?.(project);
+      onClose();
+      showSuccessToast("Trabalho cadastrado com sucesso");
+      window.dispatchEvent(new CustomEvent("myboard:workspace-refresh"));
+    } catch (err) {
+      setError(err.message || "Não foi possível cadastrar o trabalho");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleSubmit() {
@@ -121,6 +229,21 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
           return;
         }
         payload.budget = value;
+      }
+
+      if (!isRecurring && alreadyReceived.trim()) {
+        const received = parseCurrencyInput(alreadyReceived);
+        if (received == null || received < 0) {
+          setError("Valor já recebido inválido");
+          setLoading(false);
+          return;
+        }
+        if (payload.budget != null && received > payload.budget) {
+          setError("O valor já recebido não pode ser maior que o valor do projeto");
+          setLoading(false);
+          return;
+        }
+        if (received > 0) payload.already_received = received;
       }
 
       if (isRecurring) {
@@ -172,17 +295,128 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Novo projeto"
+      title={mode === "job" ? "Novo trabalho" : mode === "freela" ? "Novo freela" : "Novo projeto"}
       size="md"
       footer={
-        <ModalActions
-          onCancel={handleClose}
-          onConfirm={handleSubmit}
-          confirmLabel={loading ? "Salvando..." : "Criar projeto"}
-        />
+        mode === "choose" ? null : (
+          <ModalActions
+            onCancel={handleClose}
+            onConfirm={mode === "job" ? handleSubmitJob : handleSubmit}
+            confirmLabel={
+              loading ? "Salvando..." : mode === "job" ? "Cadastrar trabalho" : "Criar projeto"
+            }
+          />
+        )
       }
     >
+      {mode === "choose" && (
+        <div className={styles.choices}>
+          <button type="button" className={styles.choice} onClick={() => setMode("job")}>
+            <BriefcaseIcon />
+            <span className={styles.choiceTitle}>Trabalho</span>
+            <span className={styles.choiceText}>
+              Emprego fixo. O salário entra todo mês no dia do pagamento.
+            </span>
+          </button>
+          <button type="button" className={styles.choice} onClick={() => setMode("freela")}>
+            <LaptopIcon />
+            <span className={styles.choiceTitle}>Freela</span>
+            <span className={styles.choiceText}>
+              Projeto para um cliente, com valor, prazo, demandas e parcelas.
+            </span>
+          </button>
+        </div>
+      )}
+
+      {mode === "job" && (
+        <div className={formStyles.form}>
+          <button type="button" className={styles.back} onClick={backToChoice}>
+            ← Trabalho ou freela
+          </button>
+
+          <AvatarDropzone
+            label="Logo (opcional)"
+            file={logoFile}
+            onFileChange={setLogoFile}
+            disabled={loading}
+            previewName={clients.find((c) => c.id === clientId)?.name || jobRole}
+          />
+
+          <div className={formStyles.field}>
+            <label htmlFor="job-client" className={formStyles.label}>
+              Empresa
+            </label>
+            <select
+              id="job-client"
+              className={formStyles.select}
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              disabled={loading || loadingClients}
+              required
+            >
+              <option value="">
+                {loadingClients ? "Carregando clientes..." : "Selecione a empresa"}
+              </option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
+            <span className={formStyles.hint}>
+              {!loadingClients && clients.length === 0
+                ? "Nenhum cliente ainda. Cadastre a empresa em \u201cNovo Cliente\u201d (com foto) e volte aqui."
+                : "A empresa é um cliente seu — foto e dados vêm do cadastro dele."}
+            </span>
+          </div>
+
+          <Input
+            label="Cargo (opcional)"
+            placeholder="Ex: Desenvolvedor Front-end"
+            value={jobRole}
+            onChange={(e) => setJobRole(e.target.value)}
+            disabled={loading}
+          />
+
+          <div className={formStyles.row}>
+            <CurrencyInput
+              label="Salário"
+              placeholder="0,00"
+              value={jobSalary}
+              onChange={(e) => setJobSalary(e.target.value)}
+              disabled={loading}
+            />
+            <Input
+              label="Dia do pagamento"
+              type="number"
+              min={1}
+              max={31}
+              placeholder="Ex: 5"
+              value={jobPayDay}
+              onChange={(e) => setJobPayDay(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+
+          <Input
+            label="Início (opcional)"
+            type="date"
+            value={jobStartDate}
+            onChange={(e) => setJobStartDate(e.target.value)}
+            disabled={loading}
+            hint="O salário passa a cair a partir do próximo dia de pagamento."
+          />
+
+          {error && <p className={formStyles.error}>{error}</p>}
+        </div>
+      )}
+
+      {mode === "freela" && (
       <div className={formStyles.form}>
+        <button type="button" className={styles.back} onClick={backToChoice}>
+          ← Trabalho ou freela
+        </button>
+
         <AvatarDropzone
           label="Logo do projeto (opcional)"
           file={logoFile}
@@ -277,7 +511,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
             onChange={(e) => setProjectType(e.target.value)}
             disabled={loading}
           >
-            {PROJECT_TYPES.map((item) => (
+            {PROJECT_TYPES.filter((item) => item.id !== "job").map((item) => (
               <option key={item.id} value={item.id}>
                 {item.label}
               </option>
@@ -289,6 +523,22 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
               : "Todo mês, no dia escolhido, o valor entra automaticamente no financeiro. Você pode alterar o valor depois — vale só para os próximos."}
           </span>
         </div>
+
+        {projectType === "common" && (
+          <div className={formStyles.field}>
+            <CurrencyInput
+              label="Já recebido (opcional)"
+              placeholder="0,00"
+              value={alreadyReceived}
+              onChange={(e) => setAlreadyReceived(e.target.value)}
+              disabled={loading}
+            />
+            <span className={formStyles.hint}>
+              Quanto você já recebeu antes de cadastrar. Abate do &quot;a receber&quot; e não
+              conta no recebido deste mês.
+            </span>
+          </div>
+        )}
 
         {projectType !== "common" && (
           <>
@@ -328,6 +578,7 @@ export default function NewProjectModal({ isOpen, onClose, onCreated }) {
 
         {error && <p className={formStyles.error}>{error}</p>}
       </div>
+      )}
     </Modal>
   );
 }

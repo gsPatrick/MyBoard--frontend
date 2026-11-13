@@ -21,11 +21,12 @@ export default function ProjectHero() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Animação de "concluiu tudo": só toca na transição (aberto → tudo concluído),
-  // não toda vez que o dashboard abre já com tudo concluído.
-  const [celebrating, setCelebrating] = useState(false);
+  // Animação de "concluiu tudo": toca quando o último projeto em aberto é
+  // concluído (o lote fecha). Mostra "N / N · 100%" por um instante e depois
+  // o card limpa para 0 / 0, pronto para o próximo ciclo.
+  const [celebration, setCelebration] = useState(null); // { total } durante a animação
+  const [prevCycle, setPrevCycle] = useState(null);
   const [animateCollapse, setAnimateCollapse] = useState(false);
-  const [prevAllDone, setPrevAllDone] = useState(null);
   const [prevHideReceivable, setPrevHideReceivable] = useState(null);
 
   const tenantName = getStoredTenant()?.name || "Meu workspace";
@@ -41,16 +42,27 @@ export default function ProjectHero() {
     () => computeProjectDashboardStats(projects, receivedByProjectId),
     [projects, receivedByProjectId]
   );
-  const allDone = !loading && stats.total > 0 && stats.completedCount === stats.total;
-  // "Total a receber" só some quando tudo foi entregue E pago
+  // "Total a receber" some quando não há projeto em aberto nem saldo pendente
   // (projeto concluído com parcela pendente continua aparecendo).
-  const hideReceivable = allDone && stats.pendingFromProjects === 0;
+  const hideReceivable = !loading && stats.openCount === 0 && stats.pendingFromProjects === 0;
 
-  // Detecta a transição durante o render (padrão recomendado pelo React).
-  // Primeira carga (prevAllDone === null): aplica o estado final sem animar.
-  if (!loading && prevAllDone !== allDone) {
-    if (prevAllDone !== null) setCelebrating(allDone);
-    setPrevAllDone(allDone);
+  // Detecta as transições durante o render (padrão recomendado pelo React).
+  // Primeira carga (prev === null): aplica o estado final sem animar.
+  if (!loading) {
+    const cycleKey = `${stats.openCount}|${stats.total}|${stats.completedAllCount}`;
+    if (prevCycle !== cycleKey) {
+      if (prevCycle !== null) {
+        const [prevOpen, prevTotal, prevDone] = prevCycle.split("|").map(Number);
+        const justClosed =
+          prevOpen > 0 &&
+          stats.openCount === 0 &&
+          stats.total === 0 &&
+          stats.completedAllCount > prevDone;
+        if (justClosed) setCelebration({ total: prevTotal });
+        else if (stats.openCount > 0) setCelebration(null);
+      }
+      setPrevCycle(cycleKey);
+    }
   }
   if (!loading && prevHideReceivable !== hideReceivable) {
     if (prevHideReceivable !== null) setAnimateCollapse(true);
@@ -58,10 +70,16 @@ export default function ProjectHero() {
   }
 
   useEffect(() => {
-    if (!celebrating) return;
-    const timer = setTimeout(() => setCelebrating(false), CELEBRATION_MS);
+    if (!celebration) return;
+    const timer = setTimeout(() => setCelebration(null), CELEBRATION_MS);
     return () => clearTimeout(timer);
-  }, [celebrating]);
+  }, [celebration]);
+
+  const celebrating = Boolean(celebration);
+  // Durante a animação mostra o lote que acabou de fechar; depois, o lote atual (zerado).
+  const shown = celebration
+    ? { completed: celebration.total, total: celebration.total, progress: 100 }
+    : { completed: stats.completedCount, total: stats.total, progress: stats.progress };
 
   const clientAvatars = useMemo(
     () =>
@@ -121,25 +139,25 @@ export default function ProjectHero() {
           <div className={`${styles.metric} ${styles.metricStatus}`}>
             <span className={styles.metricLabel}>Status</span>
             <StatusStrip
-              progress={loading ? 0 : stats.progress}
+              progress={loading ? 0 : shown.progress}
               statusText="Concluídos"
-              color={allDone ? "green" : "indigo"}
+              color={celebrating ? "green" : "indigo"}
             />
           </div>
           <div className={styles.divider} aria-hidden="true" />
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Projetos finalizados</span>
             <p className={styles.metricValue}>
-              <span className={styles.metricStrong}>
-                {loading ? "—" : stats.completedCount}
+              <span
+                key={celebrating ? "fechado" : `lote-${shown.completed}-${shown.total}`}
+                className={styles.valueSwap}
+              >
+                <span className={styles.metricStrong}>{loading ? "—" : shown.completed}</span>
+                <span className={styles.metricMuted}> / </span>
+                <span className={styles.metricStrong}>{loading ? "—" : shown.total}</span>
               </span>
-              <span className={styles.metricMuted}> / </span>
-              <span className={styles.metricStrong}>{loading ? "—" : stats.total}</span>
-              {allDone && (
-                <span
-                  className={`${styles.doneBadge} ${celebrating ? styles.doneBadgePop : ""}`}
-                  role="status"
-                >
+              {celebrating && (
+                <span className={`${styles.doneBadge} ${styles.doneBadgePop}`} role="status">
                   <svg viewBox="0 0 16 16" aria-hidden="true" className={styles.doneIcon}>
                     <path
                       d="M3.5 8.5l3 3 6-7"
@@ -148,7 +166,7 @@ export default function ProjectHero() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className={celebrating ? styles.doneCheckDraw : ""}
+                      className={styles.doneCheckDraw}
                     />
                   </svg>
                   Tudo concluído
@@ -161,16 +179,29 @@ export default function ProjectHero() {
             <span className={styles.metricLabel}>Projetos em aberto</span>
             <p className={styles.metricStrong}>{loading ? "—" : stats.openCount}</p>
           </div>
+          <div className={styles.divider} aria-hidden="true" />
+          <div className={styles.metric}>
+            <span className={styles.metricLabel}>Concluídos no mês</span>
+            <p
+              key={`mes-${stats.completedThisMonth}`}
+              className={`${styles.metricStrong} ${styles.valueSwap}`}
+            >
+              {loading ? "—" : stats.completedThisMonth}
+            </p>
+          </div>
+        </div>
+
+        {/* Linha do financeiro (fixa, para o layout não pular quando algo some). */}
+        <div className={styles.metrics}>
           <div className={receivableClass} aria-hidden={hideReceivable || undefined}>
-            <div className={styles.divider} aria-hidden="true" />
             <div className={styles.metric}>
               <span className={styles.metricLabel}>Total a receber</span>
               <p className={styles.metricStrong}>
                 {loading ? "—" : formatCurrencyBRL(stats.totalToReceive)}
               </p>
             </div>
+            <div className={styles.divider} aria-hidden="true" />
           </div>
-          <div className={styles.divider} aria-hidden="true" />
           <div className={styles.metric}>
             <span className={styles.metricLabel}>Recebido no mês</span>
             <p className={styles.metricStrong}>
