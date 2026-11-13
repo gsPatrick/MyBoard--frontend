@@ -15,7 +15,9 @@ import {
   aggregateByClient,
   aggregateByProject,
   buildPanoramaTimeline,
+  buildReceivedByProjectId,
   groupByMonthAndType,
+  isProfitEntry,
   parseAmount,
   sumEntryAmounts,
 } from "@/lib/financialStats";
@@ -92,22 +94,27 @@ export default function LucroView() {
     return projects.filter((p) => p.client_id === clientFilter);
   }, [projects, clientFilter]);
 
+  // Lucro ignora o "Recebido antes do cadastro"; o saldo (a receber) usa tudo.
+  const profitEntries = useMemo(() => entries.filter(isProfitEntry), [entries]);
+  const receivedByProjectId = useMemo(() => buildReceivedByProjectId(entries), [entries]);
+
   const sortedEntries = useMemo(
     () =>
-      [...entries].sort((a, b) =>
+      [...profitEntries].sort((a, b) =>
         (b.entry_date || "").localeCompare(a.entry_date || "")
       ),
-    [entries]
+    [profitEntries]
   );
 
   const projectRows = useMemo(
-    () => aggregateByProject(entries, projectsForClient),
-    [entries, projectsForClient]
+    () => aggregateByProject(profitEntries, projectsForClient),
+    [profitEntries, projectsForClient]
   );
 
-  const clientRows = useMemo(() => aggregateByClient(entries), [entries]);
+  const clientRows = useMemo(() => aggregateByClient(profitEntries), [profitEntries]);
 
-  const receivedTotal = useMemo(() => sumEntryAmounts(entries), [entries]);
+  const receivedTotal = useMemo(() => sumEntryAmounts(profitEntries), [profitEntries]);
+  const receivedAllTotal = useMemo(() => sumEntryAmounts(entries), [entries]);
   const budgetTotal = useMemo(() => {
     if (projectFilter) {
       const project = projects.find((p) => p.id === projectFilter);
@@ -117,8 +124,8 @@ export default function LucroView() {
     return list.reduce((sum, p) => sum + parseAmount(p.budget), 0);
   }, [projectFilter, clientFilter, projects, projectsForClient]);
 
-  const pendingTotal = Math.max(budgetTotal - receivedTotal, 0);
-  const monthType = useMemo(() => groupByMonthAndType(entries), [entries]);
+  const pendingTotal = Math.max(budgetTotal - receivedAllTotal, 0);
+  const monthType = useMemo(() => groupByMonthAndType(profitEntries), [profitEntries]);
   const panoramaTimeline = useMemo(
     () => buildPanoramaTimeline(monthType),
     [monthType]
@@ -267,7 +274,7 @@ export default function LucroView() {
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Lançamentos</p>
-          <p className={styles.statValue}>{loading ? "—" : entries.length}</p>
+          <p className={styles.statValue}>{loading ? "—" : profitEntries.length}</p>
         </div>
       </div>
 
@@ -487,7 +494,7 @@ export default function LucroView() {
                 const received = row?.received || 0;
                 const entryCount = row?.entryCount || 0;
                 const budget = parseAmount(project.budget);
-                const pending = Math.max(budget - received, 0);
+                const pending = Math.max(budget - (receivedByProjectId[project.id] || 0), 0);
                 return (
                   <button
                     key={project.id}

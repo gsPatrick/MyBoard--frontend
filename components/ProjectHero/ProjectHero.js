@@ -10,7 +10,12 @@ import { normalizeListResponse } from "@/lib/apiList";
 import { ensureActiveTenant } from "@/lib/tenantContext";
 import { getClientAvatarUrl } from "@/lib/mediaUrl";
 import { computeProjectDashboardStats, formatCurrencyBRL } from "@/lib/projectStats";
-import { buildReceivedByProjectId, getCurrentYearMonth, sumEntryAmounts } from "@/lib/financialStats";
+import {
+  buildReceivedByProjectId,
+  getCurrentYearMonth,
+  isProfitEntry,
+  sumEntryAmounts,
+} from "@/lib/financialStats";
 import { assets } from "@/lib/dashboardData";
 import styles from "./ProjectHero.module.css";
 
@@ -26,8 +31,6 @@ export default function ProjectHero() {
   // o card limpa para 0 / 0, pronto para o próximo ciclo.
   const [celebration, setCelebration] = useState(null); // { total } durante a animação
   const [prevCycle, setPrevCycle] = useState(null);
-  const [animateCollapse, setAnimateCollapse] = useState(false);
-  const [prevHideReceivable, setPrevHideReceivable] = useState(null);
 
   const tenantName = getStoredTenant()?.name || "Meu workspace";
 
@@ -35,16 +38,15 @@ export default function ProjectHero() {
   const receivedByProjectId = useMemo(() => buildReceivedByProjectId(entries), [entries]);
   const receivedThisMonth = useMemo(() => {
     const month = getCurrentYearMonth();
-    return sumEntryAmounts(entries.filter((e) => (e.entry_date || "").startsWith(month)));
+    return sumEntryAmounts(
+      entries.filter((e) => isProfitEntry(e) && (e.entry_date || "").startsWith(month))
+    );
   }, [entries]);
 
   const stats = useMemo(
     () => computeProjectDashboardStats(projects, receivedByProjectId),
     [projects, receivedByProjectId]
   );
-  // "Total a receber" some quando não há projeto em aberto nem saldo pendente
-  // (projeto concluído com parcela pendente continua aparecendo).
-  const hideReceivable = !loading && stats.openCount === 0 && stats.pendingFromProjects === 0;
 
   // Detecta as transições durante o render (padrão recomendado pelo React).
   // Primeira carga (prev === null): aplica o estado final sem animar.
@@ -63,10 +65,6 @@ export default function ProjectHero() {
       }
       setPrevCycle(cycleKey);
     }
-  }
-  if (!loading && prevHideReceivable !== hideReceivable) {
-    if (prevHideReceivable !== null) setAnimateCollapse(true);
-    setPrevHideReceivable(hideReceivable);
   }
 
   useEffect(() => {
@@ -119,15 +117,6 @@ export default function ProjectHero() {
       window.removeEventListener("myboard:tenant-changed", loadData);
     };
   }, [loadData]);
-
-  const receivableClass = [
-    styles.metric,
-    styles.collapsible,
-    animateCollapse ? styles.collapsibleAnimated : "",
-    hideReceivable ? styles.collapsed : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
 
   return (
     <section
@@ -202,7 +191,7 @@ export default function ProjectHero() {
               {loading ? "—" : stats.completedThisMonth}
             </p>
           </div>
-          <div className={receivableClass} aria-hidden={hideReceivable || undefined}>
+          <div className={styles.metric}>
             <span className={styles.metricLabel}>Total a receber</span>
             <p className={styles.metricStrong}>
               {loading ? "—" : formatCurrencyBRL(stats.totalToReceive)}
